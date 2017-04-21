@@ -1,0 +1,20 @@
+{
+    "name": "xlx/dbm",
+    "description": "database tools",   
+    "license": "MIT",
+    "require-dev": {
+        "vrana/notorm":"dev-master",
+        "illuminate/database":"*"
+    },
+    "autoload":{
+        "psr-4": {
+            "dbm\\":"./src/"
+        }
+    },
+    "repositories": {
+        "packagist": {
+            "type": "composer",
+            "url": "https://packagist.phpcomposer.com"
+        }
+    }
+}

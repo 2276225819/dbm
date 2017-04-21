@@ -1,0 +1,8 @@
+/*.sql
+/*.bat
+/*.php
+/*.lock
+/vendor
+/test
+/.composer-help
+/.vscode
