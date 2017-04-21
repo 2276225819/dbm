@@ -25,10 +25,8 @@ class SQL implements \Iterator
     function access()
     { 
         $args =  array_merge($this->fArgs, $this->wArgs);
-        if ($this->query = $this->execute((string)$this, $args)) {
-            ;
-        } else {
-            throw new \Exception("Error Processing Request", 1);
+        if (!($this->query = $this->execute((string)$this, $args))) { 
+            throw new \Exception("Error Processing Query" );
         }
         if (isset($this->model)) {
             $this->query->setFetchMode(\PDO::FETCH_CLASS, 
@@ -138,10 +136,8 @@ class SQL implements \Iterator
     {
         $data = array_merge($data, $this->sArgs);
         $sql="INSERT INTO {$this->tname} SET ".$this->kvSQL($param, ',', $data);
-        if ($query = $this->execute($sql, $param)) {
-            ;
-        } else {
-            throw new Exception("Error Processing Request", 1);
+        if (!($query = $this->execute($sql, $param))) { 
+            throw new \Exception("Error Processing Insert" );
         }
         //AUTO INCREMENT
         $last_id = $this->lastInsertId();
@@ -181,26 +177,22 @@ class SQL implements \Iterator
             $sql1.=",`{$key}`";
         }
         $sql="INSERT INTO {$this->tname} (".substr($sql1, 1)." )VALUES".substr($sql2, 1);
-        if ($query = $this->execute($sql, $param)) {
-            ;
-        } else {
-            throw new Exception("Error Processing Request", 1);
+        if (!($query = $this->execute($sql, $param))) { 
+            throw new \Exception("Error Processing Insert Mulit", 1);
         }
         return $query->rowCount();
     }
     public function update($data, ...$arr) :int
     {
         if (empty($this->wStr)) {
-            throw new \Exception("Error Processing Request", 1);
+            throw new \Exception("Require Where Column", 1);
         }
         $param=[];
         $data=$this->kvSQL($param, ',', $data, $arr);
         $sql="UPDATE {$this->tname} SET {$data} {$this->wStr}";
         $param = array_merge($param, $this->wArgs);
-        if ($query = $this->execute($sql, $param)) {
-            ;
-        } else {
-            throw new Exception("Error Processing Request", 1);
+        if (!($query = $this->execute($sql, $param))) { 
+            throw new \Exception("Error Processing Update", 1);
         }
         return $query->rowCount();
     }
@@ -210,10 +202,8 @@ class SQL implements \Iterator
             return false;
         }
         $sql="DELETE FROM {$this->tname} {$this->wStr}";
-        if ($query = $this->execute($sql, $this->wArgs)) {
-            ;
-        } else {
-            throw new Exception("Error Processing Request", 1);
+        if (!($query = $this->execute($sql, $this->wArgs))) { 
+            throw new \Exception("Error Processing Delete", 1);
         }
         return $query->rowCount();
     }

@@ -52,12 +52,10 @@ class Connect{
     {
         $arr = array_combine($table::$pks, $pkv);
         if ($row = (new SQL($table))->and($arr)->fetch()) {
-            ;
+            return $row;
         } else {
             throw new \Exception("Error Processing Request", 1);
-        }
-        return $row;
-
+        } 
     } 
 
 }

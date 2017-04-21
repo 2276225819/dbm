@@ -18,32 +18,7 @@ class Model implements \ArrayAccess
     }
     public function __construct(SQL $bulider=null)
     {  
-        $this->bulider = $bulider;
-       
-        // if(!empty($sql->parent)){  
-        //     $a = $sql->parent->model; //user 
-        //     unset($sql->parent);
-        //     $arr = $sql->fetchAll();
-        //     foreach ($arr as $post) {  
-        //         static::$cache["$a:$class"][$post->pkv()]=$sql; 
-        //     } 
-            
-        //     // foreach (static::$pks as $i => $key) {
-        //     //     if(empty($this->$key))
-        //     //         return;
-        //     //     $pkv[]=$this->$key;
-        //     // }
-        //     // $caller = get_class($callee);
-        //     // static::$cache["$caller:$class"][join($pkv,'-')]=$callee->bulider; 
-        // } 
-        // if(!empty($sql->model) && $sql->model==$class){ 
-        //     foreach (static::$pks as $i => $key) {
-        //         if(empty($this->$key))
-        //             return;
-        //         $pkv[]=$this->$key;
-        //     }
-        //     static::$cache[$class][join($pkv,'-')]=$this;
-        // }
+        $this->bulider = $bulider; 
     }
  
   
@@ -82,7 +57,7 @@ class Model implements \ArrayAccess
     public function create(Connect $conn):bool
     {
         if (!empty($this->bulider)) {
-            throw new Exception("Error Processing Request", 1);
+            throw new \Exception("Error Processing Request", 1);
         }
         $this->bulider = $conn->sql(get_called_class());
         $this->bulider->insert($this->dirty);
@@ -117,7 +92,7 @@ class Model implements \ArrayAccess
         }
         foreach (static::$pks as $i => $key) {
             if (!isset($this->$key)) {
-                throw new Exception("Error Processing Request", 1);
+                throw new \Exception("Error Processing Request", 1);
             }
             $arr[$key] = $this->$key;
         }
