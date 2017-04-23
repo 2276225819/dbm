@@ -1,35 +1,36 @@
 <?php namespace dbm;
 
 class SQL implements \Iterator
-{ 
+{
     public $query;
     public $tname;
     public $model;
     public function __construct(string $model)
     {
-        if (class_exists($model) && isset($model::$table) ) {
+        if (class_exists($model) && isset($model::$table)) {
             $this->tname = $model::$table??$model;
             $this->model = $model;
         } else {
             $this->tname=$model;
         }
     }
-    public function __toString(){
-        return "SELECT {$this->fStr} FROM {$this->tname} {$this->wStr} {$this->oStr} {$this->lStr}"; 
+    public function __toString()
+    {
+        return "SELECT {$this->fStr} FROM {$this->tname} {$this->wStr} {$this->oStr} {$this->lStr}";
     }
-    public function new(string $model = null):SQL
-    { 
+    public function new(string $model):SQL
+    {
         return new self($model??$this->model);
     }
     
     function access()
-    { 
+    {
         $args =  array_merge($this->fArgs, $this->wArgs);
-        if (!($this->query = $this->execute((string)$this, $args))) { 
+        if (!($this->query = $this->execute((string)$this, $args))) {
             throw new \Exception("Error Processing Query" );
         }
         if (isset($this->model)) {
-            $this->query->setFetchMode(\PDO::FETCH_CLASS, 
+            $this->query->setFetchMode(\PDO::FETCH_CLASS,
                 $this->model, [ $this ]
             );
         } else {
@@ -39,33 +40,36 @@ class SQL implements \Iterator
     public $each=[];
     public $each_pos=0;
     function rewind()
-    { 
-        $this->each = $this->fetchAll();
-        $this->each_pos=0;
-        if(!empty($this->sArgs)){
-            $this->each = array_filter($this->each,function($a){
+    {
+        $arr = $this->fetchAll();
+        if (!empty($this->sArgs)) {
+            $arr = array_filter($arr, function ($a) {
                 foreach ($this->sArgs as $k => $v) {
-                    if($a->$k!=$v)  return false;
+                    if ($a->$k!=$v) {
+                        return false;
+                    }
                 }
-                return true; 
-            });  
-        } 
+                return true;
+            }); 
+        }
+		$this->each=array_values($arr);
+        $this->each_pos=0;
     }
     function current()
     {
-        return $this->each[$this->each_pos]; 
+        return $this->each[$this->each_pos];
     }
     function key()
     {
-        return $this->each_pos; 
+        return $this->each_pos;
     }
     function next()
     {
-       return ++$this->each_pos; 
+        return ++$this->each_pos;
     }
     function valid()
     {
-        return isset($this->each[$this->each_pos]); 
+        return isset($this->each[$this->each_pos]);
     }
     
     public $_array=[];
@@ -76,7 +80,7 @@ class SQL implements \Iterator
         if (empty($this->query)) {
             $this->access();
         }
-        if (empty($this->_end)) { 
+        if (empty($this->_end)) {
             if ($all = $this->query->fetchAll()) {
                 $this->_array = array_merge($this->_array, $all);
             }
@@ -102,29 +106,32 @@ class SQL implements \Iterator
                     $this->_end=true;
                 }
             }
-        } 
+        }
         return $this->_array[$this->_pos++];
     }
     
-    public function value($column=0) {
+    public function value($column = 0)
+    {
         $args = array_merge($this->fArgs, $this->wArgs);
-        if ($this->query = $this->execute((string)$this, $args)) {  
+        if ($this->query = $this->execute((string)$this, $args)) {
             if ($row=$this->query->fetch(\PDO::FETCH_BOTH)) {
                 return $row[$column];
             }
         }
     }
-    public function list(){
+    public function list()
+    {
         $args = array_merge($this->fArgs, $this->wArgs);
-        if ($this->query = $this->execute((string)$this, $args)) {  
-            return $this->query->fetchAll(\PDO::FETCH_COLUMN,0); 
-        } 
+        if ($this->query = $this->execute((string)$this, $args)) {
+            return $this->query->fetchAll(\PDO::FETCH_COLUMN, 0);
+        }
     }
-    public function keypair(){
+    public function keypair()
+    {
         $args = array_merge($this->fArgs, $this->wArgs);
-        if ($this->query = $this->execute((string)$this, $args)) {  
-            return $this->query->fetchAll(\PDO::FETCH_KEY_PAIR); 
-        } 
+        if ($this->query = $this->execute((string)$this, $args)) {
+            return $this->query->fetchAll(\PDO::FETCH_KEY_PAIR);
+        }
     }
     ///////////////////////////////////////
     public function execute($sql, $args = []) //:mixed?
@@ -136,7 +143,7 @@ class SQL implements \Iterator
     {
         $data = array_merge($data, $this->sArgs);
         $sql="INSERT INTO {$this->tname} SET ".$this->kvSQL($param, ',', $data);
-        if (!($query = $this->execute($sql, $param))) { 
+        if (!($query = $this->execute($sql, $param))) {
             throw new \Exception("Error Processing Insert" );
         }
         //AUTO INCREMENT
@@ -177,7 +184,7 @@ class SQL implements \Iterator
             $sql1.=",`{$key}`";
         }
         $sql="INSERT INTO {$this->tname} (".substr($sql1, 1)." )VALUES".substr($sql2, 1);
-        if (!($query = $this->execute($sql, $param))) { 
+        if (!($query = $this->execute($sql, $param))) {
             throw new \Exception("Error Processing Insert Mulit", 1);
         }
         return $query->rowCount();
@@ -191,7 +198,7 @@ class SQL implements \Iterator
         $data=$this->kvSQL($param, ',', $data, $arr);
         $sql="UPDATE {$this->tname} SET {$data} {$this->wStr}";
         $param = array_merge($param, $this->wArgs);
-        if (!($query = $this->execute($sql, $param))) { 
+        if (!($query = $this->execute($sql, $param))) {
             throw new \Exception("Error Processing Update", 1);
         }
         return $query->rowCount();
@@ -202,15 +209,18 @@ class SQL implements \Iterator
             return false;
         }
         $sql="DELETE FROM {$this->tname} {$this->wStr}";
-        if (!($query = $this->execute($sql, $this->wArgs))) { 
+        if (!($query = $this->execute($sql, $this->wArgs))) {
             throw new \Exception("Error Processing Delete", 1);
         }
         return $query->rowCount();
     }
-    public function limit($offset, $limit = null):SQL
-    { 
-        $this->lStr=" LIMIT ".intval($offset);
-        if(!empty($limit))$this->lStr.=' , '.intval($limit).' '; 
+    public function limit($limit,$offset = 0):SQL
+    {
+		
+        $this->lStr=" LIMIT ".intval($limit);
+        if (!empty($offset)) {
+            $this->lStr.=' OFFSET '.intval($offset).' ';
+        }
         return $this;
     }
     public function order(string $order) :SQL
@@ -222,7 +232,7 @@ class SQL implements \Iterator
     {
         $this->fStr=$this->kvSQL($this->fArgs, ',', $fields );
         return $this;
-    } 
+    }
 
     public function where($w, ...$arr) :SQL
     {

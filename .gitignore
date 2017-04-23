@@ -2,6 +2,7 @@
 /*.bat
 /*.php
 /*.lock
+/*.html
 /vendor
 /test
 /.composer-help

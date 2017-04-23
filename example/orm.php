@@ -135,7 +135,7 @@ foreach ($test->sql(User::class) as $user) {
 
 // SELECT * FROM zz_post_type  WHERE  Id in (?)  
 // [0] => 1 
- 
+
 
 print_r($test->sql('zz_user')->where('Id=?',2)->fetchAll());
 // SELECT * FROM zz_user  WHERE Id=?
@@ -149,8 +149,8 @@ print_r($test->sql('zz_user')->limit(2)->fetchAll());
 // SELECT * FROM zz_user    LIMIT 2
 
 
-print_r($test->sql('zz_user')->field('Id')->limit(0,3)->fetchAll());
-// SELECT Id FROM zz_user    LIMIT 0 , 3 
+print_r($test->sql('zz_user')->field('Id')->limit(2,1)->fetchAll());
+// SELECT Id FROM zz_user    LIMIT 2 OFFSET 1 
 
 
 print_r($test->sql('zz_user')->field('count(1)')->value());

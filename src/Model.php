@@ -10,15 +10,16 @@ class Model implements \ArrayAccess
 
     // public $data=[];
     // public $dirty=[];
-    public function pkv(){ 
+    public function pkv()
+    {
         foreach (static::$pks as $i => $key) {
             $arr[]=$this->$key;
         }
-        return join($arr,'-');
+        return join($arr, '-');
     }
-    public function __construct(SQL $bulider=null)
-    {  
-        $this->bulider = $bulider; 
+    public function __construct(SQL $bulider = null)
+    {
+        $this->bulider = $bulider;
     }
  
   
@@ -63,9 +64,9 @@ class Model implements \ArrayAccess
         $this->bulider->insert($this->dirty);
         if ($last_id = $this->bulider->lastInsertId()) {
             if (count(static::$pks)==1) {
-                $this->{static::$pks[0]} = $last_id; 
-            }  
-        } 
+                $this->{static::$pks[0]} = $last_id;
+            }
+        }
         foreach (static::$pks as $i => $key) {
             $where[$key]=$this->$key;
         }
@@ -111,7 +112,7 @@ class Model implements \ArrayAccess
             $pkv[] = $this->{static::$fks[$model][$i]};
         }
         $pkey = join($pkv, '-');
-        if (empty(static::$cache[$model][$pkey])) { 
+        if (empty(static::$cache[$model][$pkey])) {
             $query = $this->bulider->new($model);
             foreach ($model::$pks as $i => $key) {
                 foreach ($this->bulider->fetchAll() as $value) {
@@ -135,11 +136,11 @@ class Model implements \ArrayAccess
             throw new \Exception("Error Processing Request", 1);
         }
         
-        $query = $this->bulider; 
-        $hash = md5( print_r([$query->wStr,$query->wArgs],true) );    
-        $caller = get_called_class();   
+        $query = $this->bulider;
+        $hash = md5( print_r([$query->wStr,$query->wArgs], true) );
+        $caller = get_called_class();
         if (empty(static::$cache["$caller:$model"][$hash])) {
-            $query = $this->bulider->new($model);  
+            $query = $this->bulider->new($model);
             $qs=[];
             foreach (static::$pks as $i => $key) {
                 $arr=array();
@@ -147,15 +148,15 @@ class Model implements \ArrayAccess
                     $arr[] = $val[$key];
                 }
                 $query->or([ $model::$fks[$caller][$i]=> array_unique($arr) ]);
-            }   
-            static::$cache["$caller:$model"][$hash]=$query; 
-        } 
-        $query = static::$cache["$caller:$model"][$hash];  
+            }
+            static::$cache["$caller:$model"][$hash]=$query;
+        }
+        $query = static::$cache["$caller:$model"][$hash];
         foreach ($model::$pks as $i => $key) {
             $pkv[] = $this->$key;
-        } 
+        }
 
-        $query->sArgs = array_combine( $model::$fks[$caller] , $pkv );   
+        $query->sArgs = array_combine( $model::$fks[$caller], $pkv );
         return $query;
     }
 }
