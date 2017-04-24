@@ -5,8 +5,7 @@ user->post
 include __DIR__."/../before.php";
 
 $conn = new \dbm\Connect('mysql:dbname=test','root','root');
-
-//\dbm\Connect::$debug=true;
+$conn->debug=true;
 foreach ($conn->sql(User::class) as $user) {
 	echo "USER:".$user['name']."\n"; 
 	foreach ($user[Post::class]  as $post) { 
@@ -18,7 +17,18 @@ foreach ($conn->sql(User::class) as $user) {
 
 ?>
 --EXPECT--
+SELECT * FROM zz_user   Array
+(
+)
+
 USER:u1
+SELECT * FROM zz_post  WHERE  user_id in (?,?,?)  Array
+(
+    [0] => 1
+    [1] => 2
+    [2] => 3
+)
+
 Array
 (
     [Id] => 1

@@ -2,11 +2,14 @@
 
 class SQL implements \Iterator
 {
-    public $query;
-    public $tname;
-    public $model;
-    public function __construct(string $model)
+	public $conn;#Connect 
+    public $query;#PDOStatement //For Select Query
+    public $tname;#String
+    public $model;#ClassString?
+	public $parent;#SQL?
+    public function __construct(Connect $conn,string $model)
     {
+		$this->conn=$conn;
         if (class_exists($model) && isset($model::$table)) {
             $this->tname = $model::$table??$model;
             $this->model = $model;
@@ -20,7 +23,7 @@ class SQL implements \Iterator
     }
     public function new(string $model):SQL
     {
-        return new self($model??$this->model);
+		return new self($this->conn,$model??$this->model); 
     }
     
     function access()
@@ -41,8 +44,12 @@ class SQL implements \Iterator
     public $each_pos=0;
     function rewind()
     {
+		if(!$this->_end && !empty($this->parent)){
+			$s=substr($this->parent->wStr,7);
+			$this->and($s,...$this->parent->wArgs); 
+		}
         $arr = $this->fetchAll();
-        if (!empty($this->sArgs)) {
+        if (!empty($this->parent) ) { 
             $arr = array_filter($arr, function ($a) {
                 foreach ($this->sArgs as $k => $v) {
                     if ($a->$k!=$v) {
@@ -138,7 +145,7 @@ class SQL implements \Iterator
     ///////////////////////////////////////
     public function execute($sql, $args = []) //:mixed?
     {
-        return Connect::$currect->execute($sql, $args);
+        return $this->conn->execute($sql, $args);
     }
 
     public function insert($data, $auto_increment_key = null)
@@ -170,7 +177,7 @@ class SQL implements \Iterator
     public $wArgs=[], $fArgs=[], $sArgs=[];
     public function lastInsertId() :int
     {
-        return Connect::$currect->lastInsertId();
+        return $this->conn->lastInsertId();
     }
     public function insertMulit($list) :int
     {
@@ -237,7 +244,7 @@ class SQL implements \Iterator
     }
 
     public function where($w, ...$arr) :SQL
-    {
+    { 
         $this->wStr=' WHERE '.$this->kvSQL($this->wArgs, 'AND', $w, $arr);
         return $this;
     }

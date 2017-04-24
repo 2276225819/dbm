@@ -5,18 +5,9 @@ class Model implements \ArrayAccess
     public static $table;
     public static $pks=[];
     public static $fks=[];
-    public static $cache=[];
+    public static $cache=[];//TODO
     public $bulider=null;
-
-    // public $data=[];
-    // public $dirty=[];
-    public function pkv()
-    {
-        foreach (static::$pks as $i => $key) {
-            $arr[]=$this->$key;
-        }
-        return join($arr, '-');
-    }
+	// public $dirty=[];
     public function __construct(SQL $bulider = null)
     {
         $this->bulider = $bulider;
@@ -70,7 +61,7 @@ class Model implements \ArrayAccess
         foreach (static::$pks as $i => $key) {
             $where[$key]=$this->$key;
         }
-        $this->bulider->where($where);
+        $this->bulider->where($where);//???????????????????
         unset($this->dirty);
         return true;
     }
@@ -141,22 +132,21 @@ class Model implements \ArrayAccess
         $caller = get_called_class();
         if (empty(static::$cache["$caller:$model"][$hash])) {
             $query = $this->bulider->new($model);
-            $qs=[];
+            $query->parent = clone $query; 
             foreach (static::$pks as $i => $key) {
                 $arr=array();
                 foreach ($this->bulider->fetchAll() as $val) {
                     $arr[] = $val[$key];
                 }
-                $query->or([ $model::$fks[$caller][$i]=> array_unique($arr) ]);
-            }
-            static::$cache["$caller:$model"][$hash]=$query;
+                $query->parent->or([ $model::$fks[$caller][$i]=> array_unique($arr) ]);
+            } 
+			static::$cache["$caller:$model"][$hash]=$query;
         }
         $query = static::$cache["$caller:$model"][$hash];
         foreach ($model::$pks as $i => $key) {
             $pkv[] = $this->$key;
-        }
-
-        $query->sArgs = array_combine( $model::$fks[$caller], $pkv );
+        } 
+        $query->sArgs = array_combine( $model::$fks[$caller], $pkv );//useby insert&select
         return $query;
     }
 }

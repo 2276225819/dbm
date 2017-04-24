@@ -1,17 +1,14 @@
 <?php namespace dbm;
 
 class Connect
-{
-
-    public static $debug=false;
-    public static $currect;
+{ 
+    public $debug=false; 
     public $attr=[
         \PDO::ATTR_ERRMODE=>\PDO::ERRMODE_EXCEPTION,
         \PDO::ATTR_PERSISTENT=>true,
     ];
     public function __construct($dns = null, $name = null, $pass = null)
-    {
-        static::$currect = $this;
+    { 
         $this->dns=$dns;
         $this->name=$name;
         $this->pass=$pass;
@@ -36,7 +33,7 @@ class Connect
         }
         while (true) {
             try {
-                if (static::$debug) {
+                if ($this->debug) {
                     echo "$sql".print_r($args, true)."\n";
                 }
                 $query = $this->db->prepare($sql);
@@ -53,12 +50,12 @@ class Connect
     }
     public function sql($model):SQL
     {
-        return new SQL($model);
+        return new SQL($this,$model);
     }
     public function load($table, ...$pkv):Model
     {
         $arr = array_combine($table::$pks, $pkv);
-        if ($row = (new SQL($table))->and($arr)->fetch()) {
+        if ($row = (new SQL($this,$table))->and($arr)->fetch()) {
             return $row;
         } else {
             throw new \Exception("Error Processing Request", 1);
