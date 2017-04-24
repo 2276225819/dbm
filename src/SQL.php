@@ -106,7 +106,9 @@ class SQL implements \Iterator
                     $this->_end=true;
                 }
             }
-        }
+        } 
+        if(empty($this->_array[$this->_pos]))
+            return false;
         return $this->_array[$this->_pos++];
     }
     
