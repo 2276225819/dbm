@@ -256,7 +256,7 @@ class SQL implements \Iterator
         return $this;
     }
     public function or($w, ...$arr) :SQL
-    {
+    { 
         $this->wStr.=empty($this->wStr)?" WHERE ":" OR ";
         $this->wStr.=$this->kvSQL($this->wArgs, 'OR', $w, $arr);
         return $this;
@@ -268,7 +268,7 @@ class SQL implements \Iterator
             foreach ($arr as $key => $v) {
                 if (is_array($v)) {
                     $str= substr(str_repeat(",?", count($v)), 1);
-                    $sql.="{$join} {$key} in ($str)";
+                    $sql.="{$join} {$key} in ($str) " ;
                     $param=array_merge($param, $v);
                 } else {
                     $sql.= "{$join} {$key}=?";
