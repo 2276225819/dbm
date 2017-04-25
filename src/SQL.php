@@ -28,7 +28,7 @@ class SQL implements \Iterator
     
     function access()
     {
-        $args =  array_merge($this->fArgs, $this->wArgs);
+        $args =  array_merge($this->fArgs, $this->wArgs,$this->oArgs);
         if (!($this->query = $this->execute((string)$this, $args))) {
             throw new \Exception("Error Processing Query" );
         }
@@ -131,15 +131,15 @@ class SQL implements \Iterator
     public function list()
     {
         $args = array_merge($this->fArgs, $this->wArgs);
-        if ($this->query = $this->execute((string)$this, $args)) {
-            return $this->query->fetchAll(\PDO::FETCH_COLUMN, 0);
+        if ($query = $this->execute((string)$this, $args)) {
+            return $query->fetchAll(\PDO::FETCH_COLUMN, 0);
         }
     }
     public function keypair()
     {
         $args = array_merge($this->fArgs, $this->wArgs);
-        if ($this->query = $this->execute((string)$this, $args)) {
-            return $this->query->fetchAll(\PDO::FETCH_KEY_PAIR);
+        if ($query = $this->execute((string)$this, $args)) {
+            return $query->fetchAll(\PDO::FETCH_KEY_PAIR);
         }
     }
     ///////////////////////////////////////
@@ -174,7 +174,7 @@ class SQL implements \Iterator
     }
     
     public $wStr='',$lStr='',$oStr='',$fStr='*';
-    public $wArgs=[], $fArgs=[], $sArgs=[];
+    public $wArgs=[], $fArgs=[], $sArgs=[],$oArgs=[];
     public function lastInsertId() :int
     {
         return $this->conn->lastInsertId();
@@ -232,9 +232,10 @@ class SQL implements \Iterator
         }
         return $this;
     }
-    public function order(string $order) :SQL
+    public function order(string $order, ...$arr) :SQL
     {
         $this->oStr=" ORDER BY ".$order;
+        $this->oArgs=$arr;
         return $this;
     }
     public function field($fields) :SQL
