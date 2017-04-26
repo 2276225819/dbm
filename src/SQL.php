@@ -24,8 +24,7 @@ class SQL implements \IteratorAggregate, \ArrayAccess
     }
     public function getIterator()
     {
-        $all = $this->fetchAll();
-    
+        $all = $this->fetchAll(); 
         foreach ($all as $value) {
             if ($this->rArgs) {
                 foreach ($this->rArgs as $k => $v) {
@@ -38,26 +37,31 @@ class SQL implements \IteratorAggregate, \ArrayAccess
         }
         return new \ArrayIterator($arr??[]);
     }
-    public function fetchAll()
+    public function fetchAll($style=\PDO::FETCH_CLASS)
     {
         $args = array_merge($this->wArgs, $this->oArgs);
-        $sql = "$this;".implode($args, ','); 
+        $sql = "$style|$this;".implode($args, ','); 
         if (empty($this->caches[$sql])) {
             if (!($query = $this->execute((string)$this, $args))) {
                 throw new \Exception("Error Processing Query" );
             }
-            $query->setFetchMode(\PDO::FETCH_CLASS,
-                $this->model??Model::class, [$this->conn, $this ]
-            );
-
+            switch($style){
+                case \PDO::FETCH_CLASS:
+                    $query->setFetchMode(\PDO::FETCH_CLASS,
+                        $this->model??Model::class, [$this->conn, $this ]
+                    );
+                    break; 
+                default:
+                    $query->setFetchMode($style);
+                    break;
+            } 
             $this->caches[$sql] = $query->fetchAll();
         }
         return $this->caches[$sql];
     }
-    public function fetch(){ 
-        foreach ($this as $row) {
-            return $row ;
-        }
+    public function fetch($style=\PDO::FETCH_CLASS){ 
+        $all = $this->fetchAll($style); 
+        return current($all); 
     }
     public function offsetExists($offset)
     {
@@ -83,7 +87,7 @@ class SQL implements \IteratorAggregate, \ArrayAccess
     }
      
     public function value($field){
-        return $this->field($field)->fetch()->{$field};
+        return $this->field($field)->fetch()[$field];
     }
     public function list($key)
     { 
@@ -142,7 +146,7 @@ class SQL implements \IteratorAggregate, \ArrayAccess
         $sql1 = "";
         $sql2 = "";
         foreach ($list as &$arr) {
-            $arr = array_merge($arr, $this->sArgs);
+            $arr = array_merge($arr, $this->sArgs,$this->rArgs);
             $sql2.=",(".substr(str_repeat(",?", count($arr)), 1).")";
             array_push($param, ...array_values($arr));
         }

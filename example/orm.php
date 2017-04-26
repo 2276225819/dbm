@@ -135,21 +135,21 @@ foreach ($test->sql(User::class) as $user) {
 
 // SELECT * FROM zz_post_type  WHERE  Id in (?)  
 // [0] => 1 
+$test->debug=true;
 
-
-print_r($test->sql('zz_user')->where('Id=?',2)->fetchAll());
+print_r($test->sql('zz_user')->where('Id=?',2)->fetchAll(\PDO::FETCH_ASSOC));
 // SELECT * FROM zz_user  WHERE Id=?
 // [0] => 2
  
-print_r($test->sql('zz_user')->order('Id desc')->fetchAll());
+print_r($test->sql('zz_user')->order('Id desc')->fetchAll(\PDO::FETCH_ASSOC));
 // SELECT * FROM zz_user   ORDER BY Id desc
 
 
-print_r($test->sql('zz_user')->limit(2)->fetchAll());
+print_r($test->sql('zz_user')->limit(2)->fetchAll(\PDO::FETCH_ASSOC));
 // SELECT * FROM zz_user    LIMIT 2
 
 
-print_r($test->sql('zz_user')->field('Id')->limit(2,1)->fetchAll());
+print_r($test->sql('zz_user')->field('Id')->limit(2,1)->fetchAll(\PDO::FETCH_ASSOC));
 // SELECT Id FROM zz_user    LIMIT 2 OFFSET 1 
 
 
@@ -171,4 +171,5 @@ print_r($test->sql('zz_user')->keypair('name','Id') );
 //     [user2 updated] => 2
 //     [updated 4] => 4
 // )
+
 

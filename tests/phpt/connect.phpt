@@ -8,8 +8,8 @@ include __DIR__."/../before.php";
 $conn = new \dbm\Connect('mysql:dbname=test','root','root');
 $conn->debug=true;
 
-$a=$conn->sql(User::class)->fetchAll();
-$b=$conn->sql('zz_user')->fetchAll();
+$a=$conn->sql(User::class)->fetchAll(\PDO::FETCH_ASSOC);
+$b=$conn->sql('zz_user')->fetchAll(\PDO::FETCH_ASSOC);
 echo count($a)==count($b);
 echo "\n";
 

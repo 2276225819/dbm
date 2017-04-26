@@ -69,7 +69,7 @@ class Model implements \ArrayAccess
         foreach ($pks as $i => $k) {
             $sql->rArgs[$k]=$this[$fks[$i]];
         }
-        foreach ($this->bulider as $obj) {
+        foreach ($this->bulider->fetchAll() as $obj) {
             foreach ($fks as $i => $k) {
                 $arr[$pks[$i]][] = $obj[ $k ];
             }
@@ -126,6 +126,8 @@ class Model implements \ArrayAccess
     }
     public function save($pks = null):bool
     {
+        if(empty($pks))$pks = static::$pks;
+        
         if (empty($this->dirty)) {
             return false;
         }
