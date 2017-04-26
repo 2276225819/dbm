@@ -62,11 +62,11 @@ $post_type = $test->sql('zz_post_type')->insert([
 // INSERT INTO zz_post_type SET  name=?
 // [0] => type1
 
-$post = new Post();
+$post = new Post($test);
 $post['post_type_id']=$post_type['Id'];
 $post['user_id']='1';
 $post['text']='null post';
-$bool = $post->create($test);
+$bool = $post->create();
 // INSERT INTO zz_post SET  post_type_id=?, user_id=?, text=?
 // [0] => 1
 // [1] => 1
@@ -153,10 +153,10 @@ print_r($test->sql('zz_user')->field('Id')->limit(2,1)->fetchAll());
 // SELECT Id FROM zz_user    LIMIT 2 OFFSET 1 
 
 
-print_r($test->sql('zz_user')->field('count(1)')->value());
+print_r($test->sql('zz_user')->value('count(1)'));
 // 3
 
-print_r($test->sql('zz_user')->field('name')->list());
+print_r($test->sql('zz_user')->list('name'));
 // Array
 // (
 //     [0] => user1
@@ -164,7 +164,7 @@ print_r($test->sql('zz_user')->field('name')->list());
 //     [2] => updated 4
 // )
 
-print_r($test->sql('zz_user')->field('name,id')->keypair());
+print_r($test->sql('zz_user')->keypair('name','Id') );
 // Array
 // (
 //     [user1] => 1

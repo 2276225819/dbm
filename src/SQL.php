@@ -1,15 +1,16 @@
 <?php namespace dbm;
 
-class SQL implements \Iterator
+class SQL implements \IteratorAggregate, \ArrayAccess
 {
-	public $conn;#Connect 
-    public $query;#PDOStatement //For Select Query
+    public $conn;#Connect
     public $tname;#String
     public $model;#ClassString?
-	public $parent;#SQL?
-    public function __construct(Connect $conn,string $model)
+    public $parent;#SQL?
+    public $caches=[];
+    public function __construct(Connect $conn, string $model, &$caches = [])
     {
-		$this->conn=$conn;
+        $this->conn=$conn;
+        $this->caches=&$caches;
         if (class_exists($model) && isset($model::$table)) {
             $this->tname = $model::$table??$model;
             $this->model = $model;
@@ -21,126 +22,82 @@ class SQL implements \Iterator
     {
         return "SELECT {$this->fStr} FROM {$this->tname} {$this->wStr} {$this->oStr} {$this->lStr}";
     }
-    public function new(string $model):SQL
+    public function getIterator()
     {
-		return new self($this->conn,$model??$this->model); 
-    }
+        $all = $this->fetchAll();
     
-    function access()
-    {
-        $args =  array_merge($this->fArgs, $this->wArgs,$this->oArgs);
-        if (!($this->query = $this->execute((string)$this, $args))) {
-            throw new \Exception("Error Processing Query" );
-        }
-        if (isset($this->model)) {
-            $this->query->setFetchMode(\PDO::FETCH_CLASS,
-                $this->model, [ $this ]
-            );
-        } else {
-            $this->query->setFetchMode(\PDO::FETCH_ASSOC);
-        }
-    }
-    public $each=[];
-    public $each_pos=0;
-    function rewind()
-    {
-		if(!$this->_end && !empty($this->parent)){
-			$s=substr($this->parent->wStr,7);
-			$this->and($s,...$this->parent->wArgs); 
-		}
-        $arr = $this->fetchAll();
-        if (!empty($this->parent) ) { 
-            $arr = array_filter($arr, function ($a) {
-                foreach ($this->sArgs as $k => $v) {
-                    if ($a->$k!=$v) {
-                        return false;
+        foreach ($all as $value) {
+            if ($this->rArgs) {
+                foreach ($this->rArgs as $k => $v) {
+                    if ($value[$k]!=$v) {
+                        continue 2;
                     }
                 }
-                return true;
-            }); 
+            }
+            $arr[]=$value;
         }
-		$this->each=array_values($arr);
-        $this->each_pos=0;
+        return new \ArrayIterator($arr??[]);
     }
-    function current()
-    {
-        return $this->each[$this->each_pos];
-    }
-    function key()
-    {
-        return $this->each_pos;
-    }
-    function next()
-    {
-        return ++$this->each_pos;
-    }
-    function valid()
-    {
-        return isset($this->each[$this->each_pos]);
-    }
-    
-    public $_array=[];
-    public $_pos=0;
-    public $_end=false;
     public function fetchAll()
     {
-        if (empty($this->query)) {
-            $this->access();
-        }
-        if (empty($this->_end)) {
-            if ($all = $this->query->fetchAll()) {
-                $this->_array = array_merge($this->_array, $all);
+        $args = array_merge($this->wArgs, $this->oArgs);
+        $sql = "$this;".implode($args, ','); 
+        if (empty($this->caches[$sql])) {
+            if (!($query = $this->execute((string)$this, $args))) {
+                throw new \Exception("Error Processing Query" );
             }
-            $this->_end=true;
+            $query->setFetchMode(\PDO::FETCH_CLASS,
+                $this->model??Model::class, [$this->conn, $this ]
+            );
+
+            $this->caches[$sql] = $query->fetchAll();
         }
-        return $this->_array;
+        return $this->caches[$sql];
     }
-    public function fetch()
-    {
-        if (empty($this->query)) {
-            $this->access();
-        }
-        if (empty($this->_end)) {
-            if ($this->_pos>2) {
-                if ($all = $this->query->fetchAll()) {
-                    $this->_array = array_merge($this->_array, $all);
-                }
-                $this->_end=true;
-            } else {
-                if ($row=$this->query->fetch()) {
-                    $this->_array[]=$row;
-                } else {
-                    $this->_end=true;
-                }
-            }
-        } 
-        if(empty($this->_array[$this->_pos]))
-            return false;
-        return $this->_array[$this->_pos++];
-    }
-    
-    public function value($column = 0)
-    {
-        $args = array_merge($this->fArgs, $this->wArgs);
-        if ($this->query = $this->execute((string)$this, $args)) {
-            if ($row=$this->query->fetch(\PDO::FETCH_BOTH)) {
-                return $row[$column];
-            }
+    public function fetch(){ 
+        foreach ($this as $row) {
+            return $row ;
         }
     }
-    public function list()
+    public function offsetExists($offset)
     {
-        $args = array_merge($this->fArgs, $this->wArgs);
-        if ($query = $this->execute((string)$this, $args)) {
-            return $query->fetchAll(\PDO::FETCH_COLUMN, 0);
+    }
+    public function offsetUnset($offset)
+    {
+    }
+    public function offsetSet($name, $value)
+    {
+    }
+    public function offsetGet($name)
+    {
+        foreach ($this as $row) {
+            return $row[$name];
         }
     }
-    public function keypair()
+
+
+
+    public function from(string $model = null):SQL
     {
-        $args = array_merge($this->fArgs, $this->wArgs);
-        if ($query = $this->execute((string)$this, $args)) {
-            return $query->fetchAll(\PDO::FETCH_KEY_PAIR);
+        return new self($this->conn,$model??$this->model??$this->tname,$this->caches);
+    }
+     
+    public function value($field){
+        return $this->field($field)->fetch()->{$field};
+    }
+    public function list($key)
+    { 
+        foreach($this as $row){
+            $arr[] = $key?$row[$key]:$row;
         }
+        return $arr??[]; 
+    }
+    public function keypair($key,$val=null)
+    { 
+        foreach($this as $row){
+            $arr[$row[$key]] = $val?$row[$val]:$row;
+        }
+        return $arr??[]; 
     }
     ///////////////////////////////////////
     public function execute($sql, $args = []) //:mixed?
@@ -150,7 +107,7 @@ class SQL implements \Iterator
 
     public function insert($data, $auto_increment_key = null)
     {
-        $data = array_merge($data, $this->sArgs);
+        $data = array_merge($data,$this->rArgs, $this->sArgs);
         $sql="INSERT INTO {$this->tname} SET ".$this->kvSQL($param, ',', $data);
         if (!($query = $this->execute($sql, $param))) {
             throw new \Exception("Error Processing Insert" );
@@ -166,7 +123,7 @@ class SQL implements \Iterator
         if (!empty($this->model::$pks) && count($this->model::$pks)==1) {
             $data[$this->model::$pks[0]]=$last_id;
         }
-        $row = new $this->model($this);
+        $row = new $this->model($this->conn,$this);
         foreach ($data as $key => $value) {
             $row->$key=$value;
         }
@@ -174,7 +131,7 @@ class SQL implements \Iterator
     }
     
     public $wStr='',$lStr='',$oStr='',$fStr='*';
-    public $wArgs=[], $fArgs=[], $sArgs=[],$oArgs=[];
+    public $rArgs=[],$wArgs=[], $fArgs=[], $sArgs=[],$oArgs=[];
     public function lastInsertId() :int
     {
         return $this->conn->lastInsertId();
@@ -223,9 +180,9 @@ class SQL implements \Iterator
         }
         return $query->rowCount();
     }
-    public function limit($limit,$offset = 0):SQL
+    public function limit($limit, $offset = 0):SQL
     {
-		
+        
         $this->lStr=" LIMIT ".intval($limit);
         if (!empty($offset)) {
             $this->lStr.=' OFFSET '.intval($offset).' ';
@@ -245,7 +202,7 @@ class SQL implements \Iterator
     }
 
     public function where($w, ...$arr) :SQL
-    { 
+    {
         $this->wStr=' WHERE '.$this->kvSQL($this->wArgs, 'AND', $w, $arr);
         return $this;
     }
@@ -256,26 +213,30 @@ class SQL implements \Iterator
         return $this;
     }
     public function or($w, ...$arr) :SQL
-    { 
+    {
         $this->wStr.=empty($this->wStr)?" WHERE ":" OR ";
         $this->wStr.=$this->kvSQL($this->wArgs, 'OR', $w, $arr);
         return $this;
     }
 
-    private function kvSQL(&$param, $join = 'AND', $arr, $attr = null, $sql = ''):string
+    private function kvSQL(&$param, $jtag = ' AND ', $arr, $attr = null, $sql = ''):string
     {
         if (is_array($arr)) {
             foreach ($arr as $key => $v) {
                 if (is_array($v)) {
-                    $str= substr(str_repeat(",?", count($v)), 1);
-                    $sql.="{$join} {$key} in ($str) " ;
-                    $param=array_merge($param, $v);
-                } else {
-                    $sql.= "{$join} {$key}=?";
-                    $param[]=$v;
+                    if (count($v)>1) {
+                        $str= substr(str_repeat(",?", count($v)), 1);
+                        $sql.="{$jtag} {$key} in ($str) " ;
+                        $param=array_merge($param, $v);
+                        continue;
+                    } else {
+                        $v=$v[0];
+                    }
                 }
+                $sql.= "{$jtag}{$key}=?";
+                $param[]=$v;
             }
-            $sql=substr($sql, strlen($join));
+            $sql=substr($sql, strlen($jtag));
         } else {
             $sql=$arr;
             if (is_array($attr)) {

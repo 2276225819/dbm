@@ -22,7 +22,7 @@ class Connect
     {
         return $this->db->lastInsertId();
     }
-    public function execute($sql, $args = [])
+    public function execute($sql, $args = []):\PDOStatement
     {
         if (isset($this->prefix)) {
             $pf = $this->prefix;
@@ -34,7 +34,7 @@ class Connect
         while (true) {
             try {
                 if ($this->debug) {
-                    echo "$sql".print_r($args, true)."\n";
+                    echo "<!--$sql;".join($args,',')."-->\n";
                 }
                 $query = $this->db->prepare($sql);
                 return $query->execute($args)?$query:false;
@@ -52,13 +52,13 @@ class Connect
     {
         return new SQL($this,$model);
     }
-    public function load($table, ...$pkv):Model
-    {
-        $arr = array_combine($table::$pks, $pkv);
-        if ($row = (new SQL($this,$table))->and($arr)->fetch()) {
+    public function load($table,$pkv,$pks=null):Model
+    { 
+        if(empty($pks) && class_exists($table))
+            $pks=$table::$pks;
+        $arr = array_combine((array)$pks,(array)$pkv);
+        foreach((new SQL($this,$table))->and($arr) as $row)
             return $row;
-        } else {
-            throw new \Exception("Error Processing Request", 1);
-        }
+        throw new \Exception("Error Processing Request", 1);
     }
 }

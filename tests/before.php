@@ -38,6 +38,7 @@ $conn->sql(PostType::class)->insertMulit([
 	['name'=>'type1'],
 	['name'=>'type2'],
 	['name'=>'type3'],
+	['name'=>'nn'],
 ]);
 
 

@@ -18,10 +18,7 @@ foreach ($users as $key => $value) {
 
 ?>
 --EXPECT--
-SELECT * FROM zz_user   Array
-(
-)
-
+<!--SELECT * FROM zz_user   ;-->
 Array
 (
     [Id] => 1

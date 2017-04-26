@@ -6,49 +6,36 @@ TODO:关联查询父级where默认删除条件重新查询
 include __DIR__.'/../before.php';
 
 
-$conn = new \dbm\Connect('mysql:dbname=test','root','root');
-
+$conn = new \dbm\Connect('mysql:dbname=test','root','root'); 
 $conn->debug=true;
-foreach ($conn->sql(User::class)->where("name like ?","%u%") as $user) {
-	echo "USER:".$user['name']."\n";  
-	foreach ($user[Post::class]->where('post_type_id!=3') as $post) { 
-		echo " ui:{$post['user_id']}   type:{$post['post_type_id']}  txt:{$post['text']}\n";
-		echo "  ".$post[PostType::class]['name']."\n"; 
-	}  
+foreach ($conn->sql(User::class)->and('Id=? or Id=3','1') as  $user) {
+    echo "USER:".$user['name']."\n";
+    #### ERROR ######
+    # foreach ($user[Post::class]->where("text like ?","%3%") as $post) {
+    #### ERROR ######
+    foreach ($user[Post::class]->and("text like ?","%3%") as $post) {
+        echo "   POST:".$post['Id']."  ".$post['text']."\n";   
+        echo "   USER:".$post->hasOne('zz_user','Id','user_id')['name']."\n";  
+        echo "   TYPE:".$post[PostType::class]['name']."\n";  
+        echo "\n";
+    }   
 } 
-
-
-
 ?>
---EXPECT--
-SELECT * FROM zz_user  WHERE name like ?  Array
-(
-    [0] => %u%
-)
-
+--EXPECT-- 
+<!--SELECT * FROM zz_user  WHERE Id=? or Id=3  ;1-->
 USER:u1
-SELECT * FROM zz_post  WHERE post_type_id!=3 AND  user_id in (?,?,?)  Array
-(
-    [0] => 1
-    [1] => 2
-    [2] => 3
-)
+<!--SELECT * FROM zz_post  WHERE  user_id in (?,?)  AND text like ?  ;1,3,%3%-->
+   POST:3  text3
+<!--SELECT * FROM zz_user  WHERE  Id in (?,?)   ;1,3-->
+   USER:u1
+<!--SELECT * FROM zz_post_type  WHERE  Id in (?,?)   ;1,2-->
+   TYPE:type1
 
- ui:1   type:1  txt:text1
-SELECT * FROM zz_post_type  WHERE  Id in (?,?)  Array
-(
-    [0] => 1
-    [1] => 2
-)
-
-  type1
- ui:1   type:1  txt:text2
-  type1
- ui:1   type:1  txt:text3
-  type1
-USER:u2
 USER:u3
- ui:3   type:2  txt:post32
-  type2
- ui:3   type:1  txt:post31
-  type1
+   POST:5  post32
+   USER:u3
+   TYPE:type2
+
+   POST:6  post31
+   USER:u3
+   TYPE:type1

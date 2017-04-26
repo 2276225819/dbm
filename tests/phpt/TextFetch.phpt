@@ -5,11 +5,13 @@ TextFetch
 include __DIR__."/../before.php";
 
 $conn = new \dbm\Connect('mysql:dbname=test','root','root');
-print_r($conn->sql('zz_post')->limit(1)->fetch());
-print_r($conn->sql('zz_post')->limit(1,3)->fetch());
+$conn->debug=true;
+print_r($conn->sql('zz_post')->limit(1)->fetch()->toArray());
+print_r($conn->sql('zz_post')->limit(1,3)->fetch()->toArray());
 
 ?>
---EXPECT--
+--EXPECT-- 
+<!--SELECT * FROM zz_post    LIMIT 1;-->
 Array
 (
     [Id] => 1
@@ -17,6 +19,7 @@ Array
     [user_id] => 1
     [text] => text1
 )
+<!--SELECT * FROM zz_post    LIMIT 1 OFFSET 3 ;-->
 Array
 (
     [Id] => 4
