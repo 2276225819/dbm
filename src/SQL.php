@@ -207,19 +207,19 @@ class SQL implements \IteratorAggregate, \ArrayAccess
 
     public function where($w, ...$arr) :SQL
     {
-        $this->wStr=' WHERE '.$this->kvSQL($this->wArgs, 'AND', $w, $arr);
+        $this->wStr=' WHERE '.$this->kvSQL($this->wArgs, ' AND ', $w, $arr);
         return $this;
     }
     public function and($w, ...$arr) :SQL
     {
         $this->wStr.=empty($this->wStr)?" WHERE ":" AND ";
-        $this->wStr.=$this->kvSQL($this->wArgs, 'AND', $w, $arr);
+        $this->wStr.=$this->kvSQL($this->wArgs, ' AND ', $w, $arr);
         return $this;
     }
     public function or($w, ...$arr) :SQL
     {
         $this->wStr.=empty($this->wStr)?" WHERE ":" OR ";
-        $this->wStr.=$this->kvSQL($this->wArgs, 'OR', $w, $arr);
+        $this->wStr.=$this->kvSQL($this->wArgs, ' OR ', $w, $arr);
         return $this;
     }
 

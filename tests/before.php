@@ -26,6 +26,11 @@ class PostType extends dbm\Model
     public static $table="zz_post_type";
     public static $pks=['Id'];    
 }
+class Friend extends dbm\Model
+{
+    public static $table="zz_friend";
+    public static $pks=['uid1','uid2'];    
+}
 
 $conn = new \dbm\Connect('mysql:dbname=test','root','root');
 $conn->sql(User::class)->insertMulit([
