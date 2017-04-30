@@ -10,8 +10,8 @@ foreach ($conn->sql(PostType::class) as $pt) {
 	echo "POST_TYPE:".$pt['name']."\n" ; 
 	foreach ($pt[Post::class]  as $post) { 
         echo "  ID     : ".$post['Id']."\n";
-        echo "  Author : ".$post->hasOne('zz_user','Id','user_id')['name']."\n";
-        echo "  Type   : ".$post->hasOne('zz_post_type','Id','post_type_id')['name']."\n";
+        echo "  Author : ".$post->one('zz_user','Id','user_id')[0]['name']."\n";
+        echo "  Type   : ".$post->one('zz_post_type','Id','post_type_id')[0]['name']."\n";
         echo "\n";
 	}  
 } 
@@ -26,7 +26,7 @@ POST_TYPE:type1
   ID     : 1
 <!--SELECT * FROM zz_user  WHERE  Id in (?,?,?)   ;1,2,3-->
   Author : u1
-<!--SELECT * FROM zz_post_type  WHERE  Id in (?,?,?)   ;1,3,2-->
+<!--SELECT * FROM zz_post_type  WHERE  Id in (?,?,?)   ;1,2,3-->
   Type   : type1
 
   ID     : 2

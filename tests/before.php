@@ -7,12 +7,12 @@ $sync->setPDO('mysql:dbname=test','root','root');
 $sync->push();
 $sync->clear();
 //////////// model ///////////////////
-class User extends dbm\Model
+class User extends dbm\Row
 {
     public static $table="zz_user";
     public static $pks=['Id'];  
 }
-class Post extends dbm\Model
+class Post extends dbm\Row
 {
     public static $table="zz_post";
     public static $pks=['Id'];   
@@ -21,12 +21,12 @@ class Post extends dbm\Model
         PostType::class =>['post_type_id']
     ]; 
 } 
-class PostType extends dbm\Model
+class PostType extends dbm\Row
 {
     public static $table="zz_post_type";
     public static $pks=['Id'];    
 }
-class Friend extends dbm\Model
+class Friend extends dbm\Row
 {
     public static $table="zz_friend";
     public static $pks=['uid1','uid2'];    
@@ -37,7 +37,13 @@ $conn->sql(User::class)->insertMulit([
 	['name'=>'u1'],
 	['name'=>'u2'],
 	['name'=>'u3'],
+	// ['Type_id'=>1,'name'=>'u1'],
+	// ['Type_id'=>1,'name'=>'u2'],
+	// ['Type_id'=>1,'name'=>'u3'],
 ]);
+// $conn->sql('zz_type')->insertMulit([
+// 	['name'=>'tysfdpe1'],  
+// ]);
 
 $conn->sql(PostType::class)->insertMulit([
 	['name'=>'type1'],

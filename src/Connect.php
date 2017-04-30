@@ -1,6 +1,6 @@
 <?php namespace dbm;
 
-class Connect
+class Connect implements \ArrayAccess
 { 
     public $debug=false; 
     public $attr=[
@@ -48,17 +48,34 @@ class Connect
             }
         }
     }
-    public function sql($model):SQL
+ 
+
+
+
+    public function offsetUnset($offset)
     {
-        return new SQL($this,$model);
     }
-    public function load($table,$pkv,$pks=null):Model
+    public function offsetSet($offset, $value)
+    {
+    }
+    public function offsetExists($offset)
     { 
-        if(empty($pks) && class_exists($table))
-            $pks=$table::$pks;
-        $arr = array_combine((array)$pks,(array)$pkv);
-        foreach((new SQL($this,$table))->and($arr) as $row)
-            return $row;
-        throw new \Exception("Error Processing Request", 1);
     }
+    public function offsetGet($offset)
+    {
+		return $this->sql($offset);
+    }
+	public function sql($model,...$pks):Sql
+	{ 
+        if (class_exists($model) && isset($model::$table)) {
+            $table = $model::$table??$model;
+			$pks = count($pks)?$pks:$model::$pks;
+            $model = $model;
+        } else {
+            $table=$model;
+			$pks=(array)$pks;
+			$model = \dbm\Row::class;
+        }
+		return new \dbm\Sql($this,$table,$pks,$model);
+	}
 }

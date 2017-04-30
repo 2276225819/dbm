@@ -1,6 +1,49 @@
 <?php 
 include __DIR__."/../vendor/autoload.php";
 
+
+#Connect->execute(STRING[,...args]); #PDOStatement
+#Connect->lastInsertId();            #int
+#Connect->debug;                     #bool
+#Connect->sql(TABLE,...PKS)          #SQL
+#Connect->sql(ROW);                  #SQL
+
+#SQL[INDEX]                 #ROW/NULL
+#SQL->get(INDEX)            #ROW/THROW
+#SQL(...PKV)                #ROW/NULL
+#SQL->load(...PKV)          #ROW/THROW
+#SQL->getIterator()         iterator
+#SQL->all()                 #[ROW,ROW...]/[]  
+#SQL->all(KEY)              #[VALUE,VALUE...]/[]  
+#SQL->keypair(KEY)          #[KEY=>ROW,KEY=>ROW...]/[]
+#SQL->keypair(KEY,VAL)      #[KEY=>VALUE,KEY=>VALUE...]/[]
+#SQL->val(FIELD)            #MIXED
+
+#SQL->where(STRING[, ..._args]);  #SQL
+#SQL->where(ARRAY);               #SQL
+#SQL->and(STRING[, ..._args]);    #SQL
+#SQL->and(ARRAY);                 #SQL
+#SQL->or(STRING[, ..._args]);     #SQL
+#SQL->or(ARRAY);                  #SQL
+#SQL->order(STRING[,..._args]);   #SQL
+#SQL->field(STRING);              #SQL
+#SQL->limit(INT[,INT])            #SQL
+
+#SQL->insert(ARRAY);             #MODLE  
+#SQL->insertMulit(ARRAY_LIST);   #int
+#SQL->update(ARRAY);             #int
+#SQL->delete();                  #int
+
+#ROW[NAME]                   #MIXED/NULL
+#ROW->val(NAME)              #MIXED/THROW
+#ROW->toArray()              #array
+#ROW->one(TABLE,PKS, FKS)    #SQL/THROW
+#ROW->many(TABLE,PKS,PKS)    #SQL/THROW
+#ROW->create()               #bool
+#ROW->save([PKS])                 #bool
+#ROW->destroy([PKS])              #bool
+
+
 ///////////// install database ///////////// 
 $sync = new \dbm\DBSync(__DIR__."/example.sql"); 
 $sync->setPDO('mysql:dbname=test','root','root');
@@ -8,12 +51,12 @@ $sync->setPDO('mysql:dbname=test','root','root');
 $sync->push();
 $sync->clear();
 //////////// model ///////////////////
-class User extends dbm\Model
+class User extends dbm\Row
 {
     public static $table="zz_user";
     public static $pks=['Id'];  
 }
-class Post extends dbm\Model
+class Post extends dbm\Row
 {
     public static $table="zz_post";
     public static $pks=['Id'];   
@@ -22,7 +65,7 @@ class Post extends dbm\Model
         PostType::class =>['post_type_id']
     ]; 
 } 
-class PostType extends dbm\Model
+class PostType extends dbm\Row
 {
     public static $table="zz_post_type";
     public static $pks=['Id'];    
@@ -72,7 +115,7 @@ $bool = $post->create();
 // [1] => 1
 // [2] => null post
 
-$user = $test->load(User::class,'2');
+$user = $test->sql(User::class)->load('2');
 // SELECT * FROM zz_user  WHERE  Id=? 
 // [0] => 2
 
@@ -137,26 +180,26 @@ foreach ($test->sql(User::class) as $user) {
 // [0] => 1 
 $test->debug=true;
 
-print_r($test->sql('zz_user')->where('Id=?',2)->fetchAll(\PDO::FETCH_ASSOC));
+print_r($test->sql('zz_user')->where('Id=?',2)->all());
 // SELECT * FROM zz_user  WHERE Id=?
 // [0] => 2
  
-print_r($test->sql('zz_user')->order('Id desc')->fetchAll(\PDO::FETCH_ASSOC));
+print_r($test->sql('zz_user')->order('Id desc')->all());
 // SELECT * FROM zz_user   ORDER BY Id desc
 
 
-print_r($test->sql('zz_user')->limit(2)->fetchAll(\PDO::FETCH_ASSOC));
+print_r($test->sql('zz_user')->limit(2)->all());
 // SELECT * FROM zz_user    LIMIT 2
 
 
-print_r($test->sql('zz_user')->field('Id')->limit(2,1)->fetchAll(\PDO::FETCH_ASSOC));
+print_r($test->sql('zz_user')->field('Id')->limit(2,1)->all());
 // SELECT Id FROM zz_user    LIMIT 2 OFFSET 1 
 
 
-print_r($test->sql('zz_user')->value('count(1)'));
+print_r($test->sql('zz_user')->val('count(1)'));
 // 3
 
-print_r($test->sql('zz_user')->list('name'));
+print_r($test->sql('zz_user')->all('name'));
 // Array
 // (
 //     [0] => user1

@@ -8,37 +8,72 @@ include __DIR__."/../before.php";
 $conn = new \dbm\Connect('mysql:dbname=test','root','root');
 $conn->debug=true;
 
-$a=$conn->sql(User::class)->fetchAll(\PDO::FETCH_ASSOC);
-$b=$conn->sql('zz_user')->fetchAll(\PDO::FETCH_ASSOC);
-echo count($a)==count($b);
-echo "\n";
+echo "#Connect->execute(STRING[,...args]); #PDOStatement\n";
+print_r($conn->execute('select 1+2+3+?+?',[4,5])->fetchAll(\PDO::FETCH_ASSOC));
 
-$a=$conn->load(User::class,1)->toArray();
-$b=$conn->load('zz_user',1,'Id')->toArray();
-echo $a==$b;
-echo "\n";
-
+echo "#Connect->sql(TABLE,...PKS)\n";
+$a=$conn->sql(User::class)->all();
+$b=$conn->sql('zz_user','Id')->all();
 print_r([$a,$b]);
+ 
 ?>
---EXPECTF--
-<!--SELECT * FROM zz_user   ;-->
-<!--SELECT * FROM zz_user   ;-->
-1
-<!--SELECT * FROM zz_user  WHERE Id=?  ;1-->
-<!--SELECT * FROM zz_user  WHERE Id=?  ;1-->
-1
+--EXPECTF-- 
+#Connect->execute(STRING[,...args]); #PDOStatement
+<!--select 1+2+3+?+?;4,5-->
 Array
 (
     [0] => Array
         (
-            [Id] => 1
-            [name] => u1
+            [1+2+3+'4'+'5'] => 15
+        )
+
+)
+#Connect->sql(TABLE,...PKS)
+<!--SELECT * FROM zz_user   ;-->
+Array
+(
+    [0] => Array
+        (
+            [0] => User Object
+                (
+                    [Id] => 1
+                    [name] => u1
+                )
+
+            [1] => User Object
+                (
+                    [Id] => 2
+                    [name] => u2
+                )
+
+            [2] => User Object
+                (
+                    [Id] => 3
+                    [name] => u3
+                )
+
         )
 
     [1] => Array
         (
-            [Id] => 1
-            [name] => u1
+            [0] => dbm\Row Object
+                (
+                    [Id] => 1
+                    [name] => u1
+                )
+
+            [1] => dbm\Row Object
+                (
+                    [Id] => 2
+                    [name] => u2
+                )
+
+            [2] => dbm\Row Object
+                (
+                    [Id] => 3
+                    [name] => u3
+                )
+
         )
 
 )

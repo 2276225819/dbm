@@ -8,31 +8,31 @@ include __DIR__.'/../before.php';
 $conn = new \dbm\Connect('mysql:dbname=test','root','root');
 $conn->debug=true;
 
-$user = $conn->load('zz_user',1,'id');
+$user = $conn->sql('zz_user','id')->load(1);
 
 echo "new friend:\n";
-echo $user->hasMany('zz_friend','uid1','Id')->insertMulit([
+echo $user->many('zz_friend','Id','uid1')->insertMulit([
     ['uid2'=>2],['uid2'=>3]
 ]); 
 echo "\n";
 
 
 echo "following:\n";
-print_r($user->hasMany('zz_friend','uid1','Id')->fetchAll(\PDO::FETCH_ASSOC));
+print_r($user->many('zz_friend','Id','uid1')->all());
 
 
 echo "followers:\n";
-print_r($user->hasMany('zz_friend','uid2','Id')->fetchAll(\PDO::FETCH_ASSOC));
+print_r($user->many('zz_friend','Id','uid2')->all());
  
 echo "\n";
 
 echo "unfollow table;\n"; 
-$conn->load('zz_friend',[1,3],['uid1','uid2'])->destroy(['Id']);
+$conn->sql('zz_friend','uid1','uid2')->load(1,3)->destroy(['Id']);
 
 echo "\n";
 
 echo "unfollow model;\n"; 
-$conn->load(Friend::class,[1,2])->destroy();
+$conn->sql(Friend::class)->load(1,2)->destroy();
 
 echo "\n";
 
@@ -46,14 +46,14 @@ following:
 <!--SELECT * FROM zz_friend  WHERE uid1=?  ;1-->
 Array
 (
-    [0] => Array
+    [0] => dbm\Row Object
         (
             [Id] => 1
             [uid1] => 1
             [uid2] => 2
         )
 
-    [1] => Array
+    [1] => dbm\Row Object
         (
             [Id] => 2
             [uid1] => 1

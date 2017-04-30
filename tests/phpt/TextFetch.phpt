@@ -6,8 +6,8 @@ include __DIR__."/../before.php";
 
 $conn = new \dbm\Connect('mysql:dbname=test','root','root');
 $conn->debug=true;
-print_r($conn->sql('zz_post')->limit(1)->fetch(\PDO::FETCH_ASSOC));
-print_r($conn->sql('zz_post')->limit(1,3)->fetch(\PDO::FETCH_ASSOC));
+print_r($conn->sql('zz_post')->limit(1)->get()->toArray());
+print_r($conn->sql('zz_post')->limit(1,3)->get()->toArray());
 
 ?>
 --EXPECT-- 

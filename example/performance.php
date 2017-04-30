@@ -2,26 +2,13 @@
 include __DIR__."/../vendor/autoload.php"; 
   
 echo "performance test :select * from [table]\n";
-$count=10;
+$count=1000;
   
 /////////////////////////////////////////////////
-class User extends dbm\Model
-{
-    public static $table="u_user";
-    public static $pks=['ID'];  
-}
-class Baby extends dbm\Model
-{
-    public static $table="u_baby";
-    public static $pks=['ID'];   
-    public static $fks=[
-        User::class     =>['User_ID'],  
-        BabyType::class =>['baby_type_id']
-    ]; 
-}  
-$db = new dbm\Connect("mysql:dbname=bplus", 'root', 'root');  
-$pdo = new PDO("mysql:dbname=bplus", 'root', 'root');
-$connection = new PDO("mysql:dbname=bplus","root","root");
+ 
+$db = new dbm\Connect("mysql:dbname=test", 'root', 'root');  
+$pdo = new PDO("mysql:dbname=test", 'root', 'root');
+$connection = new PDO("mysql:dbname=test","root","root");
 $structure = new NotORM_Structure_Convention(
     $primary = "ID", // id_$table
     $foreign = "id_%s", // id_$table
@@ -35,7 +22,7 @@ $capsule = new Capsule;
 $capsule->addConnection([
     'driver'    => 'mysql',
     'host'      => 'localhost',
-    'database'  => 'bplus',
+    'database'  => 'test',
     'username'  => 'root',
     'password'  => 'root',
     'charset'   => 'utf8',
@@ -48,7 +35,7 @@ $capsule->bootEloquent();
 
 echo "native           :";
 $time=microtime(true); 
-$query = $pdo->prepare("select * from h_temperature"); 
+$query = $pdo->prepare("select * from zz_post"); 
 $query->execute(); 
 for ($i=0; $i < $count; $i++) while($row=$query->fetch(PDO::FETCH_ASSOC))
     $arr1 =$row;
@@ -57,8 +44,8 @@ echo "\n";
 
 echo "dbm              :";
 $time=microtime(true);  
-for ($i=0; $i < $count; $i++) foreach($db->sql('h_temperature') as $row){  
-    $arr3 = $row  ;
+for ($i=0; $i < $count; $i++) foreach($db->sql('zz_post','ID') as $row){  
+    $arr3 = (array)$row  ;
 }    
 echo microtime(true)-$time;
 echo "\n";
@@ -66,7 +53,7 @@ echo "\n";
  
 echo "notorm           :";
 $time=microtime(true); 
-for ($i=0; $i < $count; $i++) foreach ($software->h_temperature() as $row){ 
+for ($i=0; $i < $count; $i++) foreach ($software->zz_post() as $row){ 
     $arr2 =  ($row) ; 
 } 
 echo microtime(true)-$time;
@@ -76,10 +63,11 @@ echo "\n";
 
 echo "laravel/database :";
 $time=microtime(true);     
-for ($i=0; $i < $count; $i++) foreach(Capsule::table('h_temperature')->get() as $row){ 
+for ($i=0; $i < $count; $i++) foreach(Capsule::table('zz_post')->get() as $row){ 
     $arr4 = (array)$row; 
 }
 echo microtime(true)-$time;
 echo "\n";
 
+exit;
 //print_r([$arr1[1],$arr2[1],$arr3[1],$arr4[1]]);
