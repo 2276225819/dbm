@@ -7,6 +7,10 @@ $count=1000;
 /////////////////////////////////////////////////
  
 $db = new dbm\Connect("mysql:dbname=test", 'root', 'root');  
+class Post extends \dbm\Row{
+    static $table="zz_post";
+};
+
 $pdo = new PDO("mysql:dbname=test", 'root', 'root');
 $connection = new PDO("mysql:dbname=test","root","root");
 $structure = new NotORM_Structure_Convention(
@@ -36,16 +40,19 @@ $capsule->bootEloquent();
 echo "native           :";
 $time=microtime(true); 
 $query = $pdo->prepare("select * from zz_post"); 
-$query->execute(); 
-for ($i=0; $i < $count; $i++) while($row=$query->fetch(PDO::FETCH_ASSOC))
-    $arr1 =$row;
+for ($i=0; $i < $count; $i++){
+    $query->execute(); 
+    while($row=$query->fetch(PDO::FETCH_ASSOC))
+        $arr1 =$row; 
+} 
 echo microtime(true)-$time;
 echo "\n";
 
 echo "dbm              :";
 $time=microtime(true);  
-for ($i=0; $i < $count; $i++) foreach($db->sql('zz_post','ID') as $row){  
-    $arr3 = (array)$row  ;
+for ($i=0; $i < $count; $i++) {
+    foreach($db->sql('zz_post','ID') as $row) 
+        $arr2 = $row->toArray()  ;
 }    
 echo microtime(true)-$time;
 echo "\n";
@@ -54,7 +61,7 @@ echo "\n";
 echo "notorm           :";
 $time=microtime(true); 
 for ($i=0; $i < $count; $i++) foreach ($software->zz_post() as $row){ 
-    $arr2 =  ($row) ; 
+    $arr3 =  iterator_to_array($row) ; 
 } 
 echo microtime(true)-$time;
 echo "\n";
@@ -69,5 +76,5 @@ for ($i=0; $i < $count; $i++) foreach(Capsule::table('zz_post')->get() as $row){
 echo microtime(true)-$time;
 echo "\n";
 
-exit;
-//print_r([$arr1[1],$arr2[1],$arr3[1],$arr4[1]]);
+ 
+print_r([$arr1 ,$arr2 ,$arr3,$arr4]);
