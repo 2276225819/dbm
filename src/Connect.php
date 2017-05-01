@@ -59,12 +59,21 @@ class Connect implements \ArrayAccess
     {
     }
     public function offsetExists($offset)
-    { 
+    {  
+    }  
+    public function begin(){ 
+         return $this->db->beginTransaction();
     }
+    public function commit(){
+         return $this->db->commit(); 
+    } 
+    public function rollback(){
+         return $this->db->rollBack(); 
+    } 
     public function offsetGet($offset)
     {
 		return $this->sql($offset);
-    }
+    } 
 	public function sql($model,...$pks):Sql
 	{ 
         if (class_exists($model) && isset($model::$table)) {
@@ -77,5 +86,6 @@ class Connect implements \ArrayAccess
 			$model = \dbm\Row::class;
         }
 		return new \dbm\Sql($this,$table,$pks,$model);
-	}
+
+	} 
 }
