@@ -56,19 +56,19 @@ Array
 
     [1] => Array
         (
-            [0] => dbm\Row Object
+            [0] => dbm\Model Object
                 (
                     [Id] => 1
                     [name] => u1
                 )
 
-            [1] => dbm\Row Object
+            [1] => dbm\Model Object
                 (
                     [Id] => 2
                     [name] => u2
                 )
 
-            [2] => dbm\Row Object
+            [2] => dbm\Model Object
                 (
                     [Id] => 3
                     [name] => u3

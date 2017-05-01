@@ -7,7 +7,7 @@ $count=1000;
 /////////////////////////////////////////////////
  
 $db = new dbm\Connect("mysql:dbname=test", 'root', 'root');  
-class Post extends \dbm\Row{
+class Post extends \dbm\Model{
     static $table="zz_post";
 };
 

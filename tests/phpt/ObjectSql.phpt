@@ -57,7 +57,7 @@ print_r([$g,$h]);
 <!--SELECT * FROM zz_user  WHERE Id=?  ;3333-->
 Array
 (
-    [0] => dbm\Row Object
+    [0] => dbm\Model Object
         (
             [Id] => 3
             [name] => u3

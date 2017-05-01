@@ -83,7 +83,7 @@ class Connect implements \ArrayAccess
         } else {
             $table=$model;
 			$pks=(array)$pks;
-			$model = \dbm\Row::class;
+			$model = \dbm\Model::class;
         }
 		return new \dbm\Sql($this,$table,$pks,$model);
 

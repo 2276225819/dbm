@@ -46,14 +46,14 @@ following:
 <!--SELECT * FROM zz_friend  WHERE uid1=?  ;1-->
 Array
 (
-    [0] => dbm\Row Object
+    [0] => dbm\Model Object
         (
             [Id] => 1
             [uid1] => 1
             [uid2] => 2
         )
 
-    [1] => dbm\Row Object
+    [1] => dbm\Model Object
         (
             [Id] => 2
             [uid1] => 1

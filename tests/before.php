@@ -7,12 +7,12 @@ $sync->setPDO('mysql:dbname=test','root','root');
 $sync->push();
 $sync->clear();
 //////////// model ///////////////////
-class User extends dbm\Row
+class User extends dbm\Model
 {
     public static $table="zz_user";
     public static $pks=['Id'];  
 }
-class Post extends dbm\Row
+class Post extends dbm\Model
 {
     public static $table="zz_post";
     public static $pks=['Id'];   
@@ -21,12 +21,12 @@ class Post extends dbm\Row
         PostType::class =>['post_type_id']
     ]; 
 } 
-class PostType extends dbm\Row
+class PostType extends dbm\Model
 {
     public static $table="zz_post_type";
     public static $pks=['Id'];    
 }
-class Friend extends dbm\Row
+class Friend extends dbm\Model
 {
     public static $table="zz_friend";
     public static $pks=['uid1','uid2'];    
