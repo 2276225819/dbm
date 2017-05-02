@@ -183,6 +183,10 @@ class Sql extends Query
     {
 		return $this(...$pkv);
     }
+    public function find(...$pkv):Model
+    {
+		return $this(...$pkv);
+    }
     public function get($offset = 0):Model
     {
         return $this[$offset];
