@@ -8,7 +8,7 @@ include __DIR__.'/../before.php';
 $conn = new \dbm\Connect('mysql:dbname=test','root','root');
 $conn->debug=true;
 
-$user = $conn->sql('zz_user','id')->load(1);
+$user = $conn->sql('zz_user','Id')->load(1);
 
 echo "new friend:\n";
 echo $user->many('zz_friend','Id','uid1')->insertMulit([
@@ -38,7 +38,7 @@ echo "\n";
 
 ?>
 --EXPECTF--
-<!--SELECT * FROM zz_user  WHERE id=?  ;1-->
+<!--SELECT * FROM zz_user  WHERE Id=?  ;1-->
 new friend:
 <!--INSERT INTO zz_friend (`uid2`,`uid1` )VALUES(?,?),(?,?);2,1,3,1-->
 2

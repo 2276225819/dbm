@@ -84,7 +84,7 @@ class Model implements \ArrayAccess ,\JsonSerializable
 
         $sql = $this->db->sql($table,...$pks);
         foreach ($fks as $i => $k) {
-            $sql->rArgs[$k]=$this->data[$pks[$i]];
+            $sql->rArgs[$k]=$this->data[$this->pq->pks[$i]];
         }  
         return $sql->and($this->kv($pks,$fks));
     }

@@ -14,9 +14,9 @@ try{
     $a=$user->one('zz_user_type','Id','type_id')->insert([
         'name'=>'aa',
     ]);
-    $b=$user[UserType::class]->insert([
-        'name'=>'aa',
-    ]); 
+    // $b=$user[UserType::class]->set([
+    //     'name'=>'aa',
+    // ]); 
 }catch(Throwable $e){  
 } 
 print_r([$a??'',$b??'']);
@@ -54,7 +54,6 @@ $sql = $user[Post::class]->set([
 <!--SELECT * FROM zz_user   ;-->
 <!--INSERT INTO zz_user_type SET name=?,Id=?;aa,-->
 <!--UPDATE zz_user SET type_id=?  WHERE Id=?;1,1-->
-<!--INSERT INTO zz_user_type SET name=?,Id=?;aa,1-->
 Array
 (
     [0] => dbm\Model Object
