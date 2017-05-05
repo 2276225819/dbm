@@ -9,7 +9,7 @@ include __DIR__."/../before.php";
 $conn = new \dbm\Connect('mysql:dbname=test','root','root');
 $conn->debug=true;
 
-$post = $conn->sql(Post::class)->load(1); 
+$post = $conn->sql(Post::class)->find(1); 
 $user = $post[User::class]->get();
 $user['name']='aaaaaaaaaaaaaa';
 $user->save();
@@ -17,7 +17,7 @@ $user->save();
 
 echo "////////////////////////////////////\n";
 
-$user = $conn->sql(User::class)->load(1);  
+$user = $conn->sql(User::class)->find(1);  
 $post = $user[Post::class]->insertMulit([
     [ 'text'=>1111],
     [ 'text'=>2222],

@@ -10,12 +10,24 @@ class Model implements \ArrayAccess ,\JsonSerializable
 	public $data;
 	public $dirty;
 	
-    public function __construct(Connect $db, $pq=null,$row=[])
+    public function __construct(Connect $db, $data=[],$pq=null)
     {
         $this->db=$db;
-        $this->pq=$pq??$db->sql(get_called_class());
-		$this->data=$row;
-		$this->dirty=[];
+		$this->dirty= [];
+        $this->data = $data; 
+        if($pq instanceof Sql){
+            $this->pq = $pq; 
+        }else{
+            $class = get_called_class();
+            $this->pq= $db->sql($class);
+            if($data){
+                $pks = $class::$pks;
+                foreach ($pks as $key ) {
+                    $where[$key]=$data[$key]; 
+                } 
+                $this->pq->where($where); 
+            } 
+        }
     }
     public function __debugInfo()
     {
@@ -38,7 +50,8 @@ class Model implements \ArrayAccess ,\JsonSerializable
     }
     public function offsetSet($offset, $value)
     {
-		$this->dirty[$offset]=$value;
+		if(empty($this->data[$offset]) || $this->data[$offset]!=$value)
+            $this->dirty[$offset]=$value;
 		$this->data[$offset]=$value;
     }
     public function offsetGet($offset)
@@ -47,12 +60,12 @@ class Model implements \ArrayAccess ,\JsonSerializable
             return $this->data[$offset];
         }
         if (class_exists($offset)) {
-            if (isset(static::$fks)) {
-                return $this->one($offset, $offset::$pks, static::$fks[$offset]);
+            $caller = get_called_class();
+            if (isset($offset::$fks) && isset($offset::$fks[$caller])) {
+                return $this->many($offset, $offset::$pks,$offset::$fks[$caller]);
             }
-            if (isset($offset::$fks)) {
-            	$caller = get_called_class();
-                return $this->many($offset, static::$pks,$offset::$fks[$caller]);
+            if (isset($this->pq->pks)) {
+                return $this->one($offset, $offset::$pks,$caller::$fks[$offset]);
             }
         } 
     }
@@ -72,7 +85,7 @@ class Model implements \ArrayAccess ,\JsonSerializable
         $sql = $this->db->sql($table,...$pks);
         foreach ($fks as $i => $k) {
             $sql->rArgs[$k]=$this->data[$pks[$i]];
-        }
+        }  
         return $sql->and($this->kv($pks,$fks));
     }
     public function one($table, $table_pks, $self_fks):Sql
@@ -85,6 +98,9 @@ class Model implements \ArrayAccess ,\JsonSerializable
         foreach ($pks as $i => $k) {
             $sql->rArgs[$k]=$this->data[$fks[$i]];
         }
+        //关联添加 $model->one()->insert();
+        $sql->rModel=$this;
+        $sql->rfks=$fks;
         return $sql->and($this->kv($fks, $pks));
     }
 
@@ -140,7 +156,7 @@ class Model implements \ArrayAccess ,\JsonSerializable
 				throw new Exception("Error Processing Request", 1);
 			return $this->data;
         } 
-        $result = $this->pq->where($arr)->update($this->dirty);
+        $result = (clone $this->pq)->where($arr)->update($this->dirty);
         $this->dirty=[];//clear
         return $result;
     }

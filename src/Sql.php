@@ -3,6 +3,7 @@
 
 class Query implements \IteratorAggregate, \ArrayAccess
 { 
+    //public $jStr='';
     public $wStr='',$lStr='',$oStr='',$fStr='*';
     public $rArgs=[],$wArgs=[], $fArgs=[], $sArgs=[],$oArgs=[];
 	
@@ -64,19 +65,30 @@ class Query implements \IteratorAggregate, \ArrayAccess
         $this->model=$model;
         $this->table=$table;
         $this->pks=(array)$pks;
-		++static::$c;
+        // if($this->db->debug)
+        //     echo str_repeat("\t",static::$gc).
+        //         "<!--> $this->table($this->model) !!!-->\n";
+		++static::$gc; 
     }
 
 	public function __destruct(){ 
-		--static::$c;
-		if(!static::$c) { 
+		--static::$gc;
+        // if($this->db->debug)
+        //     echo str_repeat("\t",static::$gc).
+        //         "<!--< $this->table($this->model) !!!-->\n"; 
+		if(!static::$gc) { 
+            // if($this->db->debug)
+            //     echo "<!--GC-->\n";
 			static::$qs=[];
 			static::$cs=[]; 
 		}
 	}
+    public function __clone(){
+		++static::$gc;//new
+    }
 
 	
-	static $c=0;
+	static $gc=0;
     /** @var PDOStatement[]  */
     static $qs=[];
     /** @var Model[]  */
@@ -99,7 +111,7 @@ class Query implements \IteratorAggregate, \ArrayAccess
             return false;
         };
 		$conv=function($row){ 
-			$mod = new $this->model($this->db,$this,$row); 
+			$mod = new $this->model($this->db,$row,$this); 
 			return $mod;
 		};
         while (true) {
@@ -155,8 +167,8 @@ class Query implements \IteratorAggregate, \ArrayAccess
 			static::$cs[$hash]=array_merge(static::$cs[$hash],$arr); 
 		}
 		foreach (static::$cs[$hash] as $row) {
-			$result[]=new $this->model($this->db,$this,$row);
-			# code...
+            $model = new $this->model($this->db,$row,$this ); 
+			$result[]=$model; 
 		} 
 		return $result;
 	}
@@ -167,6 +179,12 @@ class Sql extends Query
     ///////////////////////////////////////    
 	public function all($key=null)
     { 
+        foreach($this as $row){
+            $arr[] = $key?$row[$key]:$row;
+        }
+        return $arr??[]; 
+    }
+    public function list($key=null){ 
         foreach($this as $row){
             $arr[] = $key?$row[$key]:$row;
         }
@@ -183,9 +201,8 @@ class Sql extends Query
     {
 		return $this(...$pkv);
     }
-    public function find(...$pkv):Model
-    {
-		return $this(...$pkv);
+    public function find(...$pkv):Model{
+		return $this(...$pkv); 
     }
     public function get($offset = 0):Model
     {
@@ -198,6 +215,23 @@ class Sql extends Query
 
 	}
 
+    public function set($data){
+        $data = array_merge($this->rArgs,$data);
+        foreach ($this->pks as $key) {
+            if(!empty($data[$key]))
+                $where[$key]=$data[$key]; 
+        }
+        if(empty($where)){
+            $this->insert($data);  
+        }
+        else if($row = $this->where($where)[0]){
+            foreach ($data as $key => $value) {
+                $row[$key]=$value;
+            }
+            $row->save();
+        } 
+        return $this;
+    } 
 	//////////////////////////////////
 	public function insert($data, $auto_increment_key = null)
     {
@@ -209,9 +243,16 @@ class Sql extends Query
         //AUTO INCREMENT
         $last_id = $this->db->lastInsertId();
         if(!empty($last_id)){
-            $data[$auto_increment_key??$this->pks[0]]=$last_id; 
-        } 
-        $row = new $this->model($this->db,$this,$data); 
+            $key = $auto_increment_key??$this->pks[0];
+            $data[$key]=$last_id; 
+            if(isset($this->rModel)){
+                foreach ($this->rfks as $i => $k) {
+                    $this->rModel[$k]=$data[$this->pks[$i]];
+                } 
+                $this->rModel->save();
+            }
+        }  
+        $row = new $this->model($this->db,$data,$this); 
         return $row;
     }
   	public function insertMulit($list) :int
@@ -263,14 +304,8 @@ class Sql extends Query
 
 
 
-
-
-
-
-
 	///////////////////////////////////////
 	
-
     public function limit($limit, $offset = 0):Sql
     {
         $this->lStr=" LIMIT ".intval($limit);
@@ -290,6 +325,10 @@ class Sql extends Query
         $this->fStr=$this->kvSQL($this->fArgs, ',', $fields );
         return $this;
     }
+    // public function join($string):Sql{ 
+    //     $this->jStr=$string;
+    //     return $this;
+    // }
 
     public function where($w, ...$arr) :Sql
     {

@@ -23,29 +23,35 @@ Array
 (
     [Id] => 1
     [name] => u1
+    [type_id] => 
 )
 Array
 (
     [Id] => 2
     [name] => u2
+    [type_id] => 
 )
 Array
 (
     [Id] => 3
     [name] => u3
+    [type_id] => 
 )
 Array
 (
     [Id] => 1
     [name] => u1
+    [type_id] => 
 )
 Array
 (
     [Id] => 2
     [name] => u2
+    [type_id] => 
 )
 Array
 (
     [Id] => 3
     [name] => u3
+    [type_id] => 
 )

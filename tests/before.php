@@ -11,6 +11,14 @@ class User extends dbm\Model
 {
     public static $table="zz_user";
     public static $pks=['Id'];  
+    public static $fks=[
+		UserType::class=>['type_id']
+	];  
+}
+class UserType  extends dbm\Model
+{
+    public static $table="zz_user_type";
+    public static $pks=['Id'];  
 }
 class Post extends dbm\Model
 {

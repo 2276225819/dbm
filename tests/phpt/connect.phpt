@@ -38,18 +38,21 @@ Array
                 (
                     [Id] => 1
                     [name] => u1
+                    [type_id] => 
                 )
 
             [1] => User Object
                 (
                     [Id] => 2
                     [name] => u2
+                    [type_id] => 
                 )
 
             [2] => User Object
                 (
                     [Id] => 3
                     [name] => u3
+                    [type_id] => 
                 )
 
         )
@@ -60,18 +63,21 @@ Array
                 (
                     [Id] => 1
                     [name] => u1
+                    [type_id] => 
                 )
 
             [1] => dbm\Model Object
                 (
                     [Id] => 2
                     [name] => u2
+                    [type_id] => 
                 )
 
             [2] => dbm\Model Object
                 (
                     [Id] => 3
                     [name] => u3
+                    [type_id] => 
                 )
 
         )

@@ -61,12 +61,14 @@ Array
         (
             [Id] => 3
             [name] => u3
+            [type_id] => 
         )
 
     [1] => User Object
         (
             [Id] => 3
             [name] => u3
+            [type_id] => 
         )
 
     [2] => 
