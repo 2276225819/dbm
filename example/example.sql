@@ -20,7 +20,7 @@ create table zz_user(
   PRIMARY KEY (`Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
-create table zz_user_type(
+create table zz_type(
     `Id` int(11) NOT NULL AUTO_INCREMENT ,
     `name` varchar(255),
   PRIMARY KEY (`Id`)

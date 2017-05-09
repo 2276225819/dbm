@@ -11,6 +11,9 @@ $conn->debug=true;
 echo "#Connect->execute(STRING[,...args]); #PDOStatement\n";
 print_r($conn->execute('select 1+2+3+?+?',[4,5])->fetchAll(\PDO::FETCH_ASSOC));
 
+
+$cache = $conn->scope();
+
 echo "#Connect->sql(TABLE,...PKS)\n";
 $a=$conn->sql(User::class)->all();
 $b=$conn->sql('zz_user','Id')->all();
@@ -34,50 +37,50 @@ Array
 (
     [0] => Array
         (
-            [0] => User Object
+            [0] => Array
                 (
                     [Id] => 1
                     [name] => u1
-                    [type_id] => 
+                    [type_id] => 1
                 )
 
-            [1] => User Object
+            [1] => Array
                 (
                     [Id] => 2
                     [name] => u2
-                    [type_id] => 
+                    [type_id] => 1
                 )
 
-            [2] => User Object
+            [2] => Array
                 (
                     [Id] => 3
                     [name] => u3
-                    [type_id] => 
+                    [type_id] => 2
                 )
 
         )
 
     [1] => Array
         (
-            [0] => dbm\Model Object
+            [0] => Array
                 (
                     [Id] => 1
                     [name] => u1
-                    [type_id] => 
+                    [type_id] => 1
                 )
 
-            [1] => dbm\Model Object
+            [1] => Array
                 (
                     [Id] => 2
                     [name] => u2
-                    [type_id] => 
+                    [type_id] => 1
                 )
 
-            [2] => dbm\Model Object
+            [2] => Array
                 (
                     [Id] => 3
                     [name] => u3
-                    [type_id] => 
+                    [type_id] => 2
                 )
 
         )

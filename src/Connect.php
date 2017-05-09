@@ -2,6 +2,10 @@
 
 class Connect implements \ArrayAccess
 { 
+	use ConnectAccess;
+	use ConnectTransaction;//deprecated
+
+	
     public $debug=false; 
     public $attr=[
         \PDO::ATTR_ERRMODE=>\PDO::ERRMODE_EXCEPTION,
@@ -12,9 +16,9 @@ class Connect implements \ArrayAccess
         $this->dns=$dns;
         $this->name=$name;
         $this->pass=$pass;
-        $this->reload();
+        $this->__reload();
     }
-    public function reload()
+    public function __reload()
     {
         $this->db = new \PDO($this->dns, $this->name, $this->pass, $this->attr);
     }
@@ -41,7 +45,7 @@ class Connect implements \ArrayAccess
             } catch (Throwable $e) {
                 if ($e->errorInfo[0] == 70100||$e->errorInfo[1] == 2006 || $e->errorInfo[1] == 2013) {
                     sleep(1);//必须的？？
-                    $this->reload();
+                    $this->__reload();
                     continue;
                 }
                 throw $e;
@@ -51,32 +55,12 @@ class Connect implements \ArrayAccess
  
 
 
-
-    public function offsetUnset($offset)
-    {
-    }
-    public function offsetSet($offset, $value)
-    {
-    }
-    public function offsetExists($offset)
-    {  
-    }  
-    public function begin(){ 
-         return $this->db->beginTransaction();
-    }
-    public function commit(){
-         return $this->db->commit(); 
-    } 
-    public function rollback(){
-         return $this->db->rollBack(); 
-    } 
-    public function offsetGet($offset)
-    {
-		return $this->sql($offset);
-    } 
+	public function scope($transaction=false):Transaction{
+		return new Transaction($transaction?$this->db:null);		
+	}
 	public function sql($model,...$pks):Sql
 	{ 
-        if (class_exists($model) && isset($model::$table)) {
+        if (class_exists($model)&& isset( $model::$table) ) {
             $table = $model::$table??$model;
 			$pks = count($pks)?$pks:$model::$pks;
             $model = $model;

@@ -3,6 +3,9 @@
 
 class Model implements \ArrayAccess ,\JsonSerializable
 {  
+	static $fks;
+	static $has;
+
     /** @var Connect  */
     public $db;
     /** @var Sql  */

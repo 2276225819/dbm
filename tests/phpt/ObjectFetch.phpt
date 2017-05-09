@@ -10,10 +10,10 @@ $conn->debug=true;
 $users = $conn->sql(User::class);
 
 foreach ($users as $key => $value) {
-	print_r($value->toArray()); 
+	print_r($value); 
 } 
 foreach ($users as $key => $value) {
-	print_r($value->toArray()); 
+	print_r($value); 
 } 
 
 ?>
@@ -23,35 +23,35 @@ Array
 (
     [Id] => 1
     [name] => u1
-    [type_id] => 
+    [type_id] => 1
 )
 Array
 (
     [Id] => 2
     [name] => u2
-    [type_id] => 
+    [type_id] => 1
 )
 Array
 (
     [Id] => 3
     [name] => u3
-    [type_id] => 
+    [type_id] => 1
 )
 Array
 (
     [Id] => 1
     [name] => u1
-    [type_id] => 
+    [type_id] => 1
 )
 Array
 (
     [Id] => 2
     [name] => u2
-    [type_id] => 
+    [type_id] => 1
 )
 Array
 (
     [Id] => 3
     [name] => u3
-    [type_id] => 
+    [type_id] => 1
 )

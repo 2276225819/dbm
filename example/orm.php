@@ -2,23 +2,28 @@
 include __DIR__."/../vendor/autoload.php";
 
 
-#Connect->execute(STRING[,...args]); #PDOStatement
-#Connect->lastInsertId();            #int
-#Connect->debug;                     #bool
-#Connect->sql(TABLE,...PKS)          #SQL
-#Connect->sql(ROW);                  #SQL
+#Conn->execute(STRING[,...args]); #PDOStatement
+#Conn->lastInsertId();            #int
+#Conn->debug;                     #bool
+#Conn->sql(TABLE,...PKS)          #SQL 
+#Conn->scope();                   #Transaction
 
-#SQL[INDEX]                 #ROW/NULL
-#SQL->get(INDEX)            #ROW/THROW
-#SQL(...PKV)                #ROW/NULL
-#SQL->load(...PKV)          #ROW/THROW
-#SQL->getIterator()         iterator
-#SQL->all()                 #[ROW,ROW...]/[]  
+
+#SQL[INDEX]                 #array/NULL
+#SQL->get(INDEX)            #array/THROW
+#SQL->getIterator()         iterator(array)
+#SQL->each()                closer(Model)
+#SQL->map()                 closer(Model)
+#SQL->all()                 #[array,array...]/[]  
 #SQL->all(KEY)              #[VALUE,VALUE...]/[]  
-#SQL->keypair(KEY)          #[KEY=>ROW,KEY=>ROW...]/[]
-#SQL->keypair(KEY,VAL)      #[KEY=>VALUE,KEY=>VALUE...]/[]
-#SQL->val(FIELD)            #MIXED
+#SQL->keypair(KEY)          #[KEY=>array,KEY=>array...]/[]
+#SQL->keypair(KEY,VAL)      #[KEY=>VALUE,KEY=>VALUE...]/[] 
+#SQL->val()                 #array
+#SQL->val(FIELD)            #mixed
 
+
+#SQL(...PKV)                	  #SQL
+#SQL->find(...PKV)          	  #SQL
 #SQL->where(STRING[, ..._args]);  #SQL
 #SQL->where(ARRAY);               #SQL
 #SQL->and(STRING[, ..._args]);    #SQL
@@ -33,6 +38,8 @@ include __DIR__."/../vendor/autoload.php";
 #SQL->insertMulit(ARRAY_LIST);   #int
 #SQL->update(ARRAY);             #int
 #SQL->delete();                  #int
+#SQL->set(ARRAY);				 #SQL
+#SQL->ref(TABLE,PKS,LKS)         #SQL
 
 #ROW[NAME]                   #MIXED/NULL
 #ROW->val(NAME)              #MIXED/THROW
@@ -43,6 +50,17 @@ include __DIR__."/../vendor/autoload.php";
 #ROW->save([PKS])                 #bool
 #ROW->destroy([PKS])              #bool
 
+
+
+//$db->sql(user_type,id)->where(id)->many(user,id,user_type_id)->many(post,id,user_id);
+//select * from user_type 	where id=1
+//select * from user 		where user_type_id in (user_type.id)
+//select * from post 		where user_id in (user.id)
+
+//$db->sql(post,id)->where(id)->one(user,id,id,user_id)->one(user_type,id,user_type_id);
+//select * from post 		where id=1
+//select * from user 		where id in (post.user_id)
+//select * from user_type 	where id in (user.user_type_id)
 
 ///////////// install database ///////////// 
 $sync = new \dbm\DBSync(__DIR__."/example.sql"); 
@@ -74,7 +92,9 @@ class PostType extends dbm\Model
 ///////////// orm test ///////////////////
 
 $test = new \dbm\Connect('mysql:dbname=test','root','root');
- 
+
+
+
 $affected = $test->sql(User::class)->insertMulit([
 	['name'=>'user1'],
 	['name'=>'user2'],
