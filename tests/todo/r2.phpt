@@ -15,7 +15,7 @@ foreach ($conn->sql(User::class)->and('Id=? or Id=3','1') as  $user) {
     #### ERROR ######
     foreach ($user[Post::class]->and("text like ?","%3%") as $post) {
         echo "   POST:".$post['Id']."  ".$post['text']."\n";   
-        echo "   USER:".$post->ref('zz_user',['Id'=>'user_id'])->get('name')."\n";  
+        echo "   USER:".$post->ref('zz_user',['Id'],['Id'=>'user_id'])['name']."\n";  
         echo "   TYPE:".$post[PostType::class]['name']."\n";  
         echo "\n";
     }   
@@ -24,11 +24,11 @@ foreach ($conn->sql(User::class)->and('Id=? or Id=3','1') as  $user) {
 --EXPECT-- 
 <!--SELECT * FROM zz_user  WHERE Id=? or Id=3  ;1-->
 USER:u1
-<!--SELECT * FROM zz_post  WHERE  user_id in (?,?)  AND text like ?  ;1,3,%3%-->
+<!--SELECT * FROM zz_post  WHERE user_id in (?,?)  AND text like ?  ;1,3,%3%-->
    POST:3  text3
-<!--SELECT * FROM zz_user  WHERE  Id in (?,?)   ;1,3-->
+<!--SELECT * FROM zz_user  WHERE Id in (?,?)   ;1,3-->
    USER:u1
-<!--SELECT * FROM zz_post_type  WHERE  Id in (?,?)   ;1,2-->
+<!--SELECT * FROM zz_post_type  WHERE Id in (?,?)   ;1,2-->
    TYPE:type1
 
 USER:u3

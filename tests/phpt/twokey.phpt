@@ -11,18 +11,18 @@ $conn->debug=true;
 $user = $conn->sql('zz_user','Id')->load(1);
 
 echo "new friend:\n";
-echo $user->many('zz_friend','Id','uid1')->insertMulit([
+echo $user->ref('zz_friend',['Id'],['uid1'=>'Id'])->insertMulit([
     ['uid2'=>2],['uid2'=>3]
 ]); 
 echo "\n";
 
 
 echo "following:\n";
-print_r($user->many('zz_friend','Id','uid1')->all());
+print_r($user->ref('zz_friend',['Id'],['uid1'=>'Id'])->all());
 
 
 echo "followers:\n";
-print_r($user->many('zz_friend','Id','uid2')->all());
+print_r($user->ref('zz_friend',['Id'],['uid2'=>'Id'])->all());
  
 echo "\n";
 

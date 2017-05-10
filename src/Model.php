@@ -6,14 +6,20 @@ class Model implements \ArrayAccess ,\JsonSerializable
     use ModelAccess;
     static $table;
     static $ref;
+	
+    /** @var Connect  */
+    public $db;
+	
+    /** @var Sql  */
+    public $pq;
 
     public function val($name)
     {
         return $this->data[$name];
     }
-    public function ref($model,$ref):Sql
+    public function ref($model,$pks,$ref):Sql
     {
-        $sql = $this->pq->ref($model,$ref);
+        $sql = $this->pq->ref($model,$pks,$ref);
         foreach ($ref as $k => $v) {
             $sql->rArgs[$k]=$this[$v];
         }   

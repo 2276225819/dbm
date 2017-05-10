@@ -47,10 +47,6 @@ trait SqlGetter
 	
     ////////////  alias /////////////  
 
-    public function load(...$pkv)
-    {
-		return $this(...$pkv);
-    }
 	
     public function list($key=null){ 
         foreach($this as $row){
@@ -58,12 +54,6 @@ trait SqlGetter
         }
         return $arr??[]; 
     }
-	public function each(Closure $fn):SQL{
-		foreach ($this as $row) 
-			$fn( new $this->model($this->db,$row,$this) ); 
-		return $this;
-	} 
-
 
 }
 

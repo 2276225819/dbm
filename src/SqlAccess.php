@@ -53,7 +53,7 @@ trait SqlAccess
 		}
 		//relation > SQL
 		if(class_exists($offset)){
-			return $this->ref($offset,$this->model::$ref[$offset]); 
+			return $this->ref($offset,$offset::$pks,$this->model::$ref[$offset]); 
 		}
         //first > mixed
 		foreach($this as $row){

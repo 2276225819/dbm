@@ -17,7 +17,7 @@ $user->save();
 
 echo "////////////////////////////////////\n";
 
-$user = $conn->sql(User::class)->find(1);  
+$user = $conn->sql(User::class)->load(1);  
 $post = $user[Post::class]->insertMulit([
     [ 'text'=>1111],
     [ 'text'=>2222],

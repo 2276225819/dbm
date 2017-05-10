@@ -19,7 +19,7 @@ class User extends dbm\Model
 
 class UserType  extends dbm\Model
 {
-    static $table="zz_type";
+    static $table="zz_user_type";
     static $pks=['Id']; 
 	static $ref=[
 		User::class=>['type_id'=>'Id'],

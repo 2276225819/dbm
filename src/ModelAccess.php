@@ -2,14 +2,10 @@
 
 trait ModelAccess
 { 	 
-    /** @var Connect  */
-    public $db;
-    /** @var Sql  */
-    public $pq;
 
 	public $data;
 	public $dirty; 
-    public function __construct(Connect $db,&$data=[],$pq=null)
+    public function __construct(Connect $db,$data=[],$pq=null)
     {
         $this->db=$db;
 		$this->dirty= [];
@@ -52,16 +48,16 @@ trait ModelAccess
             return $this->data[$offset];
         }
         if (class_exists($offset)) { 
-            return $this->ref($offset,static::$ref[$offset]); ;
+            return $this->ref($offset,$offset::$pks,static::$ref[$offset]); ;
         } 
     }
 	public function toArray(){
 		return $this->data;
 	}
-    // public function __debugInfo()
-    // {
-    //     return $this->data;
-    // }
+    public function __debugInfo()
+    {
+        return $this->data;
+    }
     public function __toString()
     {
         return (string)$this->pq;
@@ -81,16 +77,16 @@ trait ModelAccess
     //     }
     //     return $arr??[];
     // }
- 	// function pkv($pks = null)
-    // { 
-    //     foreach ($pks??$this->pq->pks as $i => $key) {
-    //         if (!isset($this->data[$key])) {
-    //             return false;
-    //         }
-    //         $arr[$key] = $this->data[$key];
-    //     }
-    //     return $arr;
-    // }
+ 	function pkv($pks = null)
+    { 
+        foreach ($pks??$this->pq->pks as $i => $key) {
+            if (!isset($this->data[$key])) {
+                return false;
+            }
+            $arr[$key] = $this->data[$key];
+        }
+        return $arr;
+    }
 
 }
 

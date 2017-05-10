@@ -5,9 +5,88 @@ class Sql implements \IteratorAggregate, \ArrayAccess
 { 
 	use SqlIterator;
 	use SqlAccess;
-	use SqlRelation; 
-	use SqlSetter;   
+	use SqlRelation;  
 	use SqlGetter;
+
+	///////////////  value  ///////////////////// 
+
+    /**
+     * [ $Row, $Row... ] | [ $key, $key... ]
+     * @param string $key
+     * @return void
+     */
+	public function all($key=null):array#[]
+    { 
+        foreach($this as $row)
+            $arr[] = $key?$row[$key]:$row;
+        return $arr??[]; 
+    }  
+    /** 
+     * [ $key => $val, $key => $val... ]
+     * @param string $key
+     * @param string $val
+     * @return array[]
+     */
+    public function keypair($key,$val=null):array#[]
+    { 
+        foreach($this as $row)
+            $arr[$row[$key]] = $val?$row[$val]:$row;
+        return $arr??[]; 
+    } 
+	
+    /** 
+     * Row
+     * @param int $offset
+     * @return Model
+     */
+    public function get($offset = 0):Model
+    {
+        return $this[$offset];
+    }  
+	
+	/**
+	 * Row
+	 * @param array ...$pkv
+	 * @return Model
+	 */
+    public function load(...$pkv) :Model
+    {
+		return $this(...$pkv)->get();
+    }
+    
+    /**
+     * mixed
+     * @param string $field
+     * @return mixed
+     */
+	public function val($field) 
+	{
+		foreach($this->field($field) as $row){
+			return $row[$field];
+		} 
+	} 
+    /**
+     * array
+     * @param Closure $fn
+     * @return array
+     */
+	public function map(Closure $fn):array{
+		foreach ($this as $row) 
+			$result[] = $fn( $row );
+		return $result;
+	}
+
+    /**
+     * array
+     * @param Closure $fn
+     * @return Sql
+     */
+	public function each(Closure $fn):Sql{
+		foreach ($this as $row) 
+			$fn( new $this->model($this->db,$row,$this) ); 
+		return $this;
+	} 
+
  
 	//////////////  select  /////////////////////////// 
 
@@ -95,91 +174,9 @@ class Sql implements \IteratorAggregate, \ArrayAccess
 	{
 		return $this(...$pkv); 
     } 
- 
-	///////////////  value  ///////////////////// 
-
-    /**
-     * [ $Row, $Row... ] | [ $key, $key... ]
-     * @param string $key
-     * @return void
-     */
-	public function all($key=null):array#[]
-    { 
-        foreach($this as $row)
-            $arr[] = $key?$row[$key]:$row;
-        return $arr??[]; 
-    }  
-    /** 
-     * [ $key => $val, $key => $val... ]
-     * @param string $key
-     * @param string $val
-     * @return array[]
-     */
-    public function keypair($key,$val=null):array#[]
-    { 
-        foreach($this as $row)
-            $arr[$row[$key]] = $val?$row[$val]:$row;
-        return $arr??[]; 
-    } 
-	
-    /** 
-     * string
-     * @param int|string|string $offset
-     * @return Row|Sql|mixed
-     */
-    public function get($offset = 0) 
-    {
-        return $this[$offset];
-    }  
     
-    /**
-     * mixed
-     * @param string $field
-     * @return mixed
-     */
-	public function val($field) 
-	{
-		foreach($this->field($field) as $row){
-			return $row[$field];
-		} 
-	} 
-    /**
-     * array
-     * @param Closure $fn
-     * @return array
-     */
-	public function map(Closure $fn):array{
-		foreach ($this as $row) 
-			$result[] = $fn( $row );
-		return $result;
-	}
-
-
-    
-	//////////////////////////////////
+	///////////////  update  ///////////////////
 	
-    /**
-     * insert or update 
-     * @param array $data
-     * @return Sql
-     */
-    public function set($data):Sql{
-        $data = array_merge($this->rArgs,$data);
-        foreach ($this->pks as $key) {
-            if(!empty($data[$key]))
-                $where[$key]=$data[$key]; 
-        }
-        if(empty($where)){
-            $this->insert($data);  
-        }
-        else if($row = $this->where($where)[0]){
-            foreach ($data as $key => $value) {
-                $row[$key]=$value;
-            }
-            $row->save();
-        } 
-        return $this;
-    } 
 
     /**
      * Row 
@@ -267,7 +264,30 @@ class Sql implements \IteratorAggregate, \ArrayAccess
             throw new \Exception("Error Processing Delete", 1);
         }
         return $query->rowCount();
-    }
-
+    } 
+    /**
+     * insert or update 
+     * @param array $data
+     * @return void
+     */
+    public function set($data){
+        $data = array_merge($this->rArgs,$data);
+        foreach ($this->pks as $key) {
+            if(isset($data[$key]) && in_array($key,$this->pks))
+                $where[$key]=$data[$key]; 
+        }
+        if(empty($where)){
+            $this->insert($data);  
+        }
+        else if($row = $this->where($where)[0]){
+            foreach ($data as $key => $value) {
+                $row[$key]=$value;
+            }
+            $row->save();
+        } else{
+			throw new Exception("Error Processing Request", 1);
+			
+		}
+    } 
 
 }
