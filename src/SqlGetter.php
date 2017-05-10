@@ -58,5 +58,12 @@ trait SqlGetter
         }
         return $arr??[]; 
     }
+	public function each(Closure $fn):SQL{
+		foreach ($this as $row) 
+			$fn( new $this->model($this->db,$row,$this) ); 
+		return $this;
+	} 
+
+
 }
 

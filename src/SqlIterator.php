@@ -23,7 +23,7 @@ trait SqlIterator
     static $qs=[];
     /** @var Model[]  */
     static $cs=[];
-    public function getIterator($i = 0)
+    public function getAllIterator($i = 0)
     {
         $hash = $this->bulidHash();
         if (empty(static::$qs[$hash])) {
@@ -32,77 +32,62 @@ trait SqlIterator
             static::$qs[$hash]=$query;
             static::$cs[$hash]=[];
         }
-        $valid=function ($row) {
-            foreach ($this->rArgs as $k => $v) {
-                if ($row[$k]!=$v) {
-                    return true;
-                }
-            }
-            return false;
-        }; 
         while (true) {
             if (static::$qs[$hash]===true) {
-                for ($c=count(static::$cs[$hash]); $i < $c; $i++) {
-                    if ($valid(static::$cs[$hash][$i])) {
-                        continue;
-                    }
-                    yield static::$cs[$hash][$i];
-                }
+                for ($c=count(static::$cs[$hash]); $i < $c; $i++) 
+                    yield static::$cs[$hash][$i]; 
                 return;
             }
-            if (isset(static::$cs[$hash][$i])) {
-                $row = static::$cs[$hash][$i++];
-                if ($valid($row)) {
-                    continue;
-                }
-                yield $row;
+            if (isset(static::$cs[$hash][$i])) { 
+                yield static::$cs[$hash][$i++];
                 continue;
             }
             if ($i<2) {
-                if ($row = static::$qs[$hash]->fetch()) {
-                    static::$cs[$hash][$i++]=$row;
-                    if ($valid($row)) {
-                        continue;
-                    }
-                    yield $row;
+                if ($row = static::$qs[$hash]->fetch()) { 
+                    yield static::$cs[$hash][$i++]=$row;
                     continue;
                 }
             }
-            foreach (static::$qs[$hash]->fetchAll() as $value) {
-                static::$cs[$hash][]=$value;
-                if ($valid($value)) {
-                    continue;
-                }
-                yield $value;
+            foreach (static::$qs[$hash]->fetchAll() as $value) { 
+                yield static::$cs[$hash][]=$value;
             }
             static::$qs[$hash]=true; 
             return;
         }
+    } 
+    public function getIterator($i=0){ 
+        if(!empty($this->rArgs)){
+            foreach ($this->getAllIterator() as $row) {
+                foreach ($this->rArgs as $k => $v) 
+                    if ($row[$k]!=$v)  
+                        continue 2; 
+                yield new $this->model($this->db,$row,$this);
+            }; 
+        }else{
+            foreach ($this->getAllIterator() as $row) {
+                yield new $this->model($this->db,$row,$this);
+            };  
+        } 
     }
 
-    public function getAll(){
-        $hash = $this->bulidHash();
-        if (empty(static::$qs[$hash])) {
-            $query=$this->db->execute($s=$this->bulidSelect(), $a=$this->bulidArgs());
-			$query->setFetchMode(\PDO::FETCH_ASSOC);
-            static::$qs[$hash]=$query;
-            static::$cs[$hash]=[];
-        } 
-		if (static::$qs[$hash]!==true) {
-			$arr =static::$qs[$hash]->fetchAll();
-			static::$cs[$hash]=array_merge(static::$cs[$hash],$arr); 
-		}
-		foreach (static::$cs[$hash] as $row) {
-            $model = new $this->model($this->db,$row,$this ); 
-			$result[]=$model; 
-		} 
-		return $result;
-	}
+    // public function getAll(){
+    //     $hash = $this->bulidHash();
+    //     if (empty(static::$qs[$hash])) {
+    //         $query=$this->db->execute($s=$this->bulidSelect(), $a=$this->bulidArgs());
+	// 		$query->setFetchMode(\PDO::FETCH_ASSOC);
+    //         static::$qs[$hash]=$query;
+    //         static::$cs[$hash]=[];
+    //     } 
+	// 	if (static::$qs[$hash]!==true) {
+	// 		$arr =static::$qs[$hash]->fetchAll();
+	// 		static::$cs[$hash]=array_merge(static::$cs[$hash],$arr); 
+	// 	}
+	// 	foreach (static::$cs[$hash] as $row) {
+    //         $model = new $this->model($this->db,$row,$this ); 
+	// 		$result[]=$model; 
+	// 	} 
+	// 	return $result;
+	// }
 
 
-	public function map(Closure $fn):array{
-		foreach ($this as $row) 
-			$result[] = $fn( new $this->model($this->db,$row,$this) );
-		return $result;
-	}
 }

@@ -19,39 +19,39 @@ foreach ($users as $key => $value) {
 ?>
 --EXPECT--
 <!--SELECT * FROM zz_user   ;-->
-Array
+User Object
 (
     [Id] => 1
     [name] => u1
     [type_id] => 1
 )
-Array
+User Object
 (
     [Id] => 2
     [name] => u2
     [type_id] => 1
 )
-Array
+User Object
 (
     [Id] => 3
     [name] => u3
-    [type_id] => 1
+    [type_id] => 2
 )
-Array
+User Object
 (
     [Id] => 1
     [name] => u1
     [type_id] => 1
 )
-Array
+User Object
 (
     [Id] => 2
     [name] => u2
     [type_id] => 1
 )
-Array
+User Object
 (
     [Id] => 3
     [name] => u3
-    [type_id] => 1
+    [type_id] => 2
 )

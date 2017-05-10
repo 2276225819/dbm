@@ -2,7 +2,7 @@
 include __DIR__."/../vendor/autoload.php";
 ///////////// install database ///////////// 
 $sync = new \dbm\DBSync(__DIR__."/../example/example.sql"); 
-$sync->setPDO('mysql:dbname=test','root','root');
+$sync->setPDO('mysql:host=127.0.0.1;dbname=test','root','root');
 //$sync->pull();  
 $sync->push();
 $sync->clear();
@@ -49,10 +49,7 @@ class Friend extends dbm\Model
 }
 
 $conn = new \dbm\Connect('mysql:dbname=test','root','root');
-$conn->sql(User::class)->insertMulit([
-	// ['name'=>'u1'],
-	// ['name'=>'u2'],
-	// ['name'=>'u3'],
+$conn->sql(User::class)->insertMulit([ 
 	['type_id'=>1,'name'=>'u1'],
 	['type_id'=>1,'name'=>'u2'],
 	['type_id'=>2,'name'=>'u3'],
@@ -78,12 +75,20 @@ $conn->sql(Post::class)->insertMulit([
 	['user_id'=>3,'post_type_id'=>2, 'text'=>'post32'],
 	['user_id'=>3,'post_type_id'=>1, 'text'=>'post31'],
 ]);
-
-// # @var Post
-// $a=aaSS();
-
-// $a->
- 
+// $conn->debug=true;
+// $cache = $conn->scope();
+// $a = $conn->sql(User::class)->get();
+// $b = $conn->sql(User::class)->get();
+// $c = $conn->sql(User::class)->get();
+// print_r([$a,$b,$c]);
+// $conn->debug=true; 
+// //$cache=$conn->scope();
+// foreach ($conn->sql(Post::class) as $v){
+// 	//$v = (new Post($conn,$v));
+// 	print_r($v);
+// } 
+// echo "end"; 
+//$conn->sql()->;
 
 // $i=$conn->sql()->getIterator();
 // for (;$row = new User($itor->next());) {  

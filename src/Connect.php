@@ -11,17 +11,8 @@ class Connect implements \ArrayAccess
         \PDO::ATTR_ERRMODE=>\PDO::ERRMODE_EXCEPTION,
         \PDO::ATTR_PERSISTENT=>true,
     ];
-    public function __construct($dns = null, $name = null, $pass = null)
-    { 
-        $this->dns=$dns;
-        $this->name=$name;
-        $this->pass=$pass;
-        $this->__reload();
-    }
-    public function __reload()
-    {
-        $this->db = new \PDO($this->dns, $this->name, $this->pass, $this->attr);
-    }
+
+    
     public function lastInsertId()
     {
         return $this->db->lastInsertId();
@@ -55,7 +46,7 @@ class Connect implements \ArrayAccess
  
 
 
-	public function scope($transaction=false):Transaction{
+	public function scope($transaction=false):Transaction { 
 		return new Transaction($transaction?$this->db:null);		
 	}
 	public function sql($model,...$pks):Sql

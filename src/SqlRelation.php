@@ -12,7 +12,7 @@ trait SqlRelation
 		$pks = array_keys($ref);
 		$sql = $this->db->sql($model,...$pks); 
 		$vstr = substr(str_repeat(",?", count($ref)), 1);
-		foreach($this->getAll() as $row){    
+		foreach($this->getAllIterator() as $row){    
 			$s=[];foreach ($ref as $k=>$f) $s[]=$row[$f]; 
 			if(empty($strlist[$k=join($s)])){
 				$strlist[$k]=",($vstr)";
@@ -20,8 +20,10 @@ trait SqlRelation
 			}  
 		} 
 		$valstr = substr(join(array_values($strlist)),1);
-		$keystr = join($pks,',');
-		$sql->wStr=" WHERE ($keystr) in ($valstr)";
+		$keystr = count($pks)>1?"(".join($pks,',').")":$pks[0];
+		$sql->wStr=" WHERE $keystr in ($valstr)";
+		
+
 		return $sql;
 	}
 }

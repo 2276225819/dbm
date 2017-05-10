@@ -12,11 +12,12 @@ class Transaction {
 			$this->db=$pdo;
 			$tihs->db->beginTransaction();  
 		}
+   
 		SQL::$gc++;
 	}
 	public function __destruct(){
 		$this->end(); 
-		SQL::$gc--;
+		SQL::$gc--; 
 	}
 
 	public function commit(){

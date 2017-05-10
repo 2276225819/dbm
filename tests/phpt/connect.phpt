@@ -12,8 +12,7 @@ echo "#Connect->execute(STRING[,...args]); #PDOStatement\n";
 print_r($conn->execute('select 1+2+3+?+?',[4,5])->fetchAll(\PDO::FETCH_ASSOC));
 
 
-$cache = $conn->scope();
-
+$cache = $conn->scope(); 
 echo "#Connect->sql(TABLE,...PKS)\n";
 $a=$conn->sql(User::class)->all();
 $b=$conn->sql('zz_user','Id')->all();
@@ -37,21 +36,21 @@ Array
 (
     [0] => Array
         (
-            [0] => Array
+            [0] => User Object
                 (
                     [Id] => 1
                     [name] => u1
                     [type_id] => 1
                 )
 
-            [1] => Array
+            [1] => User Object
                 (
                     [Id] => 2
                     [name] => u2
                     [type_id] => 1
                 )
 
-            [2] => Array
+            [2] => User Object
                 (
                     [Id] => 3
                     [name] => u3
@@ -62,21 +61,21 @@ Array
 
     [1] => Array
         (
-            [0] => Array
+            [0] => dbm\Model Object
                 (
                     [Id] => 1
                     [name] => u1
                     [type_id] => 1
                 )
 
-            [1] => Array
+            [1] => dbm\Model Object
                 (
                     [Id] => 2
                     [name] => u2
                     [type_id] => 1
                 )
 
-            [2] => Array
+            [2] => dbm\Model Object
                 (
                     [Id] => 3
                     [name] => u3

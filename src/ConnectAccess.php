@@ -2,6 +2,18 @@
 
 trait ConnectAccess{
 
+    public function __construct($dns = null, $name = null, $pass = null)
+    { 
+        $this->dns=$dns;
+        $this->name=$name;
+        $this->pass=$pass;
+        $this->__reload();
+    }
+    public function __reload()
+    {
+        $this->db = new \PDO($this->dns, $this->name, $this->pass, $this->attr);
+    }
+    
     public function offsetUnset($offset)
     {
     }
@@ -13,7 +25,7 @@ trait ConnectAccess{
     }  
     public function offsetGet($offset)
     {
-		return $this->sql($offset);
+        return $this->sql($offset);
     } 
 
 }

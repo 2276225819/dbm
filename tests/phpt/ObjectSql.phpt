@@ -6,11 +6,6 @@ include __DIR__.'/../before.php';
 $db = new \dbm\Connect('mysql:dbname=test','root','root'); 
 $db->debug=true;
 
-
-
-$cache = $db->scope();
-
-
 echo "#SQL->find(...PKV)          #ROW/THROW\n";
 $a=$db->sql('zz_user','Id')->find(3)->get(); 
 $b=$db[User::class](3)[0];
@@ -75,14 +70,14 @@ print_r([$q,$w,$e,$r]);
 <!--SELECT * FROM zz_user  WHERE Id=?  ;3333-->
 Array
 (
-    [0] => Array
+    [0] => dbm\Model Object
         (
             [Id] => 3
             [name] => u3
             [type_id] => 2
         )
 
-    [1] => Array
+    [1] => User Object
         (
             [Id] => 3
             [name] => u3

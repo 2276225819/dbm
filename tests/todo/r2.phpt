@@ -15,8 +15,8 @@ foreach ($conn->sql(User::class)->and('Id=? or Id=3','1') as  $user) {
     #### ERROR ######
     foreach ($user[Post::class]->and("text like ?","%3%") as $post) {
         echo "   POST:".$post['Id']."  ".$post['text']."\n";   
-        echo "   USER:".$post->one('zz_user','Id','user_id')->get()['name']."\n";  
-        echo "   TYPE:".$post[PostType::class][0]['name']."\n";  
+        echo "   USER:".$post->ref('zz_user',['Id'=>'user_id'])->get('name')."\n";  
+        echo "   TYPE:".$post[PostType::class]['name']."\n";  
         echo "\n";
     }   
 } 
