@@ -7,15 +7,15 @@ $db = new \dbm\Connect('mysql:dbname=test','root','root');
 $db->debug=true;
 
 echo "#SQL->find(...PKV)          #ROW/THROW\n";
-$a=$db->sql('zz_user','Id')->find(3)->get(); 
-$b=$db[User::class](3)[0];
-$c=$db[User::class](3333)[0];
+$a=$db->sql('zz_user','Id')->find(3)->val(); 
+$b=$db[User::class](3);
+$c=$db[User::class](3333);
 print_r([$a,$b,$c]);
 
 
 echo "#SQL->get(INDEX)            #ROW/NULL\n";
-$d=$db->sql('zz_user','Id')->get()['name'];
-$e=$db[User::class][0]['name']; 
+$d=$db->sql('zz_user','Id')->val('name');
+$e=$db[User::class]->val('name'); 
 print_r([$d,$e]);
 
 
@@ -30,7 +30,7 @@ print_r($db[User::class]->where('1=0')->keypair('name','Id'));
 
 
 echo "#SQL->val(FIELD)            #MIXED\n";
-print_r($db[User::class]->val("count(1)"));
+print_r($db[User::class]->count(1));
 
 
 
@@ -116,7 +116,7 @@ Array
 <!--SELECT count(1) FROM zz_user   ;-->
 3//////////////////////////
 <!--SELECT * FROM zz_user  WHERE Id=?  ;2-->
-<!--SELECT text FROM zz_post  WHERE user_id=?  ;2-->
+<!--SELECT * FROM zz_post  WHERE user_id=?  ;2-->
 Array
 (
     [0] => user2 22
@@ -124,7 +124,7 @@ Array
 )
 //////////////////////////
 <!--SELECT * FROM zz_post  WHERE Id=?  ;2-->
-<!--SELECT name FROM zz_user  WHERE Id=?  ;1-->
+<!--SELECT * FROM zz_user  WHERE Id=?  ;1-->
 Array
 (
     [0] => u1
@@ -132,7 +132,7 @@ Array
 )
 //////////////////////////
 <!--SELECT * FROM zz_post   ;-->
-<!--SELECT name FROM zz_user  WHERE Id in (?,?,?)   ;1,2,3-->
+<!--SELECT * FROM zz_user  WHERE Id in (?,?,?)   ;1,2,3-->
 Array
 (
     [0] => u1
@@ -140,7 +140,7 @@ Array
     [2] => u1
     [3] => u1
 )
-<!--SELECT text FROM zz_post  WHERE user_id in (?,?,?)   ;1,2,3-->
+<!--SELECT * FROM zz_post  WHERE user_id in (?,?,?)   ;1,2,3-->
 Array
 (
     [0] => text1

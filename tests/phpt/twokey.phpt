@@ -51,6 +51,7 @@ Array
             [Id] => 1
             [uid1] => 1
             [uid2] => 2
+            [nickname] => 1->2
         )
 
     [1] => dbm\Model Object
@@ -58,6 +59,23 @@ Array
             [Id] => 2
             [uid1] => 1
             [uid2] => 3
+            [nickname] => 1->3
+        )
+
+    [2] => dbm\Model Object
+        (
+            [Id] => 4
+            [uid1] => 1
+            [uid2] => 2
+            [nickname] => 
+        )
+
+    [3] => dbm\Model Object
+        (
+            [Id] => 5
+            [uid1] => 1
+            [uid2] => 3
+            [nickname] => 
         )
 
 )

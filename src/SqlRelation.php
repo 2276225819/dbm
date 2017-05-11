@@ -3,16 +3,17 @@
 trait SqlRelation
 {  
 	public function many($model,$model_pks,$model_fks){
-		return $this->ref($model,(array)$model_pks,
+		return $this->relation($model,(array)$model_pks,
 			array_combine((array)$model_fks,(array)$model_pks)
 		);
 	}
 	public function one($model,$model_pks,$local_fks){
-		return $this->ref($model,(array)$model_pks,
+		return $this->relation($model,(array)$model_pks,
 			array_combine((array)$model_pks,(array)$local_fks)
 		);
 	} 
-	function ref($model,array $pks,array $ref){
+	
+	public function relation($model,array $pks,array $ref):Sql{
 		$sql = $this->db->sql($model,...$pks); 
 		$arr = iterator_to_array($this->getAllIterator());
 		if(count($arr)>1){ 

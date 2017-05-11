@@ -13,16 +13,25 @@ class Model implements \ArrayAccess ,\JsonSerializable
     /** @var Sql  */
     public $pq;
 
-    public function val($name)
+    public function val($field)
     {
-        return $this->data[$name];
+        return $this->data[$field];
     }
-    public function ref($model,$pks,$ref):Sql
+	public function toArray():array{
+		return $this->data;
+	}
+    public function ref($model,$pks=NULL,$ref=NULL):Sql
     {
-        $sql = $this->pq->ref($model,$pks,$ref);
+		if(is_string($pks))$pks=(array)$pks;
+		if(!is_array($pks))$pks = static::$pks;
+		if(!is_array($ref))$ref = static::$ref[$model];
+ 
+		$sql= $this->pq->relation($model,(array)$pks,(array)$ref);
         foreach ($ref as $k => $v) {
             $sql->rArgs[$k]=$this[$v];
         }   
+		$sql->rModel=$this;
+		$sql->rref=$ref;
         return $sql;
     }  
     public function create():bool
@@ -36,8 +45,7 @@ class Model implements \ArrayAccess ,\JsonSerializable
         }
         //???????????????????
         if ($arr = $this->pkv()) {
-            $this->pq->where($arr);
-
+            $this->pq->where($arr); 
         }
         $this->dirty=[];//clear
         return true;

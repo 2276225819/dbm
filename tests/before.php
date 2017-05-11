@@ -54,6 +54,12 @@ $conn->sql(User::class)->insertMulit([
 	['type_id'=>1,'name'=>'u2'],
 	['type_id'=>2,'name'=>'u3'],
 ]);
+$conn->sql(Friend::class)->insertMulit([
+	['uid1'=>1,'uid2'=>2,'nickname'=>'1->2'],
+	['uid1'=>1,'uid2'=>3,'nickname'=>'1->3'],
+	['uid1'=>2,'uid2'=>3,'nickname'=>'2->3'],
+]);
+
 $conn->sql(UserType::class)->insertMulit([
 	['name'=>'tysfdpe1'],  
 	['name'=>'ty21'],  

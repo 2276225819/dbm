@@ -1,3 +1,6 @@
+--TEST--
+
+--FILE--
 <?php  
 include __DIR__."/../before.php";
 
@@ -15,3 +18,7 @@ echo (string)$conn->sql('zz_post')
 			->one('zz_post','Id','type_id');
 
 
+
+
+?>
+--EXPECT--

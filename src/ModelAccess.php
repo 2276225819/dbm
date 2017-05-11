@@ -51,12 +51,9 @@ trait ModelAccess
             return $this->ref($offset,$offset::$pks,static::$ref[$offset]); ;
         } 
     }
-	public function toArray(){
-		return $this->data;
-	}
     public function __debugInfo()
     {
-        return $this->data;
+        return (array)$this->data;
     }
     public function __toString()
     {

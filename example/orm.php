@@ -1,6 +1,7 @@
 <?php 
 include __DIR__."/../vendor/autoload.php";
 
+///////////////////// v3 ////////////////////////
 
 #Conn->execute(STRING[,...args]); #PDOStatement
 #Conn->lastInsertId();            #int
@@ -9,21 +10,22 @@ include __DIR__."/../vendor/autoload.php";
 #Conn->scope();                   #Transaction
 
 #SQL[INDEX]                 #Row/NULL
-#SQL[MODEL]                 #Sql/NULL
 #SQL[FIELD]                 #mixed/NULL
+#SQL[MODEL]                 #SQL/NULL
+#SQL->get()                 #Row/Throw
 #SQL->get(INDEX)            #Row/Throw
-#SQL->val()                 #Row
-#SQL->val(FIELD)            #mixed
-#SQL->getIterator()         #iterator()=>Row
-#SQL->getAllIterator()      #iterator()=>array
-#SQL->each(Model=>closer)   #array
-#SQL->map(Model=>closer)    #Sql
-#SQL->all()                 #[array,array...]/[]  
-#SQL->all(KEY)              #[VALUE,VALUE...]/[]  
-#SQL->keypair(KEY)          #[KEY=>array,KEY=>array...]/[]
-#SQL->keypair(KEY,VAL)      #[KEY=>VALUE,KEY=>VALUE...]/[] 
+#SQL->val()                 #Row/NULL
+#SQL->val(FIELD)            #mixed/NULL 
+#SQL->ref(TABLE,PKS,REF)    #SQL 
 
-#SQL(...PKV)                	  #SQL
+#SQL(...PKV)                #ROW/NULL
+#SQL->load(...PKV)          #ROW/Throw
+
+#SQL->__call(AggregateFunction) #mixed
+#SQL->count(FIELD)              #mixed
+#SQL->sum(FIELD)                #mixed
+#SQL->.....
+
 #SQL->find(...PKV)          	  #SQL
 #SQL->where(STRING[, ..._args]);  #SQL
 #SQL->where(ARRAY);               #SQL
@@ -35,12 +37,20 @@ include __DIR__."/../vendor/autoload.php";
 #SQL->field(STRING);              #SQL
 #SQL->limit(INT[,INT])            #SQL
 
+#SQL->each(Model=>closer)   #void
+#SQL->map(Model=>closer)    #array
+#SQL->getIterator()         #iterator()=>Row
+#SQL->getAllIterator()      #iterator()=>array
+#SQL->all()                 #[array,array...]/[]  
+#SQL->all(KEY)              #[VALUE,VALUE...]/[]  
+#SQL->keypair(KEY)          #[KEY=>array,KEY=>array...]/[]
+#SQL->keypair(KEY,VAL)      #[KEY=>VALUE,KEY=>VALUE...]/[] 
+
 #SQL->insert(ARRAY);             #MODLE  
 #SQL->insertMulit(ARRAY_LIST);   #int
 #SQL->update(ARRAY);             #int
-#SQL->delete();                  #int
+#SQL->delete([BOOL]);            #int 
 #SQL->set(ARRAY);				 #SQL
-#SQL->ref(TABLE,PKS,REF)         #SQL
 
 #ROW[FIELD]                  #MIXED/NULL 
 #ROW[MODEL]                  #Sql/NULL 

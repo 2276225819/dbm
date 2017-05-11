@@ -10,7 +10,7 @@ $conn = new \dbm\Connect('mysql:dbname=test','root','root');
 $conn->debug=true;
 
 $post = $conn->sql(Post::class)->find(1); 
-$user = $post[User::class]->get();
+$user = $post[User::class]->val();
 $user['name']='aaaaaaaaaaaaaa';
 $user->save();
  

@@ -68,26 +68,5 @@ trait SqlIterator
                 yield new $this->model($this->db,$row,$this);
             };  
         } 
-    }
-
-    // public function getAll(){
-    //     $hash = $this->bulidHash();
-    //     if (empty(static::$qs[$hash])) {
-    //         $query=$this->db->execute($s=$this->bulidSelect(), $a=$this->bulidArgs());
-	// 		$query->setFetchMode(\PDO::FETCH_ASSOC);
-    //         static::$qs[$hash]=$query;
-    //         static::$cs[$hash]=[];
-    //     } 
-	// 	if (static::$qs[$hash]!==true) {
-	// 		$arr =static::$qs[$hash]->fetchAll();
-	// 		static::$cs[$hash]=array_merge(static::$cs[$hash],$arr); 
-	// 	}
-	// 	foreach (static::$cs[$hash] as $row) {
-    //         $model = new $this->model($this->db,$row,$this ); 
-	// 		$result[]=$model; 
-	// 	} 
-	// 	return $result;
-	// }
-
-
+    } 
 }

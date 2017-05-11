@@ -13,11 +13,11 @@ class Transaction {
 			$tihs->db->beginTransaction();  
 		}
    
-		SQL::$gc++;
+		Sql::$gc++;
 	}
 	public function __destruct(){
 		$this->end(); 
-		SQL::$gc--; 
+		Sql::$gc--; 
 	}
 
 	public function commit(){
@@ -26,7 +26,10 @@ class Transaction {
 			unset($this->db); 
 		}
 	}
-
+	public function clear(){ 
+		Sql::$qs=[];
+		Sql::$cs=[];
+	}
 	public function end(){
 		if(isset($this->db)){
 			$this->db->rollback();

@@ -9,7 +9,7 @@ $conn = new \dbm\Connect('mysql:dbname=test','root','root');
 $conn->sql('zz_user_type')->where('1=1')->delete();
 $conn->debug=true; 
 
-$user = $conn->sql(User::class)->get();
+$user = $conn->sql(User::class)->val();
 
 try{
     $a=$user->ref('zz_user_type',['Id'],['Id'=>'type_id'])->insert([

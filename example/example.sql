@@ -26,9 +26,9 @@ create table zz_user_type(
   PRIMARY KEY (`Id`)
 )ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
-create table zz_friend(
-    `Id` int(11) NOT NULL AUTO_INCREMENT ,
-    `uid1` varchar(255) DEFAULT NULL ,
-    `uid2` varchar(255) DEFAULT NULL ,
+create table zz_friend( 
+    `uid1` int(11) ,
+    `uid2` int(11) ,
+	`nickname` varchar(25),
   PRIMARY KEY (`Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
