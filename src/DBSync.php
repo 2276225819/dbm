@@ -7,8 +7,8 @@ class DBSync{
     public $file; 
 	public $debug;
     public $tables;
-    public function __construct($file=__DIR__.'/../temp.sql',$debug=false){  
-        $this->file=$file;    
+    public function __construct($file=null,$debug=false){  
+        $this->file=$file??__DIR__.'/../temp.sql';    
 		$this->debug=$debug;  
 		if(file_exists($file)){ 
             $txt = file_get_contents($this->file);  
@@ -65,14 +65,14 @@ class DBSync{
 	public function diff($focus=false){   
 		$tables = $this->loadrt(); 		
         //print_r($tables);exit;
+        $qs = array();
         if($focus)foreach($tables as $tn=>$table){
-			$qs = array_merge($qs??[],$table->clearFrom($this->tables[$tn]??null));  
+			$qs = array_merge($qs,$table->clearFrom($this->tables[$tn]));  
 		}
 		foreach ($this->tables as $tn => $table) { 
-			$qs = array_merge($qs??[],$table->diffFrom($tables[$tn]??null)); 
-		}  
-
-		return $qs??[];
+			$qs = array_merge($qs,$table->diffFrom($tables[$tn])); 
+		}
+		return $qs;
 	}
 	
 	/**
@@ -98,9 +98,9 @@ class DBSync{
      */
     public function pull($focus=false){  
         $this->merge($focus);   
+        $str = '';
         foreach ($this->tables as $value) 
-            $str=($str??'')."{$value};\n\n"; 
-       
+            $str.="{$value};\n\n";  
         file_put_contents($this->file,$str);   
     }    
     /**  

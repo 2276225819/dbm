@@ -12,13 +12,13 @@ $user = $conn->sql(User::class) ;
 
 print_r($user->keypair('name','Id'));
 echo "\n";
-print_r($user['name']);
+print_r($user->get()->val('name'));
 echo "\n"; 
-print_r($user->list('name'));
+print_r($user->all('name'));
 
 ?>
 --EXPECT-- 
-<!--SELECT * FROM zz_user   ;-->
+<!--SELECT * FROM `zz_user`   ;-->
 Array
 (
     [u1] => 1

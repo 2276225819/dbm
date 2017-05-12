@@ -1,143 +1,101 @@
 <?php namespace dbm;
 
-class Model implements \ArrayAccess
-{
-    public static $table;//useby SQL
-    public static $pks=[];//useby SQL
-    public static $fks=[];//useby SQL 
-    // private $bulider=null;
-    // private  $dirty=[];
-    public function __construct(Connect $conn,SQL $bulider = null)
-    {
-        $this->bulider = $bulider?$bulider:$conn->sql(get_called_class());
-    }
- 
-  
-    /////////////////////////////////////////////////////
-    public function offsetExists($offset)
-    {
-    }
-    public function offsetUnset($offset)
-    {
-    }
-    public function offsetSet($name, $value)
-    {
-        $this->dirty[$name]=$value;
-        $this->$name=$value;
-    }
-    public function offsetGet($name)
-    {
-        if (isset($this->$name)) {
-            return $this->$name;
-        }
 
-        if (class_exists($name)) {
-            if (isset(static::$fks[$name])) {
-                return $this->hasOne($name, $name::$pks, static::$fks[$name]);
-            }
-            $caller = get_called_class();
-            if (isset($name::$fks[$caller])) {
-                return $this->hasMany($name, $name::$fks[$caller], static::$pks);
-            }
-        }
-    }
-    public function hasOne($model, $pks, $fks):SQL
+class Model implements \ArrayAccess ,\JsonSerializable
+{   
+    use ModelAccess;
+    static $table;
+    static $ref;
+	
+    /** @var Connect  */
+    public $db;
+	
+    /** @var Sql  */
+    public $pq;
+
+    /** 
+     * @param string $field
+     * @return mixed
+     */
+    public function val($field)
     {
-        $pks=(array)$pks;
-        $fks=(array)$fks;
-        $sql = $this->bulider->from($model);
-        foreach ($pks as $i => $k) {
-            $sql->rArgs[$k]=$this[$fks[$i]];
-            //$tmp->rArgs[$k]=$this[$fks[$i]];
-        }
-        foreach ($this->bulider->fetchAll() as $obj) {
-            $test[]=$obj;
-            foreach ($fks as $i => $k) {
-                $arr[$pks[$i]][] = $obj[ $k ];
-            }
-        }
-        foreach ($arr as &$unique) {
-            $unique=array_unique($unique);
-        } 
-        return $sql->and($arr);
+        return $this->data[$field];
     }
-    public function hasMany($model, $pks, $fks):SQL
+    /** 
+     * @return array
+     */
+	public function toArray() {
+		return $this->data;
+	}
+    /** 
+     * @param string $model
+     * @param array $pks
+     * @param array $ref
+     * @return Sql
+     */
+    public function ref($model,$pks=NULL,$ref=NULL) 
     {
-        $pks=(array)$pks;
-        $fks=(array)$fks;
-        $sql =  $this->bulider->from($model);
-        foreach ($pks as $i => $k) {
-            $sql->rArgs[$k]=$this[$fks[$i]];
-        }
-        foreach ($this->bulider->fetchAll() as $obj) {
-            foreach ($fks as $i => $k) {
-                $arr[$pks[$i]][] = $obj[ $k ];
-            }
-        }
-        return $sql->or($arr);
-    }
+		if(is_string($pks))$pks=(array)$pks;
+		if(!is_array($pks))$pks = static::$pks;
+		if(!is_array($ref))$ref = static::$ref[$model];
  
-    
-    public function pkv($pks = null)
-    {
-        foreach ($pks??static::$pks as $i => $key) {
-            if (!isset($this->$key)) {
-                return false;
-            }
-            $arr[$key] = $this->$key;
-        }
-        return $arr;
-    }
-    public function toArray():array
-    {
-        $arr = (array)$this;
-        unset($arr['bulider']);
-        unset($arr['dirty']);
-        return $arr;
-    }
-    public function create($pks=null):bool
-    { 
-        if(empty($pks))$pks = static::$pks;
-         
-        $this->bulider->insert($this->dirty);
-        if ($last_id = $this->bulider->lastInsertId()) {
+		$sql= $this->pq->relation($model,(array)$pks,(array)$ref);
+        foreach ($ref as $k => $v) {
+            $sql->rArgs[$k]=$this[$v];
+        }   
+		$sql->rModel=$this;
+		$sql->rref=$ref;
+        return $sql;
+    }  
+    /** 
+     * @return bool
+     */
+    public function create() 
+    {  
+        $this->pq->insert($this->dirty);
+        if ($last_id = $this->db->lastInsertId()) {
+        	$pks = $this->pq->pks;
             if (count($pks)==1) {
-                $this->{$pks[0]} = $last_id;
+                $this->data[$pks[0]] = $last_id;
             }
         }
         //???????????????????
-        if ($arr = $this->pkv($pks)) {
-            $this->bulider->where($arr);
+        if ($arr = $this->pkv()) {
+            $this->pq->where($arr); 
         }
-        unset($this->dirty);
+        $this->dirty=[];//clear
         return true;
     }
-    public function destroy($pks=null):bool
-    {
-        if(empty($pks))$pks = static::$pks;
 
-        if (!($arr = $this->pkv($pks))) {
-            throw new Exception("Error Processing Request", 1);
-        }
-            
-        $query = $this->bulider->from();
-        $result = $query->where($arr)->delete();
-        return $result;
-    }
-    public function save($pks = null):bool
-    {
-        if(empty($pks))$pks = static::$pks;
-        
+    /** 
+     * @param array $pks
+     * @return bool
+     */
+    public function save($pks=null)
+    { 
         if (empty($this->dirty)) {
             return false;
         }
         if (!($arr = $this->pkv($pks))) {
-            throw new Exception("Error Processing Request", 1);
-        }
-            
-        $query = $this->bulider->from();
-        $result = $query->where($arr)->update($this->dirty);
+			if(!$this->create())
+				throw new Exception("Error Processing Request", 1);
+			return $this->data;
+        } 
+        $sql = clone $this->pq;
+        $result = $sql->where($arr)->update($this->dirty);
         $this->dirty=[];//clear
+        return $result;
+    }
+    /** 
+     * @param array $pks
+     * @return bool
+     */
+    public function destroy($pks=null)
+    { 
+        if (!($arr = $this->pkv($pks))) {
+            throw new \Exception("Error Processing Request", 1);
+        } 
+        $result = $this->pq->where($arr)->delete();
         return $result;
     }
 }
