@@ -2,56 +2,68 @@
 include __DIR__."/../vendor/autoload.php";
 ///////////// install database ///////////// 
 $sync = new \dbm\DBSync(__DIR__."/../example/example.sql"); 
-$sync->setPDO('mysql:dbname=test','root','root');
+$sync->setPDO('mysql:host=127.0.0.1;dbname=test','root','root');
 //$sync->pull();  
 $sync->push();
 $sync->clear();
 //////////// model ///////////////////
 class User extends dbm\Model
 {
-    public static $table="zz_user";
-    public static $pks=['Id'];  
-    public static $fks=[
-		UserType::class=>['type_id']
-	];  
-}
+    static $table="zz_user";
+	static $pks=['Id'];  
+	static $ref=[ 
+		UserType::class=>['Id'=>'type_id'],
+		Post::class=>['user_id'=>'Id'], 
+	];    
+} 
+
 class UserType  extends dbm\Model
 {
-    public static $table="zz_user_type";
-    public static $pks=['Id'];  
+    static $table="zz_user_type";
+    static $pks=['Id']; 
+	static $ref=[
+		User::class=>['type_id'=>'Id'],
+	]; 
 }
 class Post extends dbm\Model
 {
-    public static $table="zz_post";
-    public static $pks=['Id'];   
-    public static $fks=[
-        User::class     =>['user_id'],  
-        PostType::class =>['post_type_id']
-    ]; 
+    static $table="zz_post";
+    static $pks=['Id'];   
+    static $ref=[
+    	User::class     =>['Id'=>'user_id'],  
+    	PostType::class =>['Id'=>'post_type_id']
+    ];  
 } 
 class PostType extends dbm\Model
 {
-    public static $table="zz_post_type";
-    public static $pks=['Id'];    
+    static $table="zz_post_type";
+    static $pks=['Id'];   
+	static $ref=[
+		Post::class=>['post_type_id'=>'Id'],
+	];
 }
 class Friend extends dbm\Model
 {
-    public static $table="zz_friend";
-    public static $pks=['uid1','uid2'];    
+    static $table="zz_friend";
+    static $pks=['uid1','uid2'];    
 }
 
 $conn = new \dbm\Connect('mysql:dbname=test','root','root');
-$conn->sql(User::class)->insertMulit([
-	['name'=>'u1'],
-	['name'=>'u2'],
-	['name'=>'u3'],
-	// ['Type_id'=>1,'name'=>'u1'],
-	// ['Type_id'=>1,'name'=>'u2'],
-	// ['Type_id'=>1,'name'=>'u3'],
+$conn->sql(User::class)->insertMulit([ 
+	['type_id'=>1,'name'=>'u1'],
+	['type_id'=>1,'name'=>'u2'],
+	['type_id'=>2,'name'=>'u3'],
 ]);
-// $conn->sql('zz_type')->insertMulit([
-// 	['name'=>'tysfdpe1'],  
-// ]);
+$conn->sql(Friend::class)->insertMulit([
+	['uid1'=>1,'uid2'=>2,'nickname'=>'1->2'],
+	['uid1'=>1,'uid2'=>3,'nickname'=>'1->3'],
+	['uid1'=>2,'uid2'=>3,'nickname'=>'2->3'],
+]);
+
+$conn->sql(UserType::class)->insertMulit([
+	['name'=>'tysfdpe1'],  
+	['name'=>'ty21'],  
+]);
 
 $conn->sql(PostType::class)->insertMulit([
 	['name'=>'type1'],
@@ -69,4 +81,58 @@ $conn->sql(Post::class)->insertMulit([
 	['user_id'=>3,'post_type_id'=>2, 'text'=>'post32'],
 	['user_id'=>3,'post_type_id'=>1, 'text'=>'post31'],
 ]);
+// $conn->debug=true;
+// $cache = $conn->scope(); 
+// $a = $conn->sql(User::class)->get();
+// $b = $conn->sql(User::class)->get();
+// $c = $conn->sql(User::class)->get();
+// print_r([$a,$b,$c]);
+// $conn->debug=true; 
+// //$cache=$conn->scope();
+// foreach ($conn->sql(Post::class) as $v){
+// 	//$v = (new Post($conn,$v));
+// 	print_r($v);
+// } 
+// echo "end"; 
+//$conn->sql()->;
 
+// $i=$conn->sql()->getIterator();
+// for (;$row = new User($itor->next());) {  
+
+// 	$conn($row)[Post::class][0]['name'];
+// 	$conn->obj($row)->one('')->get()->name;
+// 	$e->getName();
+// }
+
+
+
+// foreach ($conn->sql() as $key => $value) {
+// 	$row = new User($value,$db); 
+// }
+ 
+// $conn->sql()->map(function(Post $p){
+// 	return [
+// 		'name'=>$p['name'],
+// 		'type'=>$p['id'],
+// 		'aa'=>$p->cc()
+// 	];
+// });
+
+// class A{ 
+// 	const table=[
+// 		'table'=>'name',
+// 		'pk'=>'id',
+// 	];
+
+// 	const id = int::class;
+// 	public $id; 
+
+
+// 	const name = string::class;
+// 	public $name;
+// }; 
+
+
+// $a = new A();
+// print_r(A::id);
+ 

@@ -16,7 +16,7 @@ try{
 $a = $conn->execute("select * from null");
 print_r($a);
 }catch(Throwable $e){ 
-print_r($e->getMessage());
+echo "error";
 echo "\n";
 }
 
@@ -45,7 +45,7 @@ PDOStatement Object
     [queryString] => select * from zz_post
 )
 <!--select * from null;-->
-SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'null' at line 1
+error
 <!--create table zz_test(Id int); ;-->
 Array
 (

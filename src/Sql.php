@@ -1,269 +1,257 @@
 <?php namespace dbm;
 
-
-class Query implements \IteratorAggregate, \ArrayAccess
-{ 
-    //public $jStr='';
-    public $wStr='',$lStr='',$oStr='',$fStr='*';
-    public $rArgs=[],$wArgs=[], $fArgs=[], $sArgs=[],$oArgs=[];
-	
-    public $model;
-    public $table;
-    public $pks;
-	
-    public  function __toString()
-    {
-        return $this->bulidHash();
-    }
-    public function offsetUnset($offset)
-    {
-    }
-    public function offsetSet($offset, $value)
-    {
-    }
-    public function offsetExists($offset)
-    {
-        return $this[$offset];
-    }
-    public function offsetGet($offset)
-    {
-        foreach ($this as $row) { 
-            if ($offset--<=0) {
-                break;
-            }
-        }
-        return $row??null;
-    }
-	public function __invoke(...$pkv){
-		if(is_array($pkv[0] && empty($pkv[0][0]))){
-			$arr=$pkv[0];
-		}else{
-        	$arr = array_combine($this->pks, $pkv); 
-		}
-        return $this->and($arr)[0];
-	}
-	
-  
-    public function bulidHash()
-    {
-        return $this->bulidSelect().';'.join($this->bulidArgs(), ',');
-    }
-    public function bulidArgs()
-    {
-        return array_merge($this->wArgs, $this->oArgs);
-    }
-    public function bulidSelect()
-    {
-        return "SELECT {$this->fStr} FROM {$this->table} {$this->wStr} {$this->oStr} {$this->lStr}";
-    }
-	
-    /** @var Connect */
-    public $db;
-    public function __construct(Connect $db, $table, $pks, $model )
-    {
-        $this->db=$db;
-        $this->model=$model;
-        $this->table=$table;
-        $this->pks=(array)$pks;
-        // if($this->db->debug)
-        //     echo str_repeat("\t",static::$gc).
-        //         "<!--> $this->table($this->model) !!!-->\n";
-		++static::$gc; 
-    }
-
-	public function __destruct(){ 
-		--static::$gc;
-        // if($this->db->debug)
-        //     echo str_repeat("\t",static::$gc).
-        //         "<!--< $this->table($this->model) !!!-->\n"; 
-		if(!static::$gc) { 
-            // if($this->db->debug)
-            //     echo "<!--GC-->\n";
-			static::$qs=[];
-			static::$cs=[]; 
-		}
-	}
-    public function __clone(){
-		++static::$gc;//new
-    }
-
-	
-	static $gc=0;
-    /** @var PDOStatement[]  */
-    static $qs=[];
-    /** @var Model[]  */
-    static $cs=[];
-    public function getIterator($i = 0)
-    {
-        $hash = $this->bulidHash();
-        if (empty(static::$qs[$hash])) {
-            $query=$this->db->execute($this->bulidSelect(), $this->bulidArgs());
-			$query->setFetchMode(\PDO::FETCH_ASSOC);
-            static::$qs[$hash]=$query;
-            static::$cs[$hash]=[];
-        }
-        $valid=function ($row) {
-            foreach ($this->rArgs as $k => $v) {
-                if ($row[$k]!=$v) {
-                    return true;
-                }
-            }
-            return false;
-        };
-		$conv=function($row){ 
-			$mod = new $this->model($this->db,$row,$this); 
-			return $mod;
-		};
-        while (true) {
-            if (static::$qs[$hash]===true) {
-                for ($c=count(static::$cs[$hash]); $i < $c; $i++) {
-                    if ($valid(static::$cs[$hash][$i])) {
-                        continue;
-                    }
-                    yield $conv(static::$cs[$hash][$i]);
-                }
-                return;
-            }
-            if (isset(static::$cs[$hash][$i])) {
-                $row = static::$cs[$hash][$i++];
-                if ($valid($row)) {
-                    continue;
-                }
-                yield $conv($row);
-                continue;
-            }
-            if ($i<2) {
-                if ($row = static::$qs[$hash]->fetch()) {
-                    static::$cs[$hash][$i++]=$row;
-                    if ($valid($row)) {
-                        continue;
-                    }
-                    yield $conv($row);
-                    continue;
-                }
-            }
-            foreach (static::$qs[$hash]->fetchAll() as $value) {
-                static::$cs[$hash][]=$value;
-                if ($valid($value)) {
-                    continue;
-                }
-                yield $conv($value);
-            }
-            static::$qs[$hash]=true; 
-            return;
-        }
-    }
-	
-    public function getAll(){
-        $hash = $this->bulidHash();
-        if (empty(static::$qs[$hash])) {
-            $query=$this->db->execute($this->bulidSelect(), $this->bulidArgs());
-			$query->setFetchMode(\PDO::FETCH_ASSOC);
-            static::$qs[$hash]=$query;
-            static::$cs[$hash]=[];
-        } 
-		if (static::$qs[$hash]!==true) {
-			$arr =static::$qs[$hash]->fetchAll();
-			static::$cs[$hash]=array_merge(static::$cs[$hash],$arr); 
-		}
-		foreach (static::$cs[$hash] as $row) {
-            $model = new $this->model($this->db,$row,$this ); 
-			$result[]=$model; 
-		} 
-		return $result;
-	}
-}
-
-class Sql extends Query
+class Sql implements \IteratorAggregate, \ArrayAccess
 {
-    ///////////////////////////////////////    
-	public function all($key=null)
-    { 
-        foreach($this as $row){
-            $arr[] = $key?$row[$key]:$row;
-        }
-        return $arr??[]; 
-    }
-    public function list($key=null){ 
-        foreach($this as $row){
-            $arr[] = $key?$row[$key]:$row;
-        }
-        return $arr??[]; 
-    }
-    public function keypair($key,$val=null)
-    { 
-        foreach($this as $row){
-            $arr[$row[$key]] = $val?$row[$val]:$row;
-        }
-        return $arr??[]; 
-    }
-    public function load(...$pkv):Model
-    {
-		return $this(...$pkv);
-    }
-    public function find(...$pkv):Model{
-		return $this(...$pkv); 
-    }
-    public function get($offset = 0):Model
-    {
-        return $this[$offset];
-    }  
-	public function val($field){
-		foreach($this->field($field)->getAll() as $row){
-			return $row[$field];
-		}
 
+ 
+    use SqlIterator;
+    use SqlAccess;
+    use SqlRelation;
+    use SqlGetter;
+
+    ///////////////  value  /////////////////////
+ 
+    /**
+     * $sql->val() as Model | $sql->val(FILED) as Model
+     * @param int $offset
+     * @return Model
+     */
+    public function get($offset=NULL)
+    { 
+        return $this[$offset];
+    }
+    /**
+     * $sql->val(FILED) as mixed
+     * @param string $field
+     * @return mixed
+     */
+    public function val($field=NULL)
+    {  
+        foreach ($this->getAllIterator() as $row) {
+            foreach ($this->rArgs as $k => $v) 
+                if ($row[$k]!=$v) 
+                    continue 2;
+            return $field?$row[$field]:$row;
+        }
+    } 
+    /**
+     * Row
+     * @param array ...$pkv
+     * @return Model
+     */
+    public function load(...$pkv) 
+    {
+        return $this(...$pkv);
+    }
+
+
+    /**
+     * void
+     * @param Closure $fn
+     * @return void
+     */
+    public function each($fn)
+    {
+        foreach ($this as $row) {
+            $fn( $row );
+        } 
+    }
+    /**
+     * array
+     * @param Closure $fn
+     * @return array
+     */
+    public function map($fn) 
+    {
+        $result=[];
+        foreach ($this as $row) {
+            $result[] = $fn( $row );
+        }
+        return $result;
+    } 
+    /**
+     * [ $Row, $Row... ] | [ $key, $key... ]
+     * @param string $key
+     * @return Model[]
+     */
+    public function all($key = null) 
+    {
+        $result=[];
+        foreach ($this as $row) {
+            $result[] = $key?$row[$key]:$row;
+        }
+        return $result;
+    }
+    /**
+     * [ $key=>Row, $key=>Row... ] | [ $key => $val, $key => $val... ]
+     * @param string $key
+     * @param string $val
+     * @return Model[]
+     */
+    public function keypair($key, $val = null) 
+    {
+        $result=[];
+        foreach ($this as $row) {
+            $result[$row[$key]] = $val?$row[$val]:$row;
+        }
+        return $result;
+    }
+    
+ 
+    //////////////  select  ///////////////////////////
+
+    /**
+     * Undocumented function
+     *
+     * @param string $model
+     * @param array $pks
+     * @param array $ref
+     * @return Sql
+     */
+	public function ref($model,$pks=NULL,$ref=NULL){
+        $CLASS = $this->model;
+		if(is_string($pks))$pks = (array)$pks;
+		if(!is_array($pks))$pks = $CLASS::$pks;
+		if(!is_array($ref))$ref = $CLASS::$ref[$model];
+		return $this->relation($model,(array)$pks,(array)$ref);
 	}
 
-    public function set($data){
-        $data = array_merge($this->rArgs,$data);
-        foreach ($this->pks as $key) {
-            if(!empty($data[$key]))
-                $where[$key]=$data[$key]; 
-        }
-        if(empty($where)){
-            $this->insert($data);  
-        }
-        else if($row = $this->where($where)[0]){
-            foreach ($data as $key => $value) {
-                $row[$key]=$value;
-            }
-            $row->save();
-        } 
-        return $this;
-    } 
-	//////////////////////////////////
-	public function insert($data, $auto_increment_key = null)
+    /**
+     * ... LIMIT {$limit} OFFSET {$offset} ...
+     * @param int $limit
+     * @param int $offset
+     * @return Sql
+     */
+    public function limit($limit, $offset = 0) 
     {
-        $data = array_merge($data,$this->rArgs, $this->sArgs);
+        $this->lStr=" LIMIT ".intval($limit);
+        if (!empty($offset)) {
+            $this->lStr.=' OFFSET '.intval($offset).' ';
+        }
+        return $this;
+    }
+    /**
+     * ... ORDER {$order} ...
+     * @param string $order
+     * @param array ...$arr
+     * @return Sql
+     */
+    public function order(string $order, ...$arr)  
+    {
+        $this->oStr=" ORDER BY ".$order;
+        $this->oArgs=$arr;
+        return $this;
+    }
+    /**
+     * SELECT {$fileds} FROM ...
+     * @param string|array $fields
+     * @return Sql
+     */
+    public function field($fields)  
+    {
+        $this->fStr=$this->kvSQL($this->fArgs, ',', $fields);
+        return $this;
+    }
+
+    /**
+     * ... WHERE {$w} ...
+     * @param string|array $w
+     * @param array ...$arr
+     * @return Sql
+     */
+    public function where($w, ...$arr)  
+    {
+        $this->wArgs=[];
+        $this->wStr=' WHERE '.$this->kvSQL($this->wArgs, ' AND ', $w, $arr);
+        return $this;
+    }
+    /**
+     * ... WHERE ... AND {$w} ...
+     * @param string|array $w
+     * @param array ...$arr
+     * @return Sql
+     */
+    public function and($w, ...$arr)  
+    {
+        $this->wStr.=empty($this->wStr)?" WHERE ":" AND ";
+        $this->wStr.=$this->kvSQL($this->wArgs, ' AND ', $w, $arr);
+        return $this;
+    }
+    /**
+     * ... WHERE ... OR {$w} ...
+     * @param string|array $w
+     * @param array ...$arr
+     * @return Sql
+     */
+    public function or($w, ...$arr)  
+    {
+        $this->wStr.=empty($this->wStr)?" WHERE ":" OR ";
+        $this->wStr.=$this->kvSQL($this->wArgs, ' OR ', $w, $arr);
+        return $this;
+    }
+
+    /**
+     * ... WHERE `PrimaryKey` = {$pkv} ...
+     * @param string|array $w
+     * @param array ...$arr
+     * @return Sql
+     */
+    public function find(...$pkv) 
+    {
+        if (is_array($pkv[0] && empty($pkv[0][0]))) {
+            $arr = $pkv[0];
+        } else {
+            $arr = array_combine($this->pks, $pkv);
+        }
+        return $this->and($arr);
+    }
+    
+    ///////////////  update  ///////////////////
+    
+
+    /**
+     * Row
+     * @param array $data
+     * @param int $auto_increment_key
+     * @return Model
+     */
+    public function insert($data, $auto_increment_key = null)
+    {
+        $data = array_merge($data,$this->rArgs,$this->sArgs);
         $sql="INSERT INTO {$this->table} SET ".$this->kvSQL($param, ',', $data);
         if (!($query = $this->db->execute($sql, $param))) {
             throw new \Exception("Error Processing Insert" );
         }
         //AUTO INCREMENT
         $last_id = $this->db->lastInsertId();
-        if(!empty($last_id)){
-            $key = $auto_increment_key??$this->pks[0];
-            $data[$key]=$last_id; 
-            if(isset($this->rModel)){
-                foreach ($this->rfks as $i => $k) {
-                    $this->rModel[$k]=$data[$this->pks[$i]];
-                } 
+        if (!empty($last_id)) {
+            $key = $auto_increment_key?$auto_increment_key:$this->pks[0];
+            $data[$key]=$last_id;
+            if (isset($this->rModel)) { 
+                foreach ($this->rref as $i => $k) {
+                    $this->rModel[$k]=$data[$i];
+                }
                 $this->rModel->save();
             }
-        }  
-        $row = new $this->model($this->db,$data,$this); 
+        }
+        $row = new $this->model($this->db, $data, $this);
         return $row;
     }
-  	public function insertMulit($list) :int
+    /**
+     * RowCount
+     * @param array $list
+     * @return int
+     */
+    public function insertMulit($list)  
     {
         $param=[];
         $sql1 = "";
         $sql2 = "";
         foreach ($list as &$arr) {
-            $arr = array_merge($arr, $this->sArgs,$this->rArgs);
+            $arr = array_merge($arr, $this->sArgs, $this->rArgs);
             $sql2.=",(".substr(str_repeat(",?", count($arr)), 1).")";
-            array_push($param, ...array_values($arr));
+            foreach ($arr as $value) 
+                $param[]=$value; 
         }
         foreach ($list[0] as $key => $value) {
             $sql1.=",`{$key}`";
@@ -274,7 +262,13 @@ class Sql extends Query
         }
         return $query->rowCount();
     }
-    public function update($data, ...$arr) :int
+    /**
+     * RowCount
+     * @param array $data
+     * @param array ...$arr
+     * @return int
+     */
+    public function update($data, ...$arr)  
     {
         if (empty($this->wStr)) {
             throw new \Exception("Require Where Column", 1);
@@ -288,9 +282,13 @@ class Sql extends Query
         }
         return $query->rowCount();
     }
-    public function delete() :int
+    /**
+     * RowCount
+     * @return int
+     */
+    public function delete($force=false)  
     {
-        if (empty($this->wStr)) {
+        if (!$force && empty($this->wStr)) {
             return false;
         }
         $sql="DELETE FROM {$this->table} {$this->wStr}";
@@ -299,80 +297,28 @@ class Sql extends Query
         }
         return $query->rowCount();
     }
-
-
-
-
-
-	///////////////////////////////////////
-	
-    public function limit($limit, $offset = 0):Sql
+    /**
+     * insert or update
+     * @param array $data
+     * @return void
+     */
+    public function set($data)
     {
-        $this->lStr=" LIMIT ".intval($limit);
-        if (!empty($offset)) {
-            $this->lStr.=' OFFSET '.intval($offset).' ';
-        }
-        return $this;
-    }
-    public function order(string $order, ...$arr) :Sql
-    {
-        $this->oStr=" ORDER BY ".$order;
-        $this->oArgs=$arr;
-        return $this;
-    }
-    public function field($fields) :Sql
-    {
-        $this->fStr=$this->kvSQL($this->fArgs, ',', $fields );
-        return $this;
-    }
-    // public function join($string):Sql{ 
-    //     $this->jStr=$string;
-    //     return $this;
-    // }
-
-    public function where($w, ...$arr) :Sql
-    {
-		$this->wArgs=[];
-        $this->wStr=' WHERE '.$this->kvSQL($this->wArgs , ' AND ', $w, $arr);
-        return $this;
-    }
-    public function and($w, ...$arr) :Sql
-    {
-        $this->wStr.=empty($this->wStr)?" WHERE ":" AND ";
-        $this->wStr.=$this->kvSQL($this->wArgs, ' AND ', $w, $arr);
-        return $this;
-    }
-    public function or($w, ...$arr) :Sql
-    {
-        $this->wStr.=empty($this->wStr)?" WHERE ":" OR ";
-        $this->wStr.=$this->kvSQL($this->wArgs, ' OR ', $w, $arr);
-        return $this;
-    }
-
-    private function kvSQL(&$param, $jtag = ' AND ', $arr, $attr = null, $sql = ''):string
-    {
-        if (is_array($arr)) {
-            foreach ($arr as $key => $v) {
-                if (is_array($v)) {
-                    if (count($v)>1) {
-                        $str= substr(str_repeat(",?", count($v)), 1);
-                        $sql.="{$jtag} {$key} in ($str) " ;
-                        $param=array_merge($param, $v);
-                        continue;
-                    } else {
-                        $v=$v[0];
-                    }
-                }
-                $sql.= "{$jtag}{$key}=?";
-                $param[]=$v;
+        $data = array_merge($this->rArgs, $data);
+        foreach ($this->pks as $key) {
+            if (isset($data[$key]) && in_array($key, $this->pks)) {
+                $where[$key]=$data[$key];
             }
-            $sql=substr($sql, strlen($jtag));
+        }
+        if (empty($where)) {
+            $this->insert($data);
+        } elseif ($row = $this->where($where)->get()) {
+            foreach ($data as $key => $value) {
+                $row[$key]=$value;
+            }
+            $row->save();
         } else {
-            $sql=$arr;
-            if (is_array($attr)) {
-                $param=array_merge($param, $attr);
-            }
+            throw new Exception("Error Processing Request", 1);
         }
-        return $sql;
     }
 }

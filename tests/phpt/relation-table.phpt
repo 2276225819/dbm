@@ -11,10 +11,10 @@ $conn->debug=true;
  
 foreach($conn->sql('zz_post_type','Id') as $pt){
     echo "POST_TYPE: ".$pt['name']."\n"; 
-    foreach ($pt->many('zz_post','Id','post_type_id') as $post) {
+    foreach ($pt->ref('zz_post',['Id'],['post_type_id'=>'Id']) as $post) {
         echo "  ID     : ".$post['Id']."\n";
-        echo "  Author : ".$post->one('zz_user','Id','user_id')->get()['name']."\n";
-        echo "  Type   : ".$post->one('zz_post_type','Id','post_type_id')->get()['name']."\n";
+        echo "  Author : ".$post->ref('zz_user',['Id'],['Id'=>'user_id'])['name']."\n";
+        echo "  Type   : ".$post->ref('zz_post_type',['Id'],['Id'=>'post_type_id'])['name']."\n";
         echo "\n";
     }
 
@@ -23,11 +23,11 @@ foreach($conn->sql('zz_post_type','Id') as $pt){
 --EXPECTF-- 
 <!--SELECT * FROM zz_post_type   ;-->
 POST_TYPE: type1
-<!--SELECT * FROM zz_post  WHERE  post_type_id in (?,?,?,?)   ;1,2,3,4-->
+<!--SELECT * FROM zz_post  WHERE post_type_id in (?,?,?,?)   ;1,2,3,4-->
   ID     : 1
-<!--SELECT * FROM zz_user  WHERE  Id in (?,?,?)   ;1,2,3-->
+<!--SELECT * FROM zz_user  WHERE Id in (?,?,?)   ;1,2,3-->
   Author : u1
-<!--SELECT * FROM zz_post_type  WHERE  Id in (?,?,?)   ;1,2,3-->
+<!--SELECT * FROM zz_post_type  WHERE Id in (?,?,?)   ;1,2,3-->
   Type   : type1
 
   ID     : 2
