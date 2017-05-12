@@ -43,8 +43,9 @@ trait SqlAccess
     {
         ++static::$gc;//new
     }
-    public function __call($name, $args)
+    public function __call($name, $args )
     {
+        if(!count($args))$args[0]='1';
         $attr="$name({$args[0]})";
         foreach ($this->field($attr)->getAllIterator() as $row) {
             return $row[$attr];
