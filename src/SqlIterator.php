@@ -25,15 +25,22 @@ trait SqlIterator
     static $cs=[];
     public function getAllIterator($i = 0)
     {
-        $hash = $this->bulidHash();
+        $sql = $this->bulidSelect();
+        $args =  $this->bulidArgs();
+        $hash = $sql.';'.join($args, ',');
         if (empty(static::$qs[$hash])) {
-            $query=$this->db->execute($this->bulidSelect(), $this->bulidArgs());
+            $query=$this->db->execute($sql, $args);
 			$query->setFetchMode(\PDO::FETCH_ASSOC);
             static::$qs[$hash]=$query;
             static::$cs[$hash]=[];
-        }
+        }  
+ 
+        // if (static::$qs[$hash]===true) {
+        //     yield from new \ArrayIterator(static::$cs[$hash]);
+        //     return;
+        // }
         while (true) {
-            if (static::$qs[$hash]===true) {
+            if (static::$qs[$hash]===true) { 
                 for ($c=count(static::$cs[$hash]); $i < $c; $i++) 
                     yield static::$cs[$hash][$i]; 
                 return;

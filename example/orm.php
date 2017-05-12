@@ -60,5 +60,9 @@ include __DIR__."/../vendor/autoload.php";
 #ROW->save([PKS])            #bool
 #ROW->destroy([PKS])         #bool
 
- 
+
+# PHP <= 5.6 
+# ERROR function and(){}
+# ERROR function or(){} 
+
 

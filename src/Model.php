@@ -81,7 +81,8 @@ class Model implements \ArrayAccess ,\JsonSerializable
 				throw new Exception("Error Processing Request", 1);
 			return $this->data;
         } 
-        $result = (clone $this->pq)->where($arr)->update($this->dirty);
+        $sql = clone $this->pq;
+        $result = $sql->where($arr)->update($this->dirty);
         $this->dirty=[];//clear
         return $result;
     }

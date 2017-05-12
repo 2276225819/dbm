@@ -63,10 +63,11 @@ class Sql implements \IteratorAggregate, \ArrayAccess
      */
     public function map($fn) 
     {
+        $result=[];
         foreach ($this as $row) {
             $result[] = $fn( $row );
         }
-        return $result??[];
+        return $result;
     } 
     /**
      * [ $Row, $Row... ] | [ $key, $key... ]
@@ -75,10 +76,11 @@ class Sql implements \IteratorAggregate, \ArrayAccess
      */
     public function all($key = null) 
     {
+        $result=[];
         foreach ($this as $row) {
-            $arr[] = $key?$row[$key]:$row;
+            $result[] = $key?$row[$key]:$row;
         }
-        return $arr??[];
+        return $result;
     }
     /**
      * [ $key=>Row, $key=>Row... ] | [ $key => $val, $key => $val... ]
@@ -88,10 +90,11 @@ class Sql implements \IteratorAggregate, \ArrayAccess
      */
     public function keypair($key, $val = null) 
     {
+        $result=[];
         foreach ($this as $row) {
-            $arr[$row[$key]] = $val?$row[$val]:$row;
+            $result[$row[$key]] = $val?$row[$val]:$row;
         }
-        return $arr??[];
+        return $result;
     }
     
  
@@ -106,9 +109,10 @@ class Sql implements \IteratorAggregate, \ArrayAccess
      * @return Sql
      */
 	public function ref($model,$pks=NULL,$ref=NULL){
-		if(is_string($pks))$pks=(array)$pks;
-		if(!is_array($pks))$pks = $this->model::$pks;
-		if(!is_array($ref))$ref = $this->model::$ref[$model];
+        $CLASS = $this->model;
+		if(is_string($pks))$pks = (array)$pks;
+		if(!is_array($pks))$pks = $CLASS::$pks;
+		if(!is_array($ref))$ref = $CLASS::$ref[$model];
 		return $this->relation($model,(array)$pks,(array)$ref);
 	}
 
@@ -221,7 +225,7 @@ class Sql implements \IteratorAggregate, \ArrayAccess
         //AUTO INCREMENT
         $last_id = $this->db->lastInsertId();
         if (!empty($last_id)) {
-            $key = $auto_increment_key??$this->pks[0];
+            $key = $auto_increment_key?$auto_increment_key:$this->pks[0];
             $data[$key]=$last_id;
             if (isset($this->rModel)) { 
                 foreach ($this->rref as $i => $k) {
@@ -246,7 +250,8 @@ class Sql implements \IteratorAggregate, \ArrayAccess
         foreach ($list as &$arr) {
             $arr = array_merge($arr, $this->sArgs, $this->rArgs);
             $sql2.=",(".substr(str_repeat(",?", count($arr)), 1).")";
-            array_push($param, ...array_values($arr));
+            foreach ($arr as $value) 
+                $param[]=$value; 
         }
         foreach ($list[0] as $key => $value) {
             $sql1.=",`{$key}`";

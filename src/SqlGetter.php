@@ -17,7 +17,7 @@ trait SqlGetter
     //     return $this;
     // }
 
-    public function kvSQL(&$param, $jtag = ' AND ', $arr, $attr = null, $sql = ''):string
+    public function kvSQL(&$param, $jtag = ' AND ', $arr, $attr = null, $sql = '')
     {
         if (is_array($arr)) {
             foreach ($arr as $key => $v) {
@@ -42,18 +42,6 @@ trait SqlGetter
             }
         }
         return $sql;
-    }
-
-	
-    ////////////  alias /////////////  
-
-	
-    public function list($key=null){ 
-        foreach($this as $row){
-            $arr[] = $key?$row[$key]:$row;
-        }
-        return $arr??[]; 
-    }
-
+    } 
 }
 

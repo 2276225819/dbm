@@ -35,8 +35,9 @@ trait SqlAccess
     }
     public function __call($name, $args)
     {
-        foreach ($this->field($n="$name({$args[0]})")->getAllIterator() as $row) {
-            return $row[$n];
+        $attr="$name({$args[0]})";
+        foreach ($this->field($attr)->getAllIterator() as $row) {
+            return $row[$attr];
         }
     }
 
@@ -73,7 +74,8 @@ trait SqlAccess
         }
         //relation > SQL
         if (class_exists($offset)) {
-            return $this->ref($offset, $offset::$pks, $this->model::$ref[$offset]);
+            $CLASS = $this->model;
+            return $this->ref($offset, $offset::$pks, $CLASS::$ref[$offset]);
         }
         //first > mixed
         foreach ($this as $row) {

@@ -65,8 +65,8 @@ class Connect implements \ArrayAccess
 	public function sql($model, $pks=[]) 
 	{ 
         $pks = (array)$pks;
-        if (class_exists($model)&& isset( $model::$table) ) {
-            $table = $model::$table??$model;
+        if (class_exists($model,false) && isset($model::$table) ) {
+            $table = $model::$table;
 			$pks = count($pks)?$pks:$model::$pks;
             $model = $model;
         } else {

@@ -13,17 +13,17 @@ trait SqlRelation
 		);
 	} 
 	
-	public function relation($model,array $pks,array $ref):Sql{
-		$sql = $this->db->sql($model,...$pks); 
+	public function relation($model,$pks,$ref){
+		$sql = $this->db->sql($model,$pks);  
 		$arr = iterator_to_array($this->getAllIterator());
 		if(count($arr)>1){ 
 			$vstr = count($ref)>1?"(".substr(str_repeat(",?", count($ref)), 1).')':'?';
-			foreach($arr as $row){    
+			foreach($arr as $row){  	
 				$s=[];foreach ($ref as $k=>$f) $s[]=$row[$f]; 
 				if(empty($strlist[$k=join($s)])){
 					$strlist[$k]=",$vstr";
 					array_push($sql->wArgs,...$s);
-				}  
+				}
 			} 
 			sort($sql->wArgs);//hash匹配一致
 			$valstr = substr(join(array_values($strlist)),1); 

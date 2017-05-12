@@ -10,7 +10,7 @@ $conn->debug=true;
 foreach ($conn[User::class]->where('id in (1,3)') as $user) {
 	echo "{$user['Id']}:{$user['name']}\n";
 	foreach ($user[Post::class] as $post) {
-		echo "\tPOST:".$post[PostType::class]['name']."\t{$post['text']}\n"; 
+		echo "\tPOST:{$post[PostType::class]['name']}\t{$post['text']}\n"; 
 	}
 	echo "\n";
 }

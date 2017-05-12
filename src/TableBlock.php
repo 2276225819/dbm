@@ -57,14 +57,14 @@ class TableBlock{
         return new self($arr[1],$cols,$arr[3]); 
     }
 
-    public function merge(TableBlock $table){  
+    public function merge($table){  
 		$new = new TableBlock($table->name);
         $new->index=array_unique(array_merge($table->index,$this->index));
 		$new->cols=array_unique(array_merge($table->cols,$this->cols));
 		$new->attrs=array_unique(array_merge($table->attrs,$this->attrs));
 		return $new;
     }
-    public function diffFrom(TableBlock $remote=null){ 
+    public function diffFrom($remote=null){ 
 		if(empty($remote))
 			return ["{$this};"];//create table
 		

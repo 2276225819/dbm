@@ -7,7 +7,10 @@ trait ConnectAccess{
         $this->dns=$dns;
         $this->name=$name;
         $this->pass=$pass;
-        $this->__reload();
+        $this->__reload(); 
+        //autoload
+        class_exists(Sql::class);
+        class_exists(Model::class);
     }
     public function __reload()
     {

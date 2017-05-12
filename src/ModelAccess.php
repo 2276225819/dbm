@@ -76,7 +76,8 @@ trait ModelAccess
     // }
  	function pkv($pks = null)
     { 
-        foreach ($pks??$this->pq->pks as $i => $key) {
+        if(empty($pks)) $pks = $this->pq->pks;
+        foreach ($pks as $i => $key) {
             if (!isset($this->data[$key])) {
                 return false;
             }
