@@ -52,9 +52,9 @@ $sql = $user[Post::class]->set([
 
 ?>
 --EXPECTF--  
-<!--SELECT * FROM zz_user   ;-->
-<!--INSERT INTO zz_user_type SET name=?,Id=?;aa,1-->
-<!--INSERT INTO zz_user_type SET name=?,Id=?;bb,1-->
+<!--SELECT * FROM `zz_user`   ;-->
+<!--INSERT INTO `zz_user_type` SET `name`=?,Id=?;aa,1-->
+<!--INSERT INTO `zz_user_type` SET `name`=?,Id=?;bb,1-->
 Array
 (
     [0] => dbm\Model Object
@@ -65,11 +65,11 @@ Array
 
     [1] => 
 )
-<!--SELECT * FROM zz_user_type  WHERE Id=?  ;1-->
-<!--UPDATE zz_user_type SET name=?  WHERE Id=?;b,1-->
-<!--UPDATE zz_user_type SET name=?  WHERE Id=?;c,1-->
+<!--SELECT * FROM `zz_user_type`  WHERE `Id`=?  ;1-->
+<!--UPDATE `zz_user_type` SET `name`=?  WHERE `Id`=?;b,1-->
+<!--UPDATE `zz_user_type` SET `name`=?  WHERE `Id`=?;c,1-->
 
-<!--INSERT INTO zz_post SET text=?,user_id=?;u1t1,1-->
-<!--INSERT INTO zz_post SET text=?,user_id=?;u1t2,1-->
-<!--INSERT INTO zz_post SET user_id=?,text=?;1,u1t1-->
-<!--INSERT INTO zz_post SET user_id=?,text=?;1,u1t2-->  
+<!--INSERT INTO `zz_post` SET `text`=?,user_id=?;u1t1,1-->
+<!--INSERT INTO `zz_post` SET `text`=?,user_id=?;u1t2,1-->
+<!--INSERT INTO `zz_post` SET `user_id`=?,text=?;1,u1t1-->
+<!--INSERT INTO `zz_post` SET `user_id`=?,text=?;1,u1t2-->  

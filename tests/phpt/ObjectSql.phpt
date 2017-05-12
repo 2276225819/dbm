@@ -35,8 +35,8 @@ print_r($db[User::class]->count(1));
 
 
 echo "//////////////////////////\n";
-// select * from zz_user limit 1
-// select * from zz_post where User_ID in ( select Type_ID from zz_user limit 1 )
+// select * from `zz_user` limit 1
+// select * from `zz_post` where `User_ID` in ( select Type_ID from `zz_user` limit 1 )
 $e=$db->sql('zz_user','Id')->find(2)->ref('zz_post',['Id'],['user_id'=>'Id'])->val('text');
 $f=$db[User::class](2)[Post::class]->val('text');
 print_r([$e,$f]);
@@ -64,8 +64,8 @@ print_r([$q,$w,$e,$r]);
 ?>
 --EXPECT--
 #SQL->find(...PKV)          #ROW/THROW
-<!--SELECT * FROM zz_user  WHERE Id=?  ;3-->
-<!--SELECT * FROM zz_user  WHERE Id=?  ;3333-->
+<!--SELECT * FROM `zz_user`  WHERE `Id`=?  ;3-->
+<!--SELECT * FROM `zz_user`  WHERE `Id`=?  ;3333-->
 Array
 (
     [0] => dbm\Model Object
@@ -85,7 +85,7 @@ Array
     [2] => 
 )
 #SQL->get(INDEX)            #ROW/NULL
-<!--SELECT * FROM zz_user   ;-->
+<!--SELECT * FROM `zz_user`   ;-->
 Array
 (
     [0] => u1
@@ -98,7 +98,7 @@ Array
     [1] => u2
     [2] => u3
 )
-<!--SELECT * FROM zz_user  WHERE 1=0  ;-->
+<!--SELECT * FROM `zz_user`  WHERE 1=0  ;-->
 Array
 (
 )
@@ -113,26 +113,26 @@ Array
 (
 )
 #SQL->val(FIELD)            #MIXED
-<!--SELECT count(1) FROM zz_user   ;-->
+<!--SELECT count(1) FROM `zz_user`   ;-->
 3//////////////////////////
-<!--SELECT * FROM zz_user  WHERE Id=?  ;2-->
-<!--SELECT * FROM zz_post  WHERE user_id=?  ;2-->
+<!--SELECT * FROM `zz_user`  WHERE `Id`=?  ;2-->
+<!--SELECT * FROM `zz_post`  WHERE `user_id`=?  ;2-->
 Array
 (
     [0] => user2 22
     [1] => user2 22
 )
 //////////////////////////
-<!--SELECT * FROM zz_post  WHERE Id=?  ;2-->
-<!--SELECT * FROM zz_user  WHERE Id=?  ;1-->
+<!--SELECT * FROM `zz_post`  WHERE `Id`=?  ;2-->
+<!--SELECT * FROM `zz_user`  WHERE `Id`=?  ;1-->
 Array
 (
     [0] => u1
     [1] => u1
 )
 //////////////////////////
-<!--SELECT * FROM zz_post   ;-->
-<!--SELECT * FROM zz_user  WHERE Id in (?,?,?)   ;1,2,3-->
+<!--SELECT * FROM `zz_post`   ;-->
+<!--SELECT * FROM `zz_user`  WHERE `Id` in (?,?,?)   ;1,2,3-->
 Array
 (
     [0] => u1
@@ -140,7 +140,7 @@ Array
     [2] => u1
     [3] => u1
 )
-<!--SELECT * FROM zz_post  WHERE user_id in (?,?,?)   ;1,2,3-->
+<!--SELECT * FROM `zz_post`  WHERE `user_id` in (?,?,?)   ;1,2,3-->
 Array
 (
     [0] => text1

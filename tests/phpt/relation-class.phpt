@@ -20,13 +20,13 @@ foreach ($conn->sql(PostType::class) as $pt) {
 
 ?>
 --EXPECT--
-<!--SELECT * FROM zz_post_type   ;-->
+<!--SELECT * FROM `zz_post_type`   ;-->
 POST_TYPE:type1
-<!--SELECT * FROM zz_post  WHERE post_type_id in (?,?,?,?)   ;1,2,3,4-->
+<!--SELECT * FROM `zz_post`  WHERE `post_type_id` in (?,?,?,?)   ;1,2,3,4-->
   ID     : 1
-<!--SELECT * FROM zz_user  WHERE Id in (?,?,?)   ;1,2,3-->
+<!--SELECT * FROM `zz_user`  WHERE `Id` in (?,?,?)   ;1,2,3-->
   Author : u1
-<!--SELECT * FROM zz_post_type  WHERE Id in (?,?,?)   ;1,2,3-->
+<!--SELECT * FROM `zz_post_type`  WHERE `Id` in (?,?,?)   ;1,2,3-->
   Type   : type1
 
   ID     : 2

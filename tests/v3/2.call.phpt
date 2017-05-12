@@ -26,17 +26,17 @@ print_r($b);
 
 ?>
 --EXPECT--
-<!--SELECT * FROM zz_post   ;-->
+<!--SELECT * FROM `zz_post`   ;-->
 {"Id":"1","post_type_id":"1","user_id":"1","text":"text1"}
 {"Id":"2","post_type_id":"1","user_id":"1","text":"text2"}
 {"Id":"3","post_type_id":"1","user_id":"1","text":"text3"}
 {"Id":"4","post_type_id":"3","user_id":"2","text":"user2 22"}
 {"Id":"5","post_type_id":"2","user_id":"3","text":"post32"}
 {"Id":"6","post_type_id":"1","user_id":"3","text":"post31"}
-<!--SELECT count(1) FROM zz_post   ;-->
-<!--SELECT sum(Id) FROM zz_post   ;-->
-<!--SELECT avg(Id) FROM zz_post   ;-->
-<!--SELECT sum(Id+post_type_id+user_id) FROM zz_post   ;-->
+<!--SELECT count(1) FROM `zz_post`   ;-->
+<!--SELECT sum(Id) FROM `zz_post`   ;-->
+<!--SELECT avg(Id) FROM `zz_post`   ;-->
+<!--SELECT sum(Id+post_type_id+user_id) FROM `zz_post`   ;-->
 Array
 (
     [0] => 6
@@ -44,10 +44,10 @@ Array
     [2] => 3.5000
     [3] => 41
 )
-<!--SELECT count(1) FROM zz_post  WHERE user_id=1  ;-->
-<!--SELECT sum(Id) FROM zz_post  WHERE user_id=1  ;-->
-<!--SELECT avg(Id) FROM zz_post  WHERE user_id=1  ;-->
-<!--SELECT sum(Id+post_type_id+user_id) FROM zz_post  WHERE user_id=1  ;-->
+<!--SELECT count(1) FROM `zz_post`  WHERE `user_id`=1  ;-->
+<!--SELECT sum(Id) FROM `zz_post`  WHERE `user_id`=1  ;-->
+<!--SELECT avg(Id) FROM `zz_post`  WHERE `user_id`=1  ;-->
+<!--SELECT sum(Id+post_type_id+user_id) FROM `zz_post`  WHERE `user_id`=1  ;-->
 Array
 (
     [0] => 3

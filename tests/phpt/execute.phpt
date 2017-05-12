@@ -9,21 +9,21 @@ include __DIR__."/../before.php";
 $conn = new \dbm\Connect('mysql:dbname=test','root','root');
 $conn->debug=true;
 
-$a = $conn->execute("select * from zz_post");
+$a = $conn->execute("select * from `zz_post`");
 print_r($a);
 
 try{ 
-$a = $conn->execute("select * from null");
+$a = $conn->execute("select * from `null`");
 print_r($a);
 }catch(Throwable $e){ 
 echo "error";
 echo "\n";
 }
 
-$a = $conn->execute("create table zz_test(Id int); "); 
+$a = $conn->execute("create table `zz_test`(Id int); "); 
 print_r([$a,$a->rowCount(),$a->columnCount()]);
 
-$a = $conn->execute("select * from zz_test"); 
+$a = $conn->execute("select * from `zz_test`"); 
 print_r([$a,$a->rowCount(),$a->columnCount()]);
  
 
@@ -39,30 +39,30 @@ print_r([$a,$a->rowCount(),$a->columnCount()]);
 
 ?>
 --EXPECTF--
-<!--select * from zz_post;-->
+<!--select * from `zz_post`;-->
 PDOStatement Object
 (
-    [queryString] => select * from zz_post
+    [queryString] => select * from `zz_post`
 )
-<!--select * from null;-->
+<!--select * from `null`;-->
 error
-<!--create table zz_test(Id int); ;-->
+<!--create table `zz_test`(Id int); ;-->
 Array
 (
     [0] => PDOStatement Object
         (
-            [queryString] => create table zz_test(Id int); 
+            [queryString] => create table `zz_test`(Id int); 
         )
 
     [1] => 0
     [2] => 0
 )
-<!--select * from zz_test;-->
+<!--select * from `zz_test`;-->
 Array
 (
     [0] => PDOStatement Object
         (
-            [queryString] => select * from zz_test
+            [queryString] => select * from `zz_test`
         )
 
     [1] => 0

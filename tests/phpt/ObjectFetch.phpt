@@ -18,7 +18,7 @@ foreach ($users as $key => $value) {
 
 ?>
 --EXPECT--
-<!--SELECT * FROM zz_user   ;-->
+<!--SELECT * FROM `zz_user`   ;-->
 User Object
 (
     [Id] => 1

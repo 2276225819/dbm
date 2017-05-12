@@ -39,12 +39,12 @@ print_r($conn->sql(User::class)->map(function(User $u){
 ?>
 --EXPECT-- 
 # not cache
-<!--SELECT * FROM zz_user   ;-->
-<!--UPDATE zz_user SET name=?  WHERE Id=?;1,1-->
-<!--UPDATE zz_user SET name=?  WHERE Id=?;1,2-->
-<!--UPDATE zz_user SET name=?  WHERE Id=?;1,3-->
+<!--SELECT * FROM `zz_user`   ;-->
+<!--UPDATE `zz_user` SET `name`=?  WHERE `Id`=?;1,1-->
+<!--UPDATE `zz_user` SET `name`=?  WHERE `Id`=?;1,2-->
+<!--UPDATE `zz_user` SET `name`=?  WHERE `Id`=?;1,3-->
 # new query
-<!--SELECT * FROM zz_user   ;-->
+<!--SELECT * FROM `zz_user`   ;-->
 Array
 (
     [0] => 1
@@ -52,10 +52,10 @@ Array
     [2] => 1
 )
 # cache query
-<!--SELECT * FROM zz_user   ;-->
-<!--UPDATE zz_user SET name=?  WHERE Id=?;2,1-->
-<!--UPDATE zz_user SET name=?  WHERE Id=?;2,2-->
-<!--UPDATE zz_user SET name=?  WHERE Id=?;2,3-->
+<!--SELECT * FROM `zz_user`   ;-->
+<!--UPDATE `zz_user` SET `name`=?  WHERE `Id`=?;2,1-->
+<!--UPDATE `zz_user` SET `name`=?  WHERE `Id`=?;2,2-->
+<!--UPDATE `zz_user` SET `name`=?  WHERE `Id`=?;2,3-->
 # old query
 Array
 (
@@ -65,7 +65,7 @@ Array
 )
 # clear cache
 # new query
-<!--SELECT * FROM zz_user   ;-->
+<!--SELECT * FROM `zz_user`   ;-->
 Array
 (
     [0] => 2

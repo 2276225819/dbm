@@ -3,6 +3,16 @@
 trait SqlAccess
 {
 
+    
+    /** @var Connect */
+    public $db;
+    public $model;
+    public $table;
+    public $pks;
+    
+    public $jStr='', $wStr='',$lStr='',$oStr='',$fStr='*';
+    public $rArgs=[],$wArgs=[], $fArgs=[], $sArgs=[],$oArgs=[];
+ 
  
     public static $gc;
     public function __construct(Connect $db, $table, $pks, $model)
@@ -54,23 +64,23 @@ trait SqlAccess
     public function offsetGet($offset)
     {
         //offset == NULL
-        if($offset===NULL){
+        if ($offset===null) {
             foreach ($this as $value) {
                 return $value;
             }
         }
         //offset > Row
         if (is_numeric($offset)) {
-			$hash = $this->bulidHash();
-			if (empty(static::$qs[$hash])) {
-				$this->limit(1,$offset);
-			}
+            $hash = $this->bulidHash();
+            if (empty(static::$qs[$hash])) {
+                $this->limit(1, $offset);
+            }
             foreach ($this as $row) {
                 if ($offset--<=0) {
                     break;
                 }
             }
-            return $row??NULL;
+            return $row??null;
         }
         //relation > SQL
         if (class_exists($offset)) {
@@ -84,6 +94,34 @@ trait SqlAccess
     }
     public function __invoke(...$pkv)
     {
-		return $this->find(...$pkv)->get();
+        return $this->find(...$pkv)->get();
+    }
+
+    
+    public function kvSQL(&$param, $jtag = ' AND ', $arr, $attr = null, $sql = '')
+    {
+        if (is_array($arr)) {
+            foreach ($arr as $key => $v) {
+                if (is_array($v)) {
+                    if (count($v)>1) {
+                        $str= substr(str_repeat(",?", count($v)), 1);
+                        $sql.="{$jtag} {$key} in ($str) " ;
+                        $param=array_merge($param, $v);
+                        continue;
+                    } else {
+                        $v=$v[0];
+                    }
+                }
+                $sql.= "{$jtag}{$key}=?";
+                $param[]=$v;
+            }
+            $sql=substr($sql, strlen($jtag));
+        } else {
+            $sql=$arr;
+            if (is_array($attr)) {
+                $param=array_merge($param, $attr);
+            }
+        }
+        return $sql;
     }
 }

@@ -18,7 +18,7 @@ print_r($user->all('name'));
 
 ?>
 --EXPECT-- 
-<!--SELECT * FROM zz_user   ;-->
+<!--SELECT * FROM `zz_user`   ;-->
 Array
 (
     [u1] => 1

@@ -11,7 +11,7 @@ print_r($conn->sql('zz_post')->limit(1,3)->val());
 
 ?>
 --EXPECT-- 
-<!--SELECT * FROM zz_post    LIMIT 1;-->
+<!--SELECT * FROM `zz_post`    LIMIT 1;-->
 Array
 (
     [Id] => 1
@@ -19,7 +19,7 @@ Array
     [user_id] => 1
     [text] => text1
 )
-<!--SELECT * FROM zz_post    LIMIT 1 OFFSET 3 ;-->
+<!--SELECT * FROM `zz_post`    LIMIT 1 OFFSET 3 ;-->
 Array
 (
     [Id] => 4

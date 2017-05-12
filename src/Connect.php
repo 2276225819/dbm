@@ -12,7 +12,12 @@ class Connect implements \ArrayAccess
         \PDO::ATTR_PERSISTENT=>true,
     ];
 
-    
+    public function bulidSql($sql){ 
+        if( !preg_match("/[\r\n]/",$sql)  )   {
+            $sql = preg_replace($this->preg_key,$this->preg_val,$sql);   
+        } 
+        return $sql;
+    }
     public function lastInsertId()
     {
         return $this->db->lastInsertId();
@@ -22,26 +27,20 @@ class Connect implements \ArrayAccess
      * @param array $args
      * @return \PDOStatement
      */
-    public function execute($sql, $args = []) 
-    {
-        if (isset($this->prefix)) {
-            $pf = $this->prefix;
-            $sql = preg_replace(
-                array('/((?:join|truncate|into|from|create table|alter table|as)\s+)([\w]+)/' ,
-                        '/(\w+)\s+(read|write|set)/',  '(\w+\.[\w\*]+)'),
-                array("$1 `$pf$2`","`$pf$1` $2" ,"`$pf$0`"), $sql );
+    public function execute($sql, $args = [] ) 
+    {   
+        $sql = $this->bulidSql($sql); 
+        if ($this->debug) {
+            echo "<!--$sql;".join($args,',')."-->\n";
         }
         while (true) {
-            try {
-                if ($this->debug) {
-                    echo "<!--$sql;".join($args,',')."-->\n";
-                }
+            try { 
                 $query = $this->db->prepare($sql);
                 return $query->execute($args)?$query:false;
             } catch (Throwable $e) {
                 if ($e->errorInfo[0] == 70100||$e->errorInfo[1] == 2006 || $e->errorInfo[1] == 2013) {
                     sleep(1);//必须的？？
-                    $this->__reload();
+                    $this->reload();
                     continue;
                 }
                 throw $e;
