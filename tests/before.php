@@ -82,7 +82,7 @@ $conn->sql(Post::class)->insertMulit([
 	['user_id'=>3,'post_type_id'=>1, 'text'=>'post31'],
 ]);
 // $conn->debug=true;
-// $cache = $conn->scope();
+// $cache = $conn->scope(); 
 // $a = $conn->sql(User::class)->get();
 // $b = $conn->sql(User::class)->get();
 // $c = $conn->sql(User::class)->get();

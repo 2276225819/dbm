@@ -43,7 +43,6 @@ User Object
 <!--SELECT * FROM zz_friend  WHERE uid1=? AND uid2=?  ;1,2-->
 Friend Object
 (
-    [Id] => 1
     [uid1] => 1
     [uid2] => 2
     [nickname] => 1->2
@@ -51,7 +50,6 @@ Friend Object
 <!--SELECT * FROM zz_friend  WHERE uid1=? AND uid2=?  ;2,3-->
 Friend Object
 (
-    [Id] => 3
     [uid1] => 2
     [uid2] => 3
     [nickname] => 2->3

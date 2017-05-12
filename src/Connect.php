@@ -17,7 +17,12 @@ class Connect implements \ArrayAccess
     {
         return $this->db->lastInsertId();
     }
-    public function execute($sql, $args = []):\PDOStatement
+    /** 
+     * @param string $sql
+     * @param array $args
+     * @return \PDOStatement
+     */
+    public function execute($sql, $args = []) 
     {
         if (isset($this->prefix)) {
             $pf = $this->prefix;
@@ -45,12 +50,21 @@ class Connect implements \ArrayAccess
     }
  
 
-
-	public function scope($transaction=false):Transaction { 
+    /** 
+     * @param boolean $transaction 
+     * @return Transaction
+     */
+	public function scope($transaction=false) { 
 		return new Transaction($transaction?$this->db:null);		
 	}
-	public function sql($model,...$pks):Sql
+    /** 
+     * @param string $model
+     * @param array $pks
+     * @return Sql
+     */
+	public function sql($model, $pks=[]) 
 	{ 
+        $pks = (array)$pks;
         if (class_exists($model)&& isset( $model::$table) ) {
             $table = $model::$table??$model;
 			$pks = count($pks)?$pks:$model::$pks;

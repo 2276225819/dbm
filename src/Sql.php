@@ -16,27 +16,30 @@ class Sql implements \IteratorAggregate, \ArrayAccess
      * @param int $offset
      * @return Model
      */
-    public function get(int $offset = 0):Model
+    public function get($offset=NULL)
     { 
         return $this[$offset];
     }
     /**
-     * $sql->val() as Model | $sql->val(FILED) as mixed
+     * $sql->val(FILED) as mixed
      * @param string $field
-     * @return Model
+     * @return mixed
      */
-    public function val(string $field='')
-    { 
-		foreach($this as $row){
-			return $field==''?$row:$row->val($field);
-		} 
+    public function val($field=NULL)
+    {  
+        foreach ($this->getAllIterator() as $row) {
+            foreach ($this->rArgs as $k => $v) 
+                if ($row[$k]!=$v) 
+                    continue 2;
+            return $field?$row[$field]:$row;
+        }
     } 
     /**
      * Row
      * @param array ...$pkv
      * @return Model
      */
-    public function load(...$pkv) :Model
+    public function load(...$pkv) 
     {
         return $this(...$pkv);
     }
@@ -47,7 +50,7 @@ class Sql implements \IteratorAggregate, \ArrayAccess
      * @param Closure $fn
      * @return void
      */
-    public function each(\Closure $fn)
+    public function each($fn)
     {
         foreach ($this as $row) {
             $fn( $row );
@@ -58,7 +61,7 @@ class Sql implements \IteratorAggregate, \ArrayAccess
      * @param Closure $fn
      * @return array
      */
-    public function map(\Closure $fn):array
+    public function map($fn) 
     {
         foreach ($this as $row) {
             $result[] = $fn( $row );
@@ -70,7 +73,7 @@ class Sql implements \IteratorAggregate, \ArrayAccess
      * @param string $key
      * @return Model[]
      */
-    public function all($key = null):array#[]
+    public function all($key = null) 
     {
         foreach ($this as $row) {
             $arr[] = $key?$row[$key]:$row;
@@ -83,7 +86,7 @@ class Sql implements \IteratorAggregate, \ArrayAccess
      * @param string $val
      * @return Model[]
      */
-    public function keypair($key, $val = null):array#[]
+    public function keypair($key, $val = null) 
     {
         foreach ($this as $row) {
             $arr[$row[$key]] = $val?$row[$val]:$row;
@@ -94,8 +97,15 @@ class Sql implements \IteratorAggregate, \ArrayAccess
  
     //////////////  select  ///////////////////////////
 
-
-	public function ref($model,$pks=NULL,$ref=NULL):Sql{
+    /**
+     * Undocumented function
+     *
+     * @param string $model
+     * @param array $pks
+     * @param array $ref
+     * @return Sql
+     */
+	public function ref($model,$pks=NULL,$ref=NULL){
 		if(is_string($pks))$pks=(array)$pks;
 		if(!is_array($pks))$pks = $this->model::$pks;
 		if(!is_array($ref))$ref = $this->model::$ref[$model];
@@ -108,7 +118,7 @@ class Sql implements \IteratorAggregate, \ArrayAccess
      * @param int $offset
      * @return Sql
      */
-    public function limit($limit, $offset = 0):Sql
+    public function limit($limit, $offset = 0) 
     {
         $this->lStr=" LIMIT ".intval($limit);
         if (!empty($offset)) {
@@ -122,7 +132,7 @@ class Sql implements \IteratorAggregate, \ArrayAccess
      * @param array ...$arr
      * @return Sql
      */
-    public function order(string $order, ...$arr) :Sql
+    public function order(string $order, ...$arr)  
     {
         $this->oStr=" ORDER BY ".$order;
         $this->oArgs=$arr;
@@ -133,7 +143,7 @@ class Sql implements \IteratorAggregate, \ArrayAccess
      * @param string|array $fields
      * @return Sql
      */
-    public function field($fields) :Sql
+    public function field($fields)  
     {
         $this->fStr=$this->kvSQL($this->fArgs, ',', $fields);
         return $this;
@@ -145,7 +155,7 @@ class Sql implements \IteratorAggregate, \ArrayAccess
      * @param array ...$arr
      * @return Sql
      */
-    public function where($w, ...$arr) :Sql
+    public function where($w, ...$arr)  
     {
         $this->wArgs=[];
         $this->wStr=' WHERE '.$this->kvSQL($this->wArgs, ' AND ', $w, $arr);
@@ -157,7 +167,7 @@ class Sql implements \IteratorAggregate, \ArrayAccess
      * @param array ...$arr
      * @return Sql
      */
-    public function and($w, ...$arr) :Sql
+    public function and($w, ...$arr)  
     {
         $this->wStr.=empty($this->wStr)?" WHERE ":" AND ";
         $this->wStr.=$this->kvSQL($this->wArgs, ' AND ', $w, $arr);
@@ -169,7 +179,7 @@ class Sql implements \IteratorAggregate, \ArrayAccess
      * @param array ...$arr
      * @return Sql
      */
-    public function or($w, ...$arr) :Sql
+    public function or($w, ...$arr)  
     {
         $this->wStr.=empty($this->wStr)?" WHERE ":" OR ";
         $this->wStr.=$this->kvSQL($this->wArgs, ' OR ', $w, $arr);
@@ -182,7 +192,7 @@ class Sql implements \IteratorAggregate, \ArrayAccess
      * @param array ...$arr
      * @return Sql
      */
-    public function find(...$pkv):Sql
+    public function find(...$pkv) 
     {
         if (is_array($pkv[0] && empty($pkv[0][0]))) {
             $arr = $pkv[0];
@@ -199,7 +209,7 @@ class Sql implements \IteratorAggregate, \ArrayAccess
      * Row
      * @param array $data
      * @param int $auto_increment_key
-     * @return Row
+     * @return Model
      */
     public function insert($data, $auto_increment_key = null)
     {
@@ -228,7 +238,7 @@ class Sql implements \IteratorAggregate, \ArrayAccess
      * @param array $list
      * @return int
      */
-    public function insertMulit($list) :int
+    public function insertMulit($list)  
     {
         $param=[];
         $sql1 = "";
@@ -253,7 +263,7 @@ class Sql implements \IteratorAggregate, \ArrayAccess
      * @param array ...$arr
      * @return int
      */
-    public function update($data, ...$arr) :int
+    public function update($data, ...$arr)  
     {
         if (empty($this->wStr)) {
             throw new \Exception("Require Where Column", 1);
@@ -271,7 +281,7 @@ class Sql implements \IteratorAggregate, \ArrayAccess
      * RowCount
      * @return int
      */
-    public function delete($force=false) :int
+    public function delete($force=false)  
     {
         if (!$force && empty($this->wStr)) {
             return false;
@@ -297,7 +307,7 @@ class Sql implements \IteratorAggregate, \ArrayAccess
         }
         if (empty($where)) {
             $this->insert($data);
-        } elseif ($row = $this->where($where)->val()) {
+        } elseif ($row = $this->where($where)->get()) {
             foreach ($data as $key => $value) {
                 $row[$key]=$value;
             }

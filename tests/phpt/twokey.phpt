@@ -27,7 +27,7 @@ print_r($user->ref('zz_friend',['Id'],['uid2'=>'Id'])->all());
 echo "\n";
 
 echo "unfollow table;\n"; 
-$conn->sql('zz_friend','uid1','uid2')->load(1,3)->destroy(['Id']);
+$conn->sql('zz_friend',['uid1','uid2'])->load(1,3)->destroy();
 
 echo "\n";
 
@@ -48,7 +48,6 @@ Array
 (
     [0] => dbm\Model Object
         (
-            [Id] => 1
             [uid1] => 1
             [uid2] => 2
             [nickname] => 1->2
@@ -56,7 +55,6 @@ Array
 
     [1] => dbm\Model Object
         (
-            [Id] => 2
             [uid1] => 1
             [uid2] => 3
             [nickname] => 1->3
@@ -64,7 +62,6 @@ Array
 
     [2] => dbm\Model Object
         (
-            [Id] => 4
             [uid1] => 1
             [uid2] => 2
             [nickname] => 
@@ -72,7 +69,6 @@ Array
 
     [3] => dbm\Model Object
         (
-            [Id] => 5
             [uid1] => 1
             [uid2] => 3
             [nickname] => 
@@ -87,7 +83,7 @@ Array
 
 unfollow table;
 <!--SELECT * FROM zz_friend  WHERE uid1=? AND uid2=?  ;1,3-->
-<!--DELETE FROM zz_friend  WHERE Id=?;2-->
+<!--DELETE FROM zz_friend  WHERE uid1=? AND uid2=?;1,3-->
 
 unfollow model;
 <!--SELECT * FROM zz_friend  WHERE uid1=? AND uid2=?  ;1,2-->

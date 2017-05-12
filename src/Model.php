@@ -13,14 +13,27 @@ class Model implements \ArrayAccess ,\JsonSerializable
     /** @var Sql  */
     public $pq;
 
+    /** 
+     * @param string $field
+     * @return mixed
+     */
     public function val($field)
     {
         return $this->data[$field];
     }
-	public function toArray():array{
+    /** 
+     * @return array
+     */
+	public function toArray() {
 		return $this->data;
 	}
-    public function ref($model,$pks=NULL,$ref=NULL):Sql
+    /** 
+     * @param string $model
+     * @param array $pks
+     * @param array $ref
+     * @return Sql
+     */
+    public function ref($model,$pks=NULL,$ref=NULL) 
     {
 		if(is_string($pks))$pks=(array)$pks;
 		if(!is_array($pks))$pks = static::$pks;
@@ -34,7 +47,10 @@ class Model implements \ArrayAccess ,\JsonSerializable
 		$sql->rref=$ref;
         return $sql;
     }  
-    public function create():bool
+    /** 
+     * @return bool
+     */
+    public function create() 
     {  
         $this->pq->insert($this->dirty);
         if ($last_id = $this->db->lastInsertId()) {
@@ -50,7 +66,12 @@ class Model implements \ArrayAccess ,\JsonSerializable
         $this->dirty=[];//clear
         return true;
     }
-    public function save($pks=null):bool
+
+    /** 
+     * @param array $pks
+     * @return bool
+     */
+    public function save($pks=null)
     { 
         if (empty($this->dirty)) {
             return false;
@@ -64,7 +85,11 @@ class Model implements \ArrayAccess ,\JsonSerializable
         $this->dirty=[];//clear
         return $result;
     }
-    public function destroy($pks=null):bool
+    /** 
+     * @param array $pks
+     * @return bool
+     */
+    public function destroy($pks=null)
     { 
         if (!($arr = $this->pkv($pks))) {
             throw new \Exception("Error Processing Request", 1);

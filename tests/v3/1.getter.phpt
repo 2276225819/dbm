@@ -39,8 +39,8 @@ unset($a,$b);
 
 //<!--SELECT * FROM zz_user    LIMIT 1 OFFSET 1 ;-->
 //<!--SELECT * FROM zz_post  WHERE user_id=?  ;2-->
-$a=$conn[User::class][1][Post::class]->val(); 
-$b=$conn->sql('zz_user','Id')->get(1)->ref('zz_post','Id',['user_id'=>'Id'])->val(); 
+$a=$conn[User::class][1][Post::class]->get(); 
+$b=$conn->sql('zz_user','Id')->get(1)->ref('zz_post','Id',['user_id'=>'Id'])->get(); 
 print_r([$a,$b]);
 
 ?>

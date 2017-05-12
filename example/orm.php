@@ -12,10 +12,10 @@ include __DIR__."/../vendor/autoload.php";
 #SQL[INDEX]                 #Row/NULL
 #SQL[FIELD]                 #mixed/NULL
 #SQL[MODEL]                 #SQL/NULL
-#SQL->get()                 #Row/Throw
-#SQL->get(INDEX)            #Row/Throw
-#SQL->val()                 #Row/NULL
-#SQL->val(FIELD)            #mixed/NULL 
+#SQL->get()                 #Row
+#SQL->get(INDEX)            #Row 
+#SQL->val()                 #array
+#SQL->val(FIELD)            #mixed 
 #SQL->ref(TABLE,PKS,REF)    #SQL 
 
 #SQL(...PKV)                #ROW/NULL

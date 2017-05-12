@@ -52,6 +52,12 @@ trait SqlAccess
     }
     public function offsetGet($offset)
     {
+        //offset == NULL
+        if($offset===NULL){
+            foreach ($this as $value) {
+                return $value;
+            }
+        }
         //offset > Row
         if (is_numeric($offset)) {
 			$hash = $this->bulidHash();
@@ -76,6 +82,6 @@ trait SqlAccess
     }
     public function __invoke(...$pkv)
     {
-		return $this->find(...$pkv)->val();
+		return $this->find(...$pkv)->get();
     }
 }

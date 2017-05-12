@@ -23,7 +23,7 @@ $conn->sql(User::class)->load(2)->ref(Post::class)->insert([
 ]); 
 
 echo "#sql[Post::class][0][PostType::class]->insert\n";
-$conn->sql(Post::class)->get()->ref(PostType::class)->insert([
+$conn->sql(Post::class)->get(0)->ref(PostType::class)->insert([
 	'name'=>'type new'
 ]);
 echo "---------------\n";

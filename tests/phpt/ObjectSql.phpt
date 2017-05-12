@@ -7,7 +7,7 @@ $db = new \dbm\Connect('mysql:dbname=test','root','root');
 $db->debug=true;
 
 echo "#SQL->find(...PKV)          #ROW/THROW\n";
-$a=$db->sql('zz_user','Id')->find(3)->val(); 
+$a=$db->sql('zz_user','Id')->find(3)->get(); 
 $b=$db[User::class](3);
 $c=$db[User::class](3333);
 print_r([$a,$b,$c]);
