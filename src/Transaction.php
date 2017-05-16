@@ -10,7 +10,7 @@ class Transaction {
 	public function __construct($pdo=null){
 		if(!empty($pdo)){
 			$this->db=$pdo;
-			$tihs->db->beginTransaction();  
+			$this->db->beginTransaction();  
 		}
    
 		Sql::$gc++;
