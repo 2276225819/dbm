@@ -70,7 +70,7 @@ class DBSync{
 			$qs = array_merge($qs,$table->clearFrom($this->tables[$tn]));  
 		}
 		foreach ($this->tables as $tn => $table) { 
-			$qs = array_merge($qs,$table->diffFrom($tables[$tn])); 
+			$qs = array_merge($qs,$table->diffFrom($tables[$tn]??null)); 
 		}
 		return $qs;
 	}
