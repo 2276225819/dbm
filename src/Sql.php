@@ -329,15 +329,14 @@ class Sql implements \IteratorAggregate, \ArrayAccess
                 $where[$key]=$data[$key];
             }
         }
-        if (empty($where)) {
-            $this->insert($data);
-        } elseif ($row = $this->where($where)->get()) {
-            foreach ($data as $key => $value) {
-                $row[$key]=$value;
-            }
-            $row->save();
-        } else {
-            throw new Exception("Error Processing Request", 1);
-        }
+        if (isset($where)) {
+            if ($row = $this->where($where)->get()) {
+                foreach ($data as $key => $value) {
+                    $row[$key]=$value;
+                }
+                return $row->save(); 
+            } 
+        }    
+        return (bool)$this->insert($data);
     }
 }

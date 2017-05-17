@@ -113,7 +113,7 @@ Array
 (
 )
 #SQL->val(FIELD)            #MIXED
-<!--SELECT count(1) FROM `zz_user`   ;-->
+<!--SELECT count(1) as `__VALUE__` FROM `zz_user`   ;-->
 3//////////////////////////
 <!--SELECT * FROM `zz_user`  WHERE `Id`=?  ;2-->
 <!--SELECT * FROM `zz_post`  WHERE `user_id`=?  ;2-->

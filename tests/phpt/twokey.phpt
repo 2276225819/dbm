@@ -40,7 +40,7 @@ echo "\n";
 --EXPECTF--
 <!--SELECT * FROM `zz_user`  WHERE `Id`=?  ;1-->
 new friend:
-<!--INSERT INTO zz_friend (`uid2`,`uid1` )VALUES(?,?),(?,?);2,1,3,1-->
+<!--INSERT INTO `zz_friend` (`uid2`,`uid1` )VALUES(?,?),(?,?);2,1,3,1-->
 2
 following:
 <!--SELECT * FROM `zz_friend`  WHERE `uid1`=?  ;1-->

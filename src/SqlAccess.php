@@ -46,9 +46,9 @@ trait SqlAccess
     public function __call($name, $args )
     {
         if(!count($args))$args[0]='1';
-        $attr="$name({$args[0]})";
+        $attr="$name({$args[0]}) as __VALUE__";
         foreach ($this->field($attr)->getAllIterator() as $row) {
-            return $row[$attr];
+            return $row['__VALUE__'];
         }
     }
 

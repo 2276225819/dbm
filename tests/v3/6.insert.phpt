@@ -49,15 +49,15 @@ $conn[PostType::class]->map(function(PostType $value){
 <!--DELETE FROM `zz_post` ;-->
 6
 #sql[Post::class]->insert
-<!--INSERT INTO `zz_post` SET `text`=?,user_id=?;insert,1-->
+<!--INSERT INTO `zz_post` SET `text`=?,`user_id`=?;insert,1-->
 #sql[Post::class]->insertMulit
-<!--INSERT INTO zz_post (`text`,`user_id`,`post_type_id` )VALUES(?,?,?);insertMulit,1,1-->
+<!--INSERT INTO `zz_post` (`text`,`user_id`,`post_type_id` )VALUES(?,?,?);insertMulit,1,1-->
 #sql[User::class](2)[Post::class]->insert
 <!--SELECT * FROM `zz_user`  WHERE `Id`=?  ;2-->
-<!--INSERT INTO `zz_post` SET `text`=?,post_type_id=?,user_id=?;insertUser,1,2-->
+<!--INSERT INTO `zz_post` SET `text`=?,`post_type_id`=?,`user_id`=?;insertUser,1,2-->
 #sql[Post::class][0][PostType::class]->insert
 <!--SELECT * FROM `zz_post`    LIMIT 1;-->
-<!--INSERT INTO `zz_post_type` SET `name`=?,Id=?;type new,-->
+<!--INSERT INTO `zz_post_type` SET `name`=?,`Id`=?;type new,-->
 <!--UPDATE `zz_post` SET `post_type_id`=?  WHERE `Id`=?;5,7-->
 ---------------
 <!--SELECT * FROM `zz_post`   ;-->

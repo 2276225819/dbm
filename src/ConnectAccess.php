@@ -7,16 +7,14 @@ trait ConnectAccess{
     public function __construct($dns = null, $name = null, $pass = null,$pf='')
     { 
         $arr=array(
-            '/(\s)([a-z_]\w*)\.([a-z_]\w*)/i'
-                =>"$1`$2`.`$3`",
-            '/((?:join|truncate|update|from|create table|alter table|as)\s+)([a-z_]\w*)/i'
+            '/((?:join|truncate|update|insert(?:\s+into)?|from|create\s+table|alter\s+table|drop\s+table|as)\s+)([a-z_]\w*)/i'
                 =>"$1`$2`",
             '/([a-z_]\w*)\s+(read|write)/i'
-                =>"`$1` $2",
-            '/(\W)([a-z_]\w*)\s*=/i'
-                =>"$1`$2`=",
-            '/([a-z_]\w*)\s+\bin\b/i'
-                =>"`$1` in"
+                =>"`$1` $2", 
+            '/(\W)([a-z_]\w*)(\s*[^`\w\s;\(\)\?])/i'
+                =>"$1`$2`$3",
+            '/(\W)([a-z_]\w*)\s+\bin\b/i'
+                =>"$1`$2` in"
         );
         $this->preg_key=array_keys($arr);
         $this->preg_val=array_values($arr);  
