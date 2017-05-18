@@ -5,18 +5,15 @@ class Connect implements \ArrayAccess
 	use ConnectAccess;
 	use ConnectTransaction;//deprecated
 
-	
+
     public $debug=false; 
     public $attr=[
         \PDO::ATTR_ERRMODE=>\PDO::ERRMODE_EXCEPTION,
         \PDO::ATTR_PERSISTENT=>true,
     ];
 
-    public function bulidSql($sql){ 
-        if( !preg_match("/[\r\n]/",$sql)  )   {
-            $sql = preg_replace($this->preg_key,$this->preg_val,$sql);   
-        } 
-        return $sql;
+    public function bulidSql($sql){   
+        return preg_replace($this->preg_key,$this->preg_val,$sql);    
     }
     public function lastInsertId()
     {
@@ -36,7 +33,7 @@ class Connect implements \ArrayAccess
         while (true) {
             try { 
                 $query = $this->db->prepare($sql);
-                return $query->execute($args)?$query:false;
+                return $query->execute($args)?$query:false; 
             } catch (Throwable $e) {
                 if ($e->errorInfo[0] == 70100||$e->errorInfo[1] == 2006 || $e->errorInfo[1] == 2013) {
                     sleep(1);//必须的？？

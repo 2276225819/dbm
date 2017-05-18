@@ -36,7 +36,7 @@ print_r($b);
 <!--SELECT count(1) as `__VALUE__` FROM `zz_post`   ;-->
 <!--SELECT sum(Id) as `__VALUE__` FROM `zz_post`   ;-->
 <!--SELECT avg(Id) as `__VALUE__` FROM `zz_post`   ;-->
-<!--SELECT sum(`Id`+post_type_id+user_id) as `__VALUE__` FROM `zz_post`   ;-->
+<!--SELECT sum(Id+post_type_id+user_id) as `__VALUE__` FROM `zz_post`   ;-->
 Array
 (
     [0] => 6
@@ -47,7 +47,7 @@ Array
 <!--SELECT count(1) as `__VALUE__` FROM `zz_post`  WHERE `user_id`=1  ;-->
 <!--SELECT sum(Id) as `__VALUE__` FROM `zz_post`  WHERE `user_id`=1  ;-->
 <!--SELECT avg(Id) as `__VALUE__` FROM `zz_post`  WHERE `user_id`=1  ;-->
-<!--SELECT sum(`Id`+post_type_id+user_id) as `__VALUE__` FROM `zz_post`  WHERE `user_id`=1  ;-->
+<!--SELECT sum(Id+post_type_id+user_id) as `__VALUE__` FROM `zz_post`  WHERE `user_id`=1  ;-->
 Array
 (
     [0] => 3

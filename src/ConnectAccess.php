@@ -11,9 +11,9 @@ trait ConnectAccess{
                 =>"$1`$2`",
             '/([a-z_]\w*)\s+(read|write)/i'
                 =>"`$1` $2", 
-            '/(\W)([a-z_]\w*)(\s*[^`\w\s;\(\)\?])/i'
+            '/(,\s*|set\s+|where\s+|and\s+|or\s+)(\b[a-z_]\w*\b)(\s*[=<>!])/i'
                 =>"$1`$2`$3",
-            '/(\W)([a-z_]\w*)\s+\bin\b/i'
+            '/(,\s*|set\s+|where\s+|and\s+|or\s+)(\b[a-z_]\w*\b)\s+\bin\b/i'
                 =>"$1`$2` in"
         );
         $this->preg_key=array_keys($arr);
