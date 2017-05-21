@@ -88,7 +88,7 @@ Array
             [type_id] => 2
         )
 
-    [1] => dbm\Model Object
+    [1] => dbm\Entity Object
         (
             [Id] => 3
             [name] => u3
@@ -108,7 +108,7 @@ Array
             [text] => user2 22
         )
 
-    [1] => dbm\Model Object
+    [1] => dbm\Entity Object
         (
             [Id] => 4
             [post_type_id] => 3

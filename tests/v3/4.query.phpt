@@ -44,7 +44,7 @@ Array
 <!--SELECT * FROM `zz_post`  WHERE  `user_id` in (?,?)   ;2,3-->
 Array
 (
-    [4] => dbm\Model Object
+    [4] => dbm\Entity Object
         (
             [Id] => 4
             [post_type_id] => 3
@@ -52,7 +52,7 @@ Array
             [text] => user2 22
         )
 
-    [5] => dbm\Model Object
+    [5] => dbm\Entity Object
         (
             [Id] => 5
             [post_type_id] => 2
@@ -60,7 +60,7 @@ Array
             [text] => post32
         )
 
-    [6] => dbm\Model Object
+    [6] => dbm\Entity Object
         (
             [Id] => 6
             [post_type_id] => 1

@@ -8,11 +8,11 @@ $conn = new \dbm\Connect('mysql:dbname=test','root','root');
 $conn->debug=true;
 
 //<!--SELECT * FROM `zz_user`  WHERE `Id`=?  ;3-->
-print_r($conn[User::class](3));
+print_r($conn[User::class]->load(3));
 print_r($conn->sql(User::class)->load(3));
 
 //<!--SELECT * FROM `zz_friend`  WHERE `uid1`=? AND `uid2`=?   LIMIT 1;1,2-->
-print_r($conn[Friend::class](1,2));
+print_r($conn[Friend::class]->load(1,2));
 print_r($conn->sql(Friend::class)->load(2,3));
 
 //SELECT * FROM `zz_post`  WHERE `user_id`=1 AND 1=? and 2=2 AND  `post_type_id` in (?,?,?)   ;1,2,3,4

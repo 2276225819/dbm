@@ -41,7 +41,7 @@ class Sql implements \IteratorAggregate, \ArrayAccess
      */
     public function load(...$pkv)
     {
-        return $this(...$pkv);
+        return $this(...$pkv)->get();
     }
 
 
