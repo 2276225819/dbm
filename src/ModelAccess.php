@@ -1,90 +1,142 @@
 <?php namespace dbm;
 
 trait ModelAccess
-{ 	 
+{
 
-	public $data;
-	public $dirty; 
-    public function __construct(Connect $db,$data=[],$pq=null)
+    /**
+     * @var Sql
+     */
+    public $sql;
+    /**
+     * @var Session
+     */
+    public $session;
+
+    function __construct($sql, $session = null)
     {
-        $this->db=$db;
-		$this->dirty= [];
-        $this->data = $data; 
-        if($pq instanceof Sql){
-            $this->pq = $pq; 
-        }else{
-            $class = get_called_class();
-            $this->pq= $db->sql($class);
-            if($data){
-                $pks = $class::$pks;
-                foreach ($pks as $key ) {
-                    $where[$key]=$data[$key]; 
-                } 
-                $this->pq->where($where); 
-            } 
+        $this->sql=$sql;
+        $this->session=$session;
+    }
+    function __debugInfo()
+    {
+        if (!isset($this->list)) {
+            $this->list = $this->session->select($this->sql);
+        }
+        if (isset($this->list[0])) {
+            return $this->list[0];
+        }
+        //return (array)$this;
+        throw new \Exception("Error Processing Request", 1);
+    }
+    function __toString()
+    {
+        return (string)$this->sql;//->getHash();
+    }
+    function __invoke(...$pkv)
+    {
+        return $this->find(...$pkv);
+    }
+    function __call($name, $args)
+    {
+        if (!count($args)) {
+            $args[0]='1';
+        }
+        $attr = "$name({$args[0]}) as __VALUE__";
+        $vals = $this->session->select($this->sql->field($attr));
+        return $vals[0]['__VALUE__'];
+    }
+    function getIterator()
+    {
+        if (!isset($this->list)) {
+            $this->list = $this->session->select($this->sql);
+        }
+        foreach ($this->list as $row) {
+            $model = new static($this->sql, $this->session);
+            $model->list = [$row];
+            yield $model;
         }
     }
 
-	public function jsonSerialize() {
-		return $this->data;
-	}
-    public function offsetExists($offset)
+
+    function jsonSerialize()
     {
-        return isset($this->data[$offset]);
+        return $this->list[0];
     }
-    public function offsetUnset($offset)
+    function offsetExists($offset)
     {
-        unset($this->data[$offset]);
+        //return isset($this->data[$offset]);
     }
-    public function offsetSet($offset, $value)
+    function offsetUnset($offset)
     {
-		if(empty($this->data[$offset]) || $this->data[$offset]!=$value)
+        //unset($this->data[$offset]);
+    }
+    function offsetSet($offset, $value)
+    {
+        if (empty($this->data[$offset]) || $this->data[$offset]!=$value) {
             $this->dirty[$offset]=$value;
-		$this->data[$offset]=$value;
-    }
-    public function offsetGet($offset)
-    {
-        if (isset($this->data[$offset])) {
-            return $this->data[$offset];
         }
-        if (class_exists($offset)) { 
-            return $this->ref($offset,$offset::$pks,static::$ref[$offset]); ;
-        } 
+        $this->data[$offset]=$value;
     }
-    public function __debugInfo()
+    function offsetGet($offset)
     {
-        return (array)$this->data;
+        if (is_numeric($offset)) {
+            return $this->get($offset);
+        } elseif (class_exists($offset)) {
+            return $this->ref($offset, $offset::$pks, static::$ref[$offset]);
+            ;
+        } elseif (isset($this->sql->rArgs[$offset])) {
+            return $this->sql->rArgs[$offset];
+        } else {
+            return $this->val($offset);
+        }
     }
-    public function __toString()
+    function toArray()
     {
-        return (string)$this->pq;
+        if (!isset($this->list)) {
+            $this->list = $this->session->select($this->sql);
+        }
+        return $this->list;
     }
-    
 
-    // function kv(array $self_ks, array $table_ks)
-    // { 
-    //     foreach ($this->pq->getAll() as $obj) {
-    //         foreach ($table_ks as $i => $k) {
-    //             $arr[$k][] = $obj[$self_ks[$i]];
-    //         }
-    //     }
-    //     foreach ($arr as &$unique) {
-    //         $unique=array_unique($unique);
-	// 		sort($unique);
-    //     }
-    //     return $arr??[];
-    // }
- 	function pkv($pks = null)
-    { 
-        if(empty($pks)) $pks = $this->pq->pks;
-        foreach ($pks as $i => $key) {
-            if (!isset($this->data[$key])) {
-                return false;
+
+
+    function find(...$pkv)
+    {
+        if (is_array($pkv[0] && empty($pkv[0][0]))) {
+            $arr = $pkv[0];
+        } else {
+            $arr = array_combine($this->sql->pks, $pkv);
+        }
+        $this->sql->rArgs=$arr;
+        return $this->and($arr);
+    }
+    function each($cb)
+    {
+        foreach ($this as $value) {
+            if ($cb($value)===false) {
+                break;
             }
-            $arr[$key] = $this->data[$key];
         }
-        return $arr;
+    }
+    function map($cb)
+    {
+        foreach ($this as $value) {
+            $arr[]=$cb($value);
+        }
+        return $arr??[];
     }
 
+      
+    public function many($model, $model_pks, $model_fks)
+    {
+        return $this->ref($model, (array)$model_pks,
+            array_combine((array)$model_fks, (array)$model_pks)
+        );
+    }
+    public function one($model, $model_pks, $local_fks)
+    {
+        return $this->ref($model, (array)$model_pks,
+            array_combine((array)$model_pks, (array)$local_fks)
+        );
+    }
 }
-

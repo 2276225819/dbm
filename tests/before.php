@@ -7,7 +7,7 @@ $sync->setPDO('mysql:host=127.0.0.1;dbname=test','root','root');
 $sync->push();
 $sync->clear();
 //////////// model ///////////////////
-class User extends dbm\Model
+class User extends dbm\Entity
 {
     static $table="zz_user";
 	static $pks=['Id'];  
@@ -17,7 +17,7 @@ class User extends dbm\Model
 	];    
 } 
 
-class UserType  extends dbm\Model
+class UserType  extends dbm\Entity
 {
     static $table="zz_user_type";
     static $pks=['Id']; 
@@ -25,7 +25,7 @@ class UserType  extends dbm\Model
 		User::class=>['type_id'=>'Id'],
 	]; 
 }
-class Post extends dbm\Model
+class Post extends dbm\Entity
 {
     static $table="zz_post";
     static $pks=['Id'];   
@@ -34,7 +34,7 @@ class Post extends dbm\Model
     	PostType::class =>['Id'=>'post_type_id']
     ];  
 } 
-class PostType extends dbm\Model
+class PostType extends dbm\Entity
 {
     static $table="zz_post_type";
     static $pks=['Id'];   
@@ -42,7 +42,7 @@ class PostType extends dbm\Model
 		Post::class=>['post_type_id'=>'Id'],
 	];
 }
-class Friend extends dbm\Model
+class Friend extends dbm\Entity
 {
     static $table="zz_friend";
     static $pks=['uid1','uid2'];    

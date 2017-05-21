@@ -53,7 +53,7 @@ class Connect implements \ArrayAccess
 	public function scope($transaction=false) { 
 		return new Transaction($transaction?$this->db:null);		
 	}
-    /** 
+  /** 
      * @param string $model
      * @param array $pks
      * @return Sql
@@ -68,9 +68,13 @@ class Connect implements \ArrayAccess
         } else {
             $table=$model;
 			$pks=(array)$pks;
-			$model = \dbm\Model::class;
+			$model = \dbm\Entity::class;
         }
 		return new \dbm\Sql($this,$table,$pks,$model);
 
-	} 
+    }
+
+    public function session(){
+        return new Session($this);
+    }
 }

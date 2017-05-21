@@ -57,7 +57,7 @@ $sql = $user[Post::class]->set([
 <!--INSERT INTO `zz_user_type` SET `name`=?,`Id`=?;bb,1-->
 Array
 (
-    [0] => dbm\Model Object
+    [0] => dbm\Entity Object
         (
             [name] => aa
             [Id] => 1

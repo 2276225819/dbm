@@ -95,7 +95,7 @@ trait SqlAccess
     }
     public function __invoke(...$pkv)
     {
-        return $this->find(...$pkv)->get();
+        return $this->find(...$pkv);//->get();
     }
 
     

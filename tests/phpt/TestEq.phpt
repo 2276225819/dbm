@@ -12,7 +12,7 @@ $user = $conn->sql(User::class) ;
 
 print_r($user->keypair('name','Id'));
 echo "\n";
-print_r($user->get()->val('name'));
+print_r($user->val('name'));
 echo "\n"; 
 print_r($user->all('name'));
 
