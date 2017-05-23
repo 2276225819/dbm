@@ -40,8 +40,14 @@ trait ConnectAccess{
     {  
     }  
     public function offsetGet($offset)
-    {
-        return $this->sql($offset);
+    {  
+        if(defined("$offset::Entity"))
+            return $this->sql($offset);
+
+        if(defined("$offset::Model"))
+            return $this->session($offset);
+        
+        throw new \Exception("Error Processing Request", 1); 
     } 
 
 }

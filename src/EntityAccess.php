@@ -12,11 +12,10 @@ trait EntityAccess
         $this->data = $data; 
         if($pq instanceof Sql){
             $this->pq = $pq; 
-        }else{
-            $class = get_called_class();
-            $this->pq= $db->sql($class);
+        }else{ 
+            $this->pq= $db->sql(static::class);
             if($data){
-                $pks = $class::$pks;
+                $pks = static::$pks;
                 foreach ($pks as $key ) {
                     $where[$key]=$data[$key]; 
                 } 

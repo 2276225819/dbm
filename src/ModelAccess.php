@@ -1,32 +1,38 @@
 <?php namespace dbm;
 
 trait ModelAccess
-{
-
+{ 
     /**
      * @var Sql
      */
-    public $sql;
-    /**
-     * @var Session
-     */
-    public $session;
+    public $sql; 
 
-    function __construct($sql, $session = null)
+    function __construct($sql=null)
     {
-        $this->sql=$sql;
-        $this->session=$session;
+        $this->sql = $sql??new Pql;
+        Session::$gc++; 
     }
+    function __clone(){
+        Session::$gc++; 
+    }
+    function __destruct(){
+        Session::$gc--; 
+        if(Session::$gc==0){
+            Session::$instance->clean(); 
+        }
+    }
+ 
     function __debugInfo()
     {
-        if (!isset($this->list)) {
-            $this->list = $this->session->select($this->sql);
-        }
+        // if (!isset($this->list)) {
+        //     $this->list = Session::$instance->select($this->sql);
+        // }
         if (isset($this->list[0])) {
             return $this->list[0];
+        } else {
+            return [static::class=>(string)$this->sql];
         }
-        //return (array)$this;
-        throw new \Exception("Error Processing Request", 1);
+        //throw new \Exception("Error Processing Request", 1);
     }
     function __toString()
     {
@@ -42,16 +48,16 @@ trait ModelAccess
             $args[0]='1';
         }
         $attr = "$name({$args[0]}) as __VALUE__";
-        $vals = $this->session->select($this->sql->field($attr));
+        $vals = Session::$instance->select($this->sql->field($attr));
         return $vals[0]['__VALUE__'];
     }
     function getIterator()
     {
         if (!isset($this->list)) {
-            $this->list = $this->session->select($this->sql);
+            $this->list = Session::$instance->select($this->sql);
         }
         foreach ($this->list as $row) {
-            $model = new static($this->sql, $this->session);
+            $model = new static($this->sql);
             $model->list = [$row];
             yield $model;
         }
@@ -81,9 +87,8 @@ trait ModelAccess
     {
         if (is_numeric($offset)) {
             return $this->get($offset);
-        } elseif (class_exists($offset)) {
-            return $this->ref($offset, $offset::$pks, static::$ref[$offset]);
-            ;
+        } elseif (defined("$offset::pks") && defined("static::ref")) {
+            return $this->ref($offset, $offset::pks, static::ref[$offset]); 
         } elseif (isset($this->sql->rArgs[$offset])) {
             return $this->sql->rArgs[$offset];
         } else {
@@ -93,7 +98,7 @@ trait ModelAccess
     function toArray()
     {
         if (!isset($this->list)) {
-            $this->list = $this->session->select($this->sql);
+            $this->list = Session::$instance->select($this->sql);
         }
         return $this->list;
     }

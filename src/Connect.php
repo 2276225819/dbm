@@ -70,11 +70,21 @@ class Connect implements \ArrayAccess
 			$pks=(array)$pks;
 			$model = \dbm\Entity::class;
         }
-		return new \dbm\Sql($this,$table,$pks,$model);
-
+		return new \dbm\Sql($this,$table,$pks,$model); 
     }
 
-    public function session(){
-        return new Session($this);
+    public function session($model,$pks=null){
+        if(empty(Session::$instance)){
+            Session::$instance = new Session($this);
+        } else {
+            Session::$instance->conn = $this; 
+        }
+        if ( defined("$model::table") ){  
+            $sql = new Pql($model::table,defined("$model::pks")?$model::pks:$pks);
+            return new $model($sql); 
+        }else{ 
+            $sql = new Pql($model,$pks);
+            return new Model($sql); 
+        }  
     }
 }

@@ -7,6 +7,8 @@ class Session
 	 */
 	public $conn;
     public $cache=[];//[SQL:hash=>[arr,arr,arr]
+    public static $instance;
+    public static $gc;
     function __construct($conn)
     {
         $this->conn=$conn;
@@ -108,18 +110,18 @@ class Session
     }
 
 
-    function sql($model,$pks){
-        $sql = new Pql;
-        $pks = (array)$pks;
-        if (class_exists($model) && isset($model::$table) ) {
-            $sql->table = $model::$table;
-			$sql->pks = count($pks)?$pks:$model::$pks;
-            $model = $model;
-        } else {
-            $sql->table=$model;
-			$sql->pks=(array)$pks;
-			$model = \dbm\Query::class;
-        } 
-        return new $model($sql,$this); 
-    }
+    // function sql($model,$pks){
+    //     $sql = new Pql;
+    //     $pks = (array)$pks;
+    //     if (class_exists($model) && isset($model::$table) ) {
+    //         $sql->table = $model::$table;
+	// 		$sql->pks = count($pks)?$pks:$model::$pks;
+    //         $model = $model;
+    //     } else {
+    //         $sql->table=$model;
+	// 		$sql->pks=(array)$pks;
+	// 		$model = \dbm\Query::class;
+    //     } 
+    //     return new $model($sql,$this); 
+    // }
 }

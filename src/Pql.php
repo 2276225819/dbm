@@ -4,7 +4,14 @@ class Pql
 {
     public $table='',$jStr='', $wStr='',$lStr='',$oStr='',$fStr='*';
     public $rArgs=[],$wArgs=[], $fArgs=[], $sArgs=[],$oArgs=[];
-	public $pks; 
+	public $pks=[]; 
+    
+    public function __construct($table,$pks)
+    {
+        $this->table=$table;
+        $this->pks=(array)$pks;
+    } 
+
     public function __toString()
     {
         return $this->bulidSelect().';'.join($this->bulidArgs(), ',');
@@ -99,10 +106,6 @@ class Pql
         $this->jStr=" $str";
         return $this;
     }
-    public function from($table)
-    {
-        $this->table=$table;
-    } 
     public function kvSQL(&$param, $jtag = ' AND ', $arr, $attr = null, $sql = '')
     {
         if (is_array($arr)) {
@@ -110,7 +113,7 @@ class Pql
 				if(strstr($key,',')){
 					$key="($key)";
 				}
-				if ($v instanceof Sql){ 
+				if ($v instanceof Pql){ 
 					$sql.="{$jtag} {$key} in (".$v->bulidSelect().")";
                 	$param=array_merge($param, $v->bulidArgs());
 					continue;

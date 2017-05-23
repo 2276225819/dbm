@@ -2,39 +2,44 @@
 
 class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
 {
+    const Model=true;
 
     use ModelAccess;
-    public static $table='...';
-    public static $pks=[];
-    public static $ref=[];
-    public static function new($conn)
-    {
-        $sql = new Sql;
-        $sql->table = static::$table;
-        $sql->pks = static::$pks;
-        return new static($sql, new Session($conn));
-    }
+    const table='...';
+    const pks=[];
+    const ref=[];
+    
     /////////////model///////////////
+    /** 
+     * @param number|null $offset 
+     * @return Model
+     */
     function get($offset = null)
     {
         if (is_numeric($offset)) {
             $this->limit($offset, 1);
             $this->list=null;
-            $offset=0;
+            $offset = 0;
+        }else{
+            $offset = 0;
         }
         if (empty($this->list)) {
-            $this->list = $this->session->select($this->sql);
+            $this->list = Session::$instance->select($this->sql);
         }
         if (empty($this->list[$offset])) {
             return null;
         }
-        $model = new static($this->sql, $this->session);
+        $model = new static($this->sql);
         $model->list = [$this->list[$offset]];
         foreach ($this->sql->pks as $key) {
             $model->sql->rArgs[$key]=$this->list[$offset][$key];
         }
         return $model;
     }
+    /** 
+     * @param array $arr
+     * @return bool
+     */
     function set($arr)
     {
         $data = array_merge($this->sql->rArgs, $arr);
@@ -53,36 +58,61 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
         }
         return (bool)$this->insert($data);
     }
+    /** 
+     * @param Mixed[] ...$pkv
+     * @return Model
+     */
     function load(...$pkv)
     {
         $this->find(...$pkv);
         if (!isset($this->list)) {
-            $this->list = $this->session->select($this->sql);
+            $this->list = Session::$instance->select($this->sql);
         }
         foreach ($this->sql->pks as $key) {
             $this->sql->rArgs[$key]=current($pkv);
             next($pkv);
         }
         return $this;
-    }
-    function all($field = null)
-    {
-        if (empty($field)) {
-            return iterator_to_array($this);
+    } 
+    /** 
+     * @param array $where
+     * @param array ...$arr
+     * @return Model
+     */
+    function all($where=null,...$arr){
+        if (isset($where)) {
+            $this->where($where,$arr);
         }
+        return iterator_to_array($this);
+    }
+    /** 
+     * [ $key, $key... ]
+     * @param string $field
+     * @return mixed[]
+     */
+    function list($field)
+    { 
+        $arr=[];
         if (!isset($this->list)) {
-            $this->list = $this->session->select($this->sql);
+            $this->list = Session::$instance->select($this->sql);
         }
         foreach ($this->list as $row) {
             $arr[]=$row[$field];
         }
-        return $arr??[] ;
+        return $arr;
     }
+
+    /**
+     * [ $key=>Row, $key=>Row... ] | [ $key => $val, $key => $val... ]
+     * @param string $key
+     * @param string $val
+     * @return Model[]|mixed[]
+     */
     function keypair($key, $val = null)
     {
         $arr=[];
         if (empty($this->list)) {
-            $this->list = $this->session->select($this->sql);
+            $this->list = Session::$instance->select($this->sql);
         }
         foreach ($this->list as $row) {
             $arr[$row[$key]] = $val?$row[$val]:$row;
@@ -90,15 +120,18 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
         return $arr;
     }
     
-    // public $dirty=[];
-    // public $list=[];
+    /**
+     * $sql->val(FILED) as mixed
+     * @param string $field
+     * @return mixed
+     */
     function val($field, $val = null)
     {
         if (isset($val)) {
             return $this->dirty[$field]=$val;
         } else {
             if (!isset($this->list)) {
-                $this->list = $this->session->select($this->sql);
+                $this->list = Session::$instance->select($this->sql);
             }
             return $this->list[0][$field];
         }
@@ -122,27 +155,36 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
             $this->update($this->dirty);
             return $this;
         }
-    }
-
-    
+    } 
     function ref($model, $pks = null, $ref = null)
     {
-        $sql=new Sql();
-        if (class_exists($model)) {
-            $sql->table = $model::$table;
-            if (!is_array($pks)) {
-                $pks = static::$pks;
+        
+        if ( class_exists($model) && defined("$model::table") ){  
+            $sql = new Pql($model::table,defined("$model::pks")?$model::pks:$pks);
+            $model = new $model($sql); 
+            if(!is_array($ref)){
+                $ref = $model::$ref[$model];
             }
-            if (!is_array($ref)) {
-                $ref = static::$ref[$model];
-            }
-        } else {
-            $sql->table = $model;
-            $model = static::class;
-        }
-        $sql->pks = (array)$pks;
+        }else{
+            $sql = new Pql($model,$pks);
+            $model = new Model($sql); 
+        }   
+        // $sql=new Sql();
+        // if (class_exists($model)) {
+        //     $sql->table = $model::$table;
+        //     if (!is_array($pks)) {
+        //         $pks = static::$pks;
+        //     }
+        //     if (!is_array($ref)) {
+        //         $ref = static::$ref[$model];
+        //     }
+        // } else {
+        //     $sql->table = $model;
+        //     $model = static::class;
+        // }
+        // $sql->pks = (array)$pks;
 
-        $model = new $model($sql, $this->session);
+        // $model = new $model($sql, Session::$instance);
         if (!isset($this->list)) {
             $keys=join(array_keys($ref), ',');
             $query = $this->sql->field(array_values($ref));
@@ -154,7 +196,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
                 }
             }
         } else {
-            $thisdata = $this->session->select($this->sql, true);
+            $thisdata = Session::$instance->select($this->sql, true);
             foreach ($ref as $k => $f) {
                 foreach ($thisdata as $row) {
                     $s[$k][]=$row[$f];
@@ -173,16 +215,17 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
         return $model;
     }
     /////////////curd/////////////
+
     function insert($arr)
     {
-        $arr = $this->session->insert($this->sql, $arr);
+        $arr = Session::$instance->insert($this->sql, $arr);
         // if (isset($this->rModel)) {
         // 	foreach ($this->rref as $i => $k) {
         // 		$this->rModel[$k]=$data[$i];
         // 	}
         // 	$this->rModel->save();
         // }
-        $row = new self($this->sql,$this->session);
+        $row = new self($this->sql,Session::$instance);
         $pk = $this->sql->pks[0];
         $row->where([$pk=>$arr[$pk]]);
         $row->list = [$arr];
@@ -194,7 +237,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
         if (!count($list)) {
             throw new \Exception("Error Muilt Column", 1);
         }
-        $count = $this->session->insertMulit($this->sql, $list);
+        $count = Session::$instance->insertMulit($this->sql, $list);
         return $count;
     }
 
@@ -203,7 +246,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
         if (empty($this->sql->wStr)) {
             throw new \Exception("Require Where Column", 1);
         }
-        $count = $this->session->update($this->sql, $arr);
+        $count = Session::$instance->update($this->sql, $arr);
         return $count;
     }
 
@@ -212,7 +255,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
         if (!$force && empty($this->sql->wStr)) {
             throw new \Exception("Require Where Column", 1);
         }
-        $count = $this->session->delete($this->sql);
+        $count = Session::$instance->delete($this->sql);
         return $count;
     }
 

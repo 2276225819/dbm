@@ -3,6 +3,8 @@
 
 class Entity implements \ArrayAccess ,\JsonSerializable
 {   
+    const Entity=true;
+    
     use EntityAccess;
     static $table;
     static $ref;
