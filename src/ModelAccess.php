@@ -2,11 +2,19 @@
 
 trait ModelAccess
 { 
-    /**
-     * @var Sql
-     */
-    public $sql; 
-
+    static $table='...';
+    static $pks=[];
+    static $ref=[];
+    
+    public static function byName($table,$pks){
+        if (class_exists($table) && isset($table::$table) ){  
+            $sql = new Pql($table::$table,isset($table::$pks)?$table::$pks:$pks);
+            return new $table($sql); 
+        }else{ 
+            $sql = new Pql($table,$pks);
+            return new Model($sql); 
+        }  
+    }
     function __construct($sql=null)
     {
         $this->sql = $sql??new Pql;
@@ -30,7 +38,7 @@ trait ModelAccess
         if (isset($this->list[0])) {
             return $this->list[0];
         } else {
-            return [static::class=>(string)$this->sql];
+            return [':'=>(string)$this->sql];
         }
         //throw new \Exception("Error Processing Request", 1);
     }
@@ -40,7 +48,7 @@ trait ModelAccess
     }
     function __invoke(...$pkv)
     {
-        return $this->find(...$pkv);
+        return $this->load(...$pkv);
     }
     function __call($name, $args)
     {
@@ -56,8 +64,8 @@ trait ModelAccess
         if (!isset($this->list)) {
             $this->list = Session::$instance->select($this->sql);
         }
+        $model = clone $this;//new static($this->sql);
         foreach ($this->list as $row) {
-            $model = new static($this->sql);
             $model->list = [$row];
             yield $model;
         }
@@ -87,8 +95,8 @@ trait ModelAccess
     {
         if (is_numeric($offset)) {
             return $this->get($offset);
-        } elseif (defined("$offset::pks") && defined("static::ref")) {
-            return $this->ref($offset, $offset::pks, static::ref[$offset]); 
+        } elseif (class_exists($offset) && isset($offset::$pks) && isset(static::$ref)) {
+            return $this->ref($offset, $offset::$pks, static::$ref[$offset]); 
         } elseif (isset($this->sql->rArgs[$offset])) {
             return $this->sql->rArgs[$offset];
         } else {
@@ -100,7 +108,7 @@ trait ModelAccess
         if (!isset($this->list)) {
             $this->list = Session::$instance->select($this->sql);
         }
-        return $this->list;
+        return $this->list[0];
     }
 
 
@@ -111,9 +119,9 @@ trait ModelAccess
             $arr = $pkv[0];
         } else {
             $arr = array_combine($this->sql->pks, $pkv);
-        }
+        } 
         $this->sql->rArgs=$arr;
-        return $this->and($arr);
+        return $this->where($arr);
     }
     function each($cb)
     {

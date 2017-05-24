@@ -12,7 +12,7 @@ class Sql implements \IteratorAggregate, \ArrayAccess
     /**
      * $sql->val() as Model | $sql->val(FILED) as Model
      * @param int $offset
-     * @return Model
+     * @return Entity
      */
     public function get($offset = null)
     {
@@ -37,7 +37,7 @@ class Sql implements \IteratorAggregate, \ArrayAccess
     /**
      * Row
      * @param array ...$pkv
-     * @return Model
+     * @return Entity
      */
     public function load(...$pkv)
     {
@@ -72,7 +72,7 @@ class Sql implements \IteratorAggregate, \ArrayAccess
     /**
      * [ $Row, $Row... ] | [ $key, $key... ]
      * @param string $key
-     * @return Model[]
+     * @return Entity[]
      */
     public function all($key = null)
     {
@@ -86,7 +86,7 @@ class Sql implements \IteratorAggregate, \ArrayAccess
      * [ $key=>Row, $key=>Row... ] | [ $key => $val, $key => $val... ]
      * @param string $key
      * @param string $val
-     * @return Model[]
+     * @return Entity[]
      */
     public function keypair($key, $val = null)
     {
@@ -231,7 +231,7 @@ class Sql implements \IteratorAggregate, \ArrayAccess
      * Row
      * @param array $data
      * @param int $auto_increment_key
-     * @return Model
+     * @return Entity
      */
     public function insert($data, $auto_increment_key = null)
     {

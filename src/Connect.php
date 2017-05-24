@@ -11,10 +11,9 @@ class Connect implements \ArrayAccess
         \PDO::ATTR_ERRMODE=>\PDO::ERRMODE_EXCEPTION,
         \PDO::ATTR_PERSISTENT=>true,
     ];
-
-    public function bulidSql($sql){   
-        return preg_replace($this->preg_key,$this->preg_val,$sql);    
-    }
+    /** 
+     * @return int
+     */
     public function lastInsertId()
     {
         return $this->db->lastInsertId();
@@ -26,7 +25,7 @@ class Connect implements \ArrayAccess
      */
     public function execute($sql, $args = [] ) 
     {   
-        $sql = $this->bulidSql($sql); 
+        $sql = static::bulidSql($sql); 
         if ($this->debug) {
             echo "<!--$sql;".join($args,',')."-->\n";
         }
@@ -72,19 +71,17 @@ class Connect implements \ArrayAccess
         }
 		return new \dbm\Sql($this,$table,$pks,$model); 
     }
-
-    public function session($model,$pks=null){
+    /** 
+     * @param string $model
+     * @param array $pks
+     * @return Model
+     */
+    public function model($model,$pks=null){
         if(empty(Session::$instance)){
             Session::$instance = new Session($this);
         } else {
             Session::$instance->conn = $this; 
-        }
-        if ( defined("$model::table") ){  
-            $sql = new Pql($model::table,defined("$model::pks")?$model::pks:$pks);
-            return new $model($sql); 
-        }else{ 
-            $sql = new Pql($model,$pks);
-            return new Model($sql); 
-        }  
+        } 
+        return Model::byName($model,$pks); 
     }
 }

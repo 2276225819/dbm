@@ -1,8 +1,9 @@
 <?php  
 include __DIR__."/../vendor/autoload.php"; 
+ 
   
-echo "performance test :select * from [table]\n";
 $count=10;
+echo "performance test :select * from [table] * $count\n";
 /////////////////////////////////////////////////
  
 $db = new dbm\Connect("mysql:dbname=test", 'root', 'root');  
@@ -27,7 +28,7 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 $capsule = new Capsule;
 $capsule->addConnection([
     'driver'    => 'mysql',
-    'host'      => 'localhost',
+    'host'      => '127.0.0.1',
     'database'  => 'test',
     'username'  => 'root',
     'password'  => 'root',
@@ -36,7 +37,7 @@ $capsule->addConnection([
     'prefix'    => '',
 ]);  
 $capsule->setAsGlobal();  
-$capsule->bootEloquent();
+$capsule->bootEloquent(); 
 
 echo "foreach          :";
 $time=microtime(true); 
@@ -56,7 +57,7 @@ $query = $pdo->prepare("select * from zz_post");
 for ($i=0; $i < $count; $i++){
     $query->execute(); 
     while($row=$query->fetch(PDO::FETCH_ASSOC))
-        $arr1 =$row; 
+        $arr2 =$row; 
 } 
 echo microtime(true)-$time;
 echo "\n";
@@ -65,17 +66,27 @@ echo "dbm              :";
 $time=microtime(true);  
 for ($i=0; $i < $count; $i++) {
     foreach($db->sql('zz_post','ID') as $row) 
-        $arr2 = $row->toArray()  ;
+        $arr3 = $row->toArray()  ;
 }    
 echo microtime(true)-$time;
 echo "\n";
 
- 
+
+echo "dbm.v4           :";
+$time=microtime(true);  
+for ($i=0; $i < $count; $i++) {
+    foreach($db->model('zz_post','ID') as $row) 
+        $arr4 = $row->toArray();
+}    
+echo microtime(true)-$time;
+echo "\n";
+
+
 echo "notorm           :";
 $time=microtime(true); 
 for ($i=0; $i < $count; $i++){
     foreach ($software->zz_post() as $row)
-        $arr3 =  iterator_to_array($row) ; 
+        $arr5 =  iterator_to_array($row) ; 
 } 
 echo microtime(true)-$time;
 echo "\n";
@@ -86,53 +97,59 @@ echo "laravel/database :";
 $time=microtime(true);     
 for ($i=0; $i < $count; $i++) {
     foreach(Capsule::table('zz_post')->get() as $row) 
-    $arr4 = (array)$row; 
+    $arr6 = (array)$row; 
 }
 echo microtime(true)-$time;
 echo "\n";
 
  
-//print_r([$arr1 ,$arr2 ,$arr3,$arr4]);
+//print_r([$arr1 ,$arr2 ,$arr3,$arr4,$arr5,$arr6]);
 /*
 # 数据*10000 默认*1 单位/秒
 performance test :select * from [table]
-foreach          :0.033241987228394
-native           :0.019859790802002
-dbm              :0.029505014419556
-notorm           :0.037763833999634
-laravel/database :1.0491268634796 
+foreach          :0.013476848602295
+native           :0.013571977615356
+dbm              :0.019706010818481
+dbm.v4           :0.017701148986816
+notorm           :0.038381099700928
+laravel/database :0.043095111846924
 
 # 数据*10000 默认*100 单位/秒
 performance test :select * from [table]
-foreach          :0.077172994613647
-native           :1.2954540252686
-dbm              :0.65180110931396
-notorm           :4.3124899864197
-laravel/database :2.6619429588318
+foreach          :0.036971092224121
+native           :1.2759008407593
+dbm              :0.67776989936829
+dbm.v4           :0.33889412879944
+notorm           :4.4621398448944
+laravel/database :1.5763001441956
 
 # 数据*10000 默认*1000 单位/秒
 performance test :select * from [table]
-foreach          :0.3026750087738
-native           :13.114972829819
-dbm              :6.2873830795288
-notorm           :43.723829984665
-laravel/database :17.558816194534
+foreach          :0.25033402442932
+native           :12.837521076202
+dbm              :6.5474979877472
+dbm.v4           :3.3023991584778
+notorm           :43.468582868576
+laravel/database :16.637385129929
 
 
 
 # 数据*10000  xDebug*1 单位/秒
-foreach          :0.025607824325562
-native           :0.10158801078796
-dbm              :0.4140510559082
-notorm           :1.2742419242859
-laravel/database :1.0866839885712
+foreach          :0.015952110290527
+native           :0.10339283943176
+dbm              :0.30134701728821
+dbm.v4           :0.18534588813782
+notorm           :1.3557300567627
+laravel/database :0.048876047134399
 
 # 数据*10000  xDebug*10 单位/秒
 performance test :select * from [table]
-native           :1.2090330123901
-dbm              :4.2746579647064
-notorm           :12.927770137787
-laravel/database :1.2445261478424
+foreach          :0.033928871154785
+native           :0.98890900611877
+dbm              :2.8212649822235
+dbm.v4           :1.7280220985413
+notorm           :12.573439121246
+laravel/database :0.20769906044006
 
  
 */

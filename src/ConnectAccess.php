@@ -2,28 +2,32 @@
 
 trait ConnectAccess{
 
-    public $preg_key;
-    public $preg_val;
+    static $preg_key=[
+        '/((?:join|truncate|update|insert(?:\s+into)?|from|create\s+table|alter\s+table|drop\s+table|as)\s+)([a-z_]\w*)/i',
+        '/([a-z_]\w*)\s+(read|write)/i',
+        '/(\(\s*|,\s*|set\s+|where\s+|and\s+|or\s+)(\b[a-z_]\w*\b)(\s*[=<>!])/i',
+        '/(\(\s*|,\s*|set\s+|where\s+|and\s+|or\s+)(\b[a-z_]\w*\b)\s+\bin\b/i',
+    ];
+    static $preg_val=[
+        "$1`$2`",
+        "`$1` $2", 
+        "$1`$2`$3",
+        "$1`$2` in"
+    ];
+    static function bulidSql($sql){
+        return preg_replace(static::$preg_key,static::$preg_val,$sql);    
+    }
     public function __construct($dns = null, $name = null, $pass = null,$pf='')
-    { 
-        $arr=array(
-            '/((?:join|truncate|update|insert(?:\s+into)?|from|create\s+table|alter\s+table|drop\s+table|as)\s+)([a-z_]\w*)/i'
-                =>"$1`$2`",
-            '/([a-z_]\w*)\s+(read|write)/i'
-                =>"`$1` $2", 
-            '/(,\s*|set\s+|where\s+|and\s+|or\s+)(\b[a-z_]\w*\b)(\s*[=<>!])/i'
-                =>"$1`$2`$3",
-            '/(,\s*|set\s+|where\s+|and\s+|or\s+)(\b[a-z_]\w*\b)\s+\bin\b/i'
-                =>"$1`$2` in"
-        );
-        $this->preg_key=array_keys($arr);
-        $this->preg_val=array_values($arr);  
+    {  
         $this->dns=$dns;
         $this->name=$name;
         $this->pass=$pass;
         $this->reload();
         class_exists(Sql::class);
+        class_exists(Entity::class);
         class_exists(Model::class);
+        class_exists(Session::class);
+        class_exists(Pql::class);
     } 
     public function reload()
     {
@@ -45,7 +49,7 @@ trait ConnectAccess{
             return $this->sql($offset);
 
         if(defined("$offset::Model"))
-            return $this->session($offset);
+            return $this->model($offset);
         
         throw new \Exception("Error Processing Request", 1); 
     } 

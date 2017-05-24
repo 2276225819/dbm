@@ -14,7 +14,7 @@ class Pql
 
     public function __toString()
     {
-        return $this->bulidSelect().';'.join($this->bulidArgs(), ',');
+        return Connect::bulidSql($this->bulidSelect()).';'.join($this->bulidArgs(), ',');
     }
 
     /**
@@ -68,7 +68,7 @@ class Pql
     public function where($w, ...$arr)
     {
         $this->wArgs=[];
-        $this->wStr=' WHERE '.$this->kvSQL($this->wArgs, ' AND ', $w, $arr);
+        $this->wStr=" WHERE (".$this->kvSQL($this->wArgs, ' AND ', $w, $arr).")";
         return $this;
     }
     /**
@@ -80,7 +80,7 @@ class Pql
     public function and($w, ...$arr)
     {
         $this->wStr.=empty($this->wStr)?" WHERE ":" AND ";
-        $this->wStr.=$this->kvSQL($this->wArgs, ' AND ', $w, $arr);
+        $this->wStr.="(".$this->kvSQL($this->wArgs, ' AND ', $w, $arr).")";
         return $this;
     }
     /**
@@ -92,7 +92,7 @@ class Pql
     public function or($w, ...$arr)
     {
         $this->wStr.=empty($this->wStr)?" WHERE ":" OR ";
-        $this->wStr.=$this->kvSQL($this->wArgs, ' OR ', $w, $arr);
+        $this->wStr.="(".$this->kvSQL($this->wArgs, ' OR ', $w, $arr).")";
         return $this;
     }
     
@@ -113,15 +113,18 @@ class Pql
 				if(strstr($key,',')){
 					$key="($key)";
 				}
+                if($v instanceof Model){
+                    $v = $v->field($this->pks)->sql;
+                }
 				if ($v instanceof Pql){ 
-					$sql.="{$jtag} {$key} in (".$v->bulidSelect().")";
+					$sql.="{$jtag}{$key} in (".$v->bulidSelect().")";
                 	$param=array_merge($param, $v->bulidArgs());
 					continue;
 				}
                 if (is_array($v)) {
                     if (count($v)>1) {
                         $str= substr(str_repeat(",?", count($v)), 1);
-                        $sql.="{$jtag} {$key} in ($str) " ;
+                        $sql.="{$jtag}{$key} in ($str) " ;
                         $param=array_merge($param, $v);
                         continue;
                     } else {
@@ -142,7 +145,14 @@ class Pql
     }
 	public function bulidArgs()
     {
-        return array_merge($this->wArgs, $this->oArgs);
+        // $arr = [];
+        // foreach ($this->wArgs as $key => $value) { 
+        //     $arr[] = $value;
+        // }
+        // foreach ($this->oArgs as $key => $value) { 
+        //     $arr[] = $value;
+        // }
+        return array_merge($this->wArgs,$this->oArgs);
     }
     public function bulidSelect()
     {

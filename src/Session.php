@@ -7,6 +7,9 @@ class Session
 	 */
 	public $conn;
     public $cache=[];//[SQL:hash=>[arr,arr,arr]
+    /** 
+     * @var Session
+     */
     public static $instance;
     public static $gc;
     function __construct($conn)
@@ -21,12 +24,9 @@ class Session
         if (!isset($this->cache[$hash])) { 
 			$fetch = $this->conn->execute($ssql, $args);
 			$fetch->setFetchMode(\PDO::FETCH_ASSOC);
-			$this->cache[$hash]=[];
-			foreach ($fetch as $row) {
-				$this->cache[$hash][]=$row;
-			}
+			$this->cache[$hash]=$fetch->fetchAll(); 
 		}
-		if($all){
+		if($all or !count($sql->rArgs)){
 			return $this->cache[$hash];
 		}else{
 			foreach ($this->cache[$hash] as $row) {
@@ -71,6 +71,16 @@ class Session
         if (!empty($last_id)) {
             $key = $sql->pks[0];
             $data[$key]=$last_id;
+
+            if(isset($sql->rsql)){ 
+                unset($sql->rArgs);
+                $sql->where([$key=>$last_id]);
+                foreach ($sql->rref as $i => $k) {
+                    $set[$k]=$data[$i];
+                }
+                $sqlclone = clone $sql->rsql;
+                $this->update($sqlclone->where($sqlclone->rArgs),$set); 
+            }
         }
 		$this->clean($sql->table);
         return $data;
@@ -107,21 +117,5 @@ class Session
                 }
             }
         }
-    }
-
-
-    // function sql($model,$pks){
-    //     $sql = new Pql;
-    //     $pks = (array)$pks;
-    //     if (class_exists($model) && isset($model::$table) ) {
-    //         $sql->table = $model::$table;
-	// 		$sql->pks = count($pks)?$pks:$model::$pks;
-    //         $model = $model;
-    //     } else {
-    //         $sql->table=$model;
-	// 		$sql->pks=(array)$pks;
-	// 		$model = \dbm\Query::class;
-    //     } 
-    //     return new $model($sql,$this); 
-    // }
+    } 
 }

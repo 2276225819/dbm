@@ -17,7 +17,7 @@ $a[]= $conn[Post::class]->avg('Id');
 $a[]= $conn[Post::class]->sum('Id+post_type_id+user_id');//BUG
 print_r($a);
 
-$query = $conn[Post::class]->and('user_id=1');
+$query = $conn[Post::class]->whereAnd('user_id=1');
 $b[]= $query->count();
 $b[]= $query->sum('Id');
 $b[]= $query->avg('Id');
@@ -29,7 +29,7 @@ print_r($b);
 <!--SELECT * FROM `zz_post`   ;-->
 {"Id":"1","post_type_id":"1","user_id":"1","text":"text1"}
 {"Id":"2","post_type_id":"1","user_id":"1","text":"text2"}
-{"Id":"3","post_type_id":"1","user_id":"1","text":"text3"}
+{"Id":"3","post_type_id":"2","user_id":"1","text":"text3"}
 {"Id":"4","post_type_id":"3","user_id":"2","text":"user2 22"}
 {"Id":"5","post_type_id":"2","user_id":"3","text":"post32"}
 {"Id":"6","post_type_id":"1","user_id":"3","text":"post31"}
@@ -42,16 +42,16 @@ Array
     [0] => 6
     [1] => 21
     [2] => 3.5000
-    [3] => 41
+    [3] => 42
 )
-<!--SELECT count(1) as `__VALUE__` FROM `zz_post`  WHERE `user_id`=1  ;-->
-<!--SELECT sum(Id) as `__VALUE__` FROM `zz_post`  WHERE `user_id`=1  ;-->
-<!--SELECT avg(Id) as `__VALUE__` FROM `zz_post`  WHERE `user_id`=1  ;-->
-<!--SELECT sum(Id+post_type_id+user_id) as `__VALUE__` FROM `zz_post`  WHERE `user_id`=1  ;-->
+<!--SELECT count(1) as `__VALUE__` FROM `zz_post`  WHERE (`user_id`=1)  ;-->
+<!--SELECT sum(Id) as `__VALUE__` FROM `zz_post`  WHERE (`user_id`=1)  ;-->
+<!--SELECT avg(Id) as `__VALUE__` FROM `zz_post`  WHERE (`user_id`=1)  ;-->
+<!--SELECT sum(Id+post_type_id+user_id) as `__VALUE__` FROM `zz_post`  WHERE (`user_id`=1)  ;-->
 Array
 (
     [0] => 3
     [1] => 6
     [2] => 2.0000
-    [3] => 12
+    [3] => 13
 )
