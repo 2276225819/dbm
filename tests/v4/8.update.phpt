@@ -7,79 +7,45 @@ include __DIR__."/../before.v4.php";
 $conn = new \dbm\Connect('mysql:dbname=test','root','root');
 $conn->debug=true;
 
-echo $conn->model(Post::class)->delete(true)."\n";
+// echo $conn->model(Post::class)->delete(true)."\n";
+// echo $conn->model(User::class)->delete(true)."\n";  
+// echo $conn->model(PostType::class)->delete(true)."\n";  
 
-echo "#sql[Post::class]->insert\n";
-$conn->model(Post::class)->insert([
-	'text'=>'insert','user_id'=>'1' 
-]);
-echo "#sql[Post::class]->insertMulit\n";
-$conn->model(Post::class)->insertMulit([
-	['text'=>'insertMulit','user_id'=>'1','post_type_id'=>1], 
-]);
-echo "#sql[User::class](2)[Post::class]->insert\n";
-$conn->model(User::class)->load(2)->ref(Post::class)->insert([ 
-	'text'=>'insertUser' ,'post_type_id'=>1
-]); 
+// echo "\n[new]#user->save()\n";
+// $user = new User;
+// $user['name']='new User';
+// $user->save();
+// print_r($user); 
 
-echo "#sql[Post::class][0][PostType::class]->insert\n";
-$conn->model(Post::class)->get(0)->ref(PostType::class)->insert([
-	'name'=>'type new'
-]);
-echo "---------------\n";
-$conn[Post::class]->map(function(Post $value){
-	echo json_encode($value); echo "\n"; 
-});
-$conn[PostType::class]->map(function(PostType $value){
-	echo json_encode($value); echo "\n"; 
-});
-echo "#sql[Post::class](7)[PostType::class]->update\n";
-$conn->model(Post::class)->load(7)->ref(PostType::class)->update([
-	'name'=>'type5'
-]); 
-$conn[Post::class]->map(function(Post $value){
-	echo json_encode($value); echo "\n"; 
-});
-$conn[PostType::class]->map(function(PostType $value){
-	echo json_encode($value); echo "\n"; 
-}); 
+// echo "\n[1:n]#user[Post]->insert()->save()\n";
+// $posts = $user->ref(Post::class);
+// $post = $posts->insert(['text'=>'a']); 
+// $post['text']='b';
+// $post->save(); 
+
+// echo "\n[1:1]#post[PostType]->set()         \n";
+// $posttypes = $post->ref(PostType::class,'Id');
+// $posttypes->set([ 
+// 	'name'=>'type2'
+// ]); 
+// $posttypes->set([ 
+// 	'name'=>'type2 change'
+// ]); 
+
+//print_r($post);
+// echo "#sql[Post::class](7)[PostType::class]->update\n";
+// $conn->model(Post::class)->load(7)->ref(PostType::class)->update([
+// 	'name'=>'type5'
+// ]); 
+
+// echo "\n---------------\n";
+// $conn[Post::class]->map(function(Post $value){
+// 	echo json_encode($value); echo "\n"; 
+// });
+// $conn[PostType::class]->map(function(PostType $value){
+// 	echo json_encode($value); echo "\n"; 
+// }); 
+// echo "---------------\n\n";
 
 ?>
---EXPECT--
-<!--DELETE FROM `zz_post` ;-->
-6
-#sql[Post::class]->insert
-<!--INSERT INTO `zz_post` SET `text`=?,`user_id`=?;insert,1-->
-#sql[Post::class]->insertMulit
-<!--INSERT INTO `zz_post` (`text`,`user_id`,`post_type_id` )VALUES(?,?,?);insertMulit,1,1-->
-#sql[User::class](2)[Post::class]->insert
-<!--SELECT * FROM `zz_user`  WHERE `Id`=?  ;2-->
-<!--INSERT INTO `zz_post` SET `text`=?,`post_type_id`=?,`user_id`=?;insertUser,1,2-->
-#sql[Post::class][0][PostType::class]->insert
-<!--SELECT * FROM `zz_post`    LIMIT 1;-->
-<!--INSERT INTO `zz_post_type` SET `name`=?,`Id`=?;type new,-->
-<!--UPDATE `zz_post` SET `post_type_id`=?  WHERE `Id`=?;5,7-->
----------------
-<!--SELECT * FROM `zz_post`   ;-->
-{"Id":"7","post_type_id":"5","user_id":"1","text":"insert"}
-{"Id":"8","post_type_id":"1","user_id":"1","text":"insertMulit"}
-{"Id":"9","post_type_id":"1","user_id":"2","text":"insertUser"}
-<!--SELECT * FROM `zz_post_type`   ;-->
-{"Id":"1","name":"type1"}
-{"Id":"2","name":"type2"}
-{"Id":"3","name":"type3"}
-{"Id":"4","name":"nn"}
-{"Id":"5","name":"type new"}
-#sql[Post::class](7)[PostType::class]->update
-<!--SELECT * FROM `zz_post`  WHERE `Id`=?  ;7-->
-<!--UPDATE `zz_post_type` SET `name`=?  WHERE `Id`=?;type5,5-->
-<!--SELECT * FROM `zz_post`   ;-->
-{"Id":"7","post_type_id":"5","user_id":"1","text":"insert"}
-{"Id":"8","post_type_id":"1","user_id":"1","text":"insertMulit"}
-{"Id":"9","post_type_id":"1","user_id":"2","text":"insertUser"}
-<!--SELECT * FROM `zz_post_type`   ;-->
-{"Id":"1","name":"type1"}
-{"Id":"2","name":"type2"}
-{"Id":"3","name":"type3"}
-{"Id":"4","name":"nn"}
-{"Id":"5","name":"type5"}
+--EXPECT--  

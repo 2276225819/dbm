@@ -49,6 +49,8 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
             $sql = $this->find(...$pkv)->sql;
             $this->list = Session::$instance->select($sql);
         } 
+        if(empty($this->list[0]))
+            return null;
         return $this;
     } 
  
@@ -65,7 +67,10 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
             if (!isset($this->list)) {
                 $this->list = Session::$instance->select($this->sql);
             }
-            return $this->list[0][$field];
+            if(isset($this->list[0][$field]))
+            {
+                return $this->list[0][$field];
+            }
         }
     }
     
@@ -92,11 +97,18 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
                 }
             }
         } else {
-            $thisdata = Session::$instance->select($this->sql, true);
+            //$thisdata=$this->list;
+            // if($this->sql->rArgs){
+            //     $thisdata = $this->list; 
+            // }else{
+            $thisdata = Session::$instance->select($this->sql, true); 
+            //} 
             $s=[];
             foreach ($ref as $k => $f) {
                 foreach ($thisdata as $row) {
-                    $s[$k][]=$row[$f];
+                    if(!empty($row[$f])){
+                        $s[$k][]=$row[$f]; 
+                    }
                 }
                 if(isset($s[$k])){
                     $s[$k] = array_unique($s[$k]); 
@@ -104,7 +116,9 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
             }
             $model->sql->and($s);
             foreach ($ref as $k => $v) {
-                $model->sql->rArgs[$k]=$this->val($v);
+                if($val=$this->val($v)){
+                    $model->sql->rArgs[$k]=$val; 
+                } 
             }
         }
         do{
@@ -173,18 +187,43 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
      */
     function insert($arr)
     {
-        $arr = Session::$instance->insert($this->sql, $arr);
+        $sql = $this->sql;
+        $arr = Session::$instance->insert($sql, $arr); 
         // if (isset($this->rModel)) {
         // 	foreach ($this->rref as $i => $k) {
         // 		$this->rModel[$k]=$data[$i];
         // 	}
         // 	$this->rModel->save();
         // }
-        $row = new self($this->sql,Session::$instance);
-        $pk = $this->sql->pks[0];
+        $row = new static($sql,Session::$instance);
+        $pk = $sql->pks[0];
         $row->where([$pk=>$arr[$pk]]);
         $row->list = [$arr];
         return $row;
+    }   
+    /**
+     * RowCount
+     * @param array $data
+     * @param array ...$arr
+     * @return int
+     */
+    function update($arr)
+    {
+        $sql = $this->sql;
+        if (empty($sql->wStr)) {
+            throw new \Exception("Require Where Column", 1);
+        }
+        $count = Session::$instance->update($sql, $arr);
+        if(isset($sql->rsql)){ 
+            unset($sql->rArgs);
+            $sql->where([$sql->pks[0]=>$arr[$sql->pks[0]]]);
+            foreach ($sql->rref as $i => $k) {
+                $set[$k]=$arr[$i];
+            }
+            $sqlclone = clone $sql->rsql;
+            Session::$instance->update($sqlclone->where($sqlclone->rArgs),$set); 
+        }
+        return $count;
     }
     /**
      * RowCount
@@ -199,20 +238,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
         $count = Session::$instance->insertMulit($this->sql, $list);
         return $count;
     }
-    /**
-     * RowCount
-     * @param array $data
-     * @param array ...$arr
-     * @return int
-     */
-    function update($arr)
-    {
-        if (empty($this->sql->wStr)) {
-            throw new \Exception("Require Where Column", 1);
-        }
-        $count = Session::$instance->update($this->sql, $arr);
-        return $count;
-    }
+
     /**
      * RowCount
      * @return int
@@ -232,13 +258,13 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
     function save($dirty = null)
     {
         if (isset($dirty)) { 
-            $this->dirty= array_merge($this->dirty,$dirty);
+            $this->dirty= array_merge($this->dirty??[],$dirty);
         }
         if (empty($this->dirty)) {
             throw new \Exception("Require Change Column", 1);
         }
         if (count($this->sql->rArgs)) {
-            $this->where($this->sql->rArgs);
+            $this->whereAnd($this->sql->rArgs);
         }
         if (empty($this->sql->wStr)) {
             $row = $this->insert($this->dirty);
@@ -258,11 +284,10 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
             }
         }
         if (isset($where)) {
-            if ($row = $this->where($where)->get()) {
-                foreach ($data as $key => $value) {
-                    $row->dirty[$key]=$value;
-                }
-                return $row->save();
+            if ($row = $this->where($where)->get()) { 
+                $diff = array_diff($data,$row->list[0]);
+                if(!empty($diff)) $row->update($diff);
+                return $row;//->save();
             }
         }
         return (bool)$this->insert($data);

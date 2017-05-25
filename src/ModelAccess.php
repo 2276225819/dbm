@@ -8,7 +8,7 @@ trait ModelAccess
     
     public static function byName($table,$pks){
         if (class_exists($table) && isset($table::$table) ){  
-            $sql = new Pql($table::$table,isset($table::$pks)?$table::$pks:$pks);
+            $sql = new Pql($table::$table,$pks??$table::$pks);
             return new $table($sql); 
         }else{ 
             $sql = new Pql($table,$pks);
@@ -17,7 +17,7 @@ trait ModelAccess
     }
     function __construct($sql=null)
     {
-        $this->sql = $sql??new Pql;
+        $this->sql = $sql??new Pql(static::$table,static::$pks);
         Session::$gc++; 
     }
     function __clone(){
@@ -38,7 +38,10 @@ trait ModelAccess
         if (isset($this->list[0])) {
             return $this->list[0];
         } else {
-            return [':'=>(string)$this->sql];
+            $arr[":"]=(string)$this->sql;
+            if(isset($this->sql->rArgs))
+                $arr['?']=json_encode($this->sql->rArgs);
+            return $arr;
         }
         //throw new \Exception("Error Processing Request", 1);
     }

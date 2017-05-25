@@ -55,11 +55,13 @@ Array
     [0] => User Object
         (
             [:] => SELECT * FROM `zz_user`    LIMIT 1 OFFSET 1 ;
+            [?] => []
         )
 
     [1] => dbm\Model Object
         (
             [:] => SELECT * FROM `zz_user`    LIMIT 1 OFFSET 1 ;
+            [?] => []
         )
 
 )
@@ -75,11 +77,13 @@ Array
     [0] => User Object
         (
             [:] => SELECT * FROM `zz_user`  WHERE (`Id`=?)  ;3
+            [?] => {"Id":3}
         )
 
     [1] => dbm\Model Object
         (
             [:] => SELECT * FROM `zz_user`  WHERE (`Id`=?)  ;3
+            [?] => {"Id":3}
         )
 
 )

@@ -40,6 +40,14 @@ class Session
 			return $arr??[];
 		} 
     }
+    function delete($sql)
+    {      
+		$str="DELETE FROM {$sql->table} {$sql->wStr}";
+        if (!($query = $this->conn->execute($str, $sql->wArgs))) {
+            throw new \Exception("Error Processing Delete", 1);
+        }
+        return $query->rowCount();
+    }
     function update($sql,$data,...$arr)
     {
         $param = [];
@@ -49,38 +57,43 @@ class Session
         if (!($query = $this->conn->execute($str, $param))) {
             throw new \Exception("Error Processing Update", 1);
         }
-        return $query->rowCount();
-    }
-    function delete($sql)
-    {      
-		$str="DELETE FROM {$sql->table} {$sql->wStr}";
-        if (!($query = $this->conn->execute($str, $sql->wArgs))) {
-            throw new \Exception("Error Processing Delete", 1);
+        if(isset($sql->rsql)){ 
+            unset($sql->rArgs);
+            $sql->where([$sql->pks[0]=>$arr[$sql->pks[0]]]);
+            foreach ($sql->rref as $i => $k) {
+                $set[$k]=$arr[$i];
+            }
+            $sqlclone = clone $sql->rsql;
+            $this->update($sqlclone->where($sqlclone->rArgs),$set); 
         }
         return $query->rowCount();
     }
     function insert($sql, $data)
     {
-        $data = array_merge($data, $sql->rArgs, $sql->sArgs);
-        $str = "INSERT INTO {$sql->table} SET ".$sql->kvSQL($param, ',', $data);
+        $data = array_merge($data, $sql->rArgs, $sql->sArgs); 
+        $sql1 = '';
+        $sql2 = ",(".substr(str_repeat(",?", count($data)), 1).")"; 
+        foreach ($data as $key => $value) {
+            $sql1.=",`{$key}`";
+            $param[]=$value;
+        } 
+        $str="INSERT INTO {$sql->table} (".substr($sql1, 1)." )VALUES".substr($sql2, 1);
         if (!($query = $this->conn->execute($str, $param))) {
             throw new \Exception("Error Processing Insert" );
         }
         //AUTO INCREMENT
         $last_id = $this->conn->lastInsertId();
-        if (!empty($last_id)) {
-            $key = $sql->pks[0];
-            $data[$key]=$last_id;
-
-            if(isset($sql->rsql)){ 
-                unset($sql->rArgs);
-                $sql->where([$key=>$last_id]);
-                foreach ($sql->rref as $i => $k) {
-                    $set[$k]=$data[$i];
-                }
-                $sqlclone = clone $sql->rsql;
-                $this->update($sqlclone->where($sqlclone->rArgs),$set); 
+        if (!empty($last_id)) { 
+            $data[$sql->pks[0]]=$last_id;
+        } 
+        if(isset($sql->rsql)){ 
+            unset($sql->rArgs);
+            $sql->where([$sql->pks[0]=>$arr[$sql->pks[0]]]);
+            foreach ($sql->rref as $i => $k) {
+                $set[$k]=$arr[$i];
             }
+            $sqlclone = clone $sql->rsql;
+            $this->update($sqlclone->where($sqlclone->rArgs),$set); 
         }
 		$this->clean($sql->table);
         return $data;
