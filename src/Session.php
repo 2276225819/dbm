@@ -59,9 +59,9 @@ class Session
         }
         if(isset($sql->rsql)){ 
             unset($sql->rArgs);
-            $sql->where([$sql->pks[0]=>$arr[$sql->pks[0]]]);
+            $sql->where([$sql->pks[0]=>$data[$sql->pks[0]]]);
             foreach ($sql->rref as $i => $k) {
-                $set[$k]=$arr[$i];
+                $set[$k]=$data[$i];
             }
             $sqlclone = clone $sql->rsql;
             $this->update($sqlclone->where($sqlclone->rArgs),$set); 
@@ -88,9 +88,9 @@ class Session
         } 
         if(isset($sql->rsql)){ 
             unset($sql->rArgs);
-            $sql->where([$sql->pks[0]=>$arr[$sql->pks[0]]]);
+            $sql->where([$sql->pks[0]=>$data[$sql->pks[0]]]);
             foreach ($sql->rref as $i => $k) {
-                $set[$k]=$arr[$i];
+                $set[$k]=$data[$i];
             }
             $sqlclone = clone $sql->rsql;
             $this->update($sqlclone->where($sqlclone->rArgs),$set); 
