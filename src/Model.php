@@ -98,10 +98,10 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
             }
         } else {
             //$thisdata=$this->list;
-            // if($this->sql->rArgs){
-            //     $thisdata = $this->list; 
+            // if($this->sql->rArgs && count($this->list)==1){
+            //      $thisdata = $this->list; 
             // }else{
-            $thisdata = Session::$instance->select($this->sql, true); 
+                $thisdata = Session::$instance->select($this->sql, true); 
             //} 
             $s=[];
             foreach ($ref as $k => $f) {
@@ -126,8 +126,9 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
                 if(!in_array($k,$model::$pks))
                     break 2;
             } 
-            $model->sql->rsql=$this->sql;
+            $model->sql->rmodel = $this;
             $model->sql->rref=$ref; 
+            // $model->sql->rsql=$this->sql;
         }while(false); 
         
         return $model;
@@ -188,17 +189,21 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
     function insert($arr)
     {
         $sql = $this->sql;
-        $arr = Session::$instance->insert($sql, $arr); 
-        // if (isset($this->rModel)) {
-        // 	foreach ($this->rref as $i => $k) {
-        // 		$this->rModel[$k]=$data[$i];
-        // 	}
-        // 	$this->rModel->save();
-        // }
+        $data = Session::$instance->insert($sql, $arr);  
+        if(isset($sql->rmodel)){ 
+            unset($sql->rArgs);
+            $sql->where([$sql->pks[0]=>$data[$sql->pks[0]]]); 
+            foreach ($sql->rref as $i => $k) {
+                $sql->rmodel[$k]=$data[$i]; 
+            }
+            $sql->rmodel->save(); 
+        }
+        
         $row = new static($sql,Session::$instance);
         $pk = $sql->pks[0];
-        $row->where([$pk=>$arr[$pk]]);
-        $row->list = [$arr];
+        $row->where($row->sql->rArgs = [$pk=>$data[$pk]]); 
+        $row->list = [$data]; 
+        Session::$instance->cache[$s=(string)$sql]=[$data]; 
         return $row;
     }   
     /**
@@ -207,22 +212,21 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
      * @param array ...$arr
      * @return int
      */
-    function update($arr)
+    function update($data,...$arr)
     {
         $sql = $this->sql;
         if (empty($sql->wStr)) {
             throw new \Exception("Require Where Column", 1);
         }
-        $count = Session::$instance->update($sql, $arr);
-        if(isset($sql->rsql)){ 
-            unset($sql->rArgs);
-            $sql->where([$sql->pks[0]=>$arr[$sql->pks[0]]]);
-            foreach ($sql->rref as $i => $k) {
-                $set[$k]=$arr[$i];
-            }
-            $sqlclone = clone $sql->rsql;
-            Session::$instance->update($sqlclone->where($sqlclone->rArgs),$set); 
-        }
+        $count = Session::$instance->update($sql,$data,...$arr); 
+        // if(isset($sql->rmodel) && isset($sql->rArgs)){ 
+        //     unset($sql->rArgs);
+        //     $sql->where([$sql->pks[0]=>$sql->rArgs[$sql->pks[0]]]);
+        //     foreach ($sql->rref as $i => $k) {
+        //         $sql->rmodel[$k]=$data[$i]; 
+        //     }
+        //     $sql->rmodel->save();  
+        // }
         return $count;
     }
     /**
@@ -256,42 +260,45 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
 
 
     function save($dirty = null)
-    {
-        if (isset($dirty)) { 
-            $this->dirty= array_merge($this->dirty??[],$dirty);
-        }
-        if (empty($this->dirty)) {
+    { 
+        $dirty = array_merge($this->dirty??[],$dirty??[]);
+        $sql = $this->sql;
+        if ( !count($dirty) ) {
             throw new \Exception("Require Change Column", 1);
+        } 
+ 
+        if(empty($sql->wStr) || empty($this->get()) ){
+            $row = $this->insert($dirty);
+            $this->list=$row->list; 
+            return $this; 
         }
-        if (count($this->sql->rArgs)) {
-            $this->whereAnd($this->sql->rArgs);
-        }
-        if (empty($this->sql->wStr)) {
-            $row = $this->insert($this->dirty);
-            $this->list=$row->list;
-            return $this;
-        } else {
-            $this->update($this->dirty);
-            return $this;
-        }
+        // if ( isset($sql->rArgs) && count($sql->rArgs)) {
+        //     $this->whereAnd($sql->rArgs);
+        // }
+        // if ( empty($sql->wStr) ) {
+        // } 
+        $this->update($dirty);
+        $this->dirty=[];
+        return $this;
+    
     } 
-    function set($arr)
-    {
-        $data = array_merge($this->sql->rArgs, $arr);
-        foreach ($this->sql->pks as $key) {
-            if (isset($data[$key]) && in_array($key, $this->sql->pks)) {
-                $where[$key]=$data[$key];
-            }
-        }
-        if (isset($where)) {
-            if ($row = $this->where($where)->get()) { 
-                $diff = array_diff($data,$row->list[0]);
-                if(!empty($diff)) $row->update($diff);
-                return $row;//->save();
-            }
-        }
-        return (bool)$this->insert($data);
-    }
+    // function set($arr)
+    // {
+    //     $data = array_merge($this->sql->rArgs, $arr);
+    //     foreach ($this->sql->pks as $key) {
+    //         if (isset($data[$key]) && in_array($key, $this->sql->pks)) {
+    //             $where[$key]=$data[$key];
+    //         }
+    //     }
+    //     if (isset($where)) {
+    //         if ($row = $this->where($where)->get()) { 
+    //             $diff = array_diff($data,$row->list[0]);
+    //             if(!empty($diff)) $row->update($diff);
+    //             return $row;//->save();
+    //         }
+    //     }
+    //     return (bool)$this->insert($data);
+    // }
     /////////////sql///////////////
     
     /**

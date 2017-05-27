@@ -7,45 +7,67 @@ include __DIR__."/../before.v4.php";
 $conn = new \dbm\Connect('mysql:dbname=test','root','root');
 $conn->debug=true;
 
-// echo $conn->model(Post::class)->delete(true)."\n";
-// echo $conn->model(User::class)->delete(true)."\n";  
-// echo $conn->model(PostType::class)->delete(true)."\n";  
+echo $conn->model(Post::class)->delete(true)."\n";
+echo $conn->model(User::class)->delete(true)."\n";  
+echo $conn->model(PostType::class)->delete(true)."\n";  
 
-// echo "\n[new]#user->save()\n";
-// $user = new User;
-// $user['name']='new User';
-// $user->save();
-// print_r($user); 
+echo "\n[new]#user->save()\n";
+$user = new User;
+$user['name']='new User';
+$user->save();
+print_r($user); 
 
-// echo "\n[1:n]#user[Post]->insert()->save()\n";
-// $posts = $user->ref(Post::class);
-// $post = $posts->insert(['text'=>'a']); 
-// $post['text']='b';
-// $post->save(); 
+echo "\n[1:n]#user[Post]->save(),#post->save()\n";
+$posts = $user->ref(Post::class);
+$post = $posts->save(['text'=>'a']); 
+$post['text']='b';
+$post->save(); 
+print_r($post); 
 
-// echo "\n[1:1]#post[PostType]->set()         \n";
-// $posttypes = $post->ref(PostType::class,'Id');
-// $posttypes->set([ 
-// 	'name'=>'type2'
-// ]); 
-// $posttypes->set([ 
-// 	'name'=>'type2 change'
-// ]); 
-
-//print_r($post);
-// echo "#sql[Post::class](7)[PostType::class]->update\n";
-// $conn->model(Post::class)->load(7)->ref(PostType::class)->update([
-// 	'name'=>'type5'
-// ]); 
-
-// echo "\n---------------\n";
-// $conn[Post::class]->map(function(Post $value){
-// 	echo json_encode($value); echo "\n"; 
-// });
-// $conn[PostType::class]->map(function(PostType $value){
-// 	echo json_encode($value); echo "\n"; 
-// }); 
-// echo "---------------\n\n";
+echo "\n[1:n]#posts[PostType]->save()\n";  
+$ptype = $post->ref(PostType::class)->save(['name'=>'a']);  
+print_r($post); 
+print_r($ptype);  
 
 ?>
---EXPECT--  
+--EXPECT--
+<!--DELETE FROM `zz_post` ;-->
+6
+<!--DELETE FROM `zz_user` ;-->
+3
+<!--DELETE FROM `zz_post_type` ;-->
+4
+
+[new]#user->save()
+<!--INSERT INTO `zz_user` (`name` )VALUES(?);new User-->
+User Object
+(
+    [name] => new User
+    [Id] => 4
+)
+
+[1:n]#user[Post]->save(),#post->save()
+<!--INSERT INTO `zz_post` (`text`,`user_id` )VALUES(?,?);a,4-->
+<!--UPDATE `zz_post` SET `text`=?  WHERE (`Id`=?);b,7-->
+Post Object
+(
+    [text] => b
+    [user_id] => 4
+    [Id] => 7
+)
+
+[1:n]#posts[PostType]->save()
+<!--INSERT INTO `zz_post_type` (`name` )VALUES(?);a-->
+<!--UPDATE `zz_post` SET `post_type_id`=?  WHERE (`Id`=?);5,7-->
+Post Object
+(
+    [text] => b
+    [user_id] => 4
+    [Id] => 7
+    [post_type_id] => 5
+)
+PostType Object
+(
+    [name] => a
+    [Id] => 5
+)

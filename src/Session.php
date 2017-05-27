@@ -18,10 +18,10 @@ class Session
     }
     function select($sql,$all=false)
     {
-        $ssql = $sql->bulidSelect();
-        $args = $sql->bulidArgs();
-        $hash = "$ssql;".join($args, ',');
+        $hash = (string)$sql; 
         if (!isset($this->cache[$hash])) { 
+            $ssql = $sql->bulidSelect();
+            $args = $sql->bulidArgs();
 			$fetch = $this->conn->execute($ssql, $args);
 			$fetch->setFetchMode(\PDO::FETCH_ASSOC);
 			$this->cache[$hash]=$fetch->fetchAll(); 
@@ -57,15 +57,6 @@ class Session
         if (!($query = $this->conn->execute($str, $param))) {
             throw new \Exception("Error Processing Update", 1);
         }
-        if(isset($sql->rsql)){ 
-            unset($sql->rArgs);
-            $sql->where([$sql->pks[0]=>$data[$sql->pks[0]]]);
-            foreach ($sql->rref as $i => $k) {
-                $set[$k]=$data[$i];
-            }
-            $sqlclone = clone $sql->rsql;
-            $this->update($sqlclone->where($sqlclone->rArgs),$set); 
-        }
         return $query->rowCount();
     }
     function insert($sql, $data)
@@ -86,15 +77,6 @@ class Session
         if (!empty($last_id)) { 
             $data[$sql->pks[0]]=$last_id;
         } 
-        if(isset($sql->rsql)){ 
-            unset($sql->rArgs);
-            $sql->where([$sql->pks[0]=>$data[$sql->pks[0]]]);
-            foreach ($sql->rref as $i => $k) {
-                $set[$k]=$data[$i];
-            }
-            $sqlclone = clone $sql->rsql;
-            $this->update($sqlclone->where($sqlclone->rArgs),$set); 
-        }
 		$this->clean($sql->table);
         return $data;
     }

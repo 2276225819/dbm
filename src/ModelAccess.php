@@ -92,7 +92,11 @@ trait ModelAccess
         if (empty($this->data[$offset]) || $this->data[$offset]!=$value) {
             $this->dirty[$offset]=$value;
         }
-        $this->data[$offset]=$value;
+        if(isset($this->list)){
+            foreach ($this->list as &$row) {
+                $row[$offset]=$value;
+            }  
+        }
     }
     function offsetGet($offset)
     {

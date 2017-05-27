@@ -67,8 +67,10 @@ class Pql
      */
     public function where($w, ...$arr)
     {
-        $this->wArgs=[];
-        $this->wStr=" WHERE (".$this->kvSQL($this->wArgs, ' AND ', $w, $arr).")";
+        if(!empty($w)){
+            $this->wArgs=[];
+            $this->wStr=" WHERE (".$this->kvSQL($this->wArgs, ' AND ', $w, $arr).")";
+        }
         return $this;
     }
     /**
@@ -79,8 +81,10 @@ class Pql
      */
     public function and($w, ...$arr)
     {
-        $this->wStr.=empty($this->wStr)?" WHERE ":" AND ";
-        $this->wStr.="(".$this->kvSQL($this->wArgs, ' AND ', $w, $arr).")";
+        if(!empty($w)){
+            $this->wStr.=empty($this->wStr)?" WHERE ":" AND ";
+            $this->wStr.="(".$this->kvSQL($this->wArgs, ' AND ', $w, $arr).")"; 
+        }
         return $this;
     }
     /**
@@ -91,8 +95,10 @@ class Pql
      */
     public function or($w, ...$arr)
     {
-        $this->wStr.=empty($this->wStr)?" WHERE ":" OR ";
-        $this->wStr.="(".$this->kvSQL($this->wArgs, ' OR ', $w, $arr).")";
+        if(!empty($w)){
+            $this->wStr.=empty($this->wStr)?" WHERE ":" OR ";
+            $this->wStr.="(".$this->kvSQL($this->wArgs, ' OR ', $w, $arr).")";
+        }
         return $this;
     }
     
