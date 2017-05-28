@@ -5,14 +5,14 @@ class Session
 	/** 
 	 * @var Connect
 	 */
-	public $conn;
+	public $conn=null;
     public $cache=[];//[SQL:hash=>[arr,arr,arr]
     /** 
      * @var Session
      */
     public static $instance;
     public static $gc;
-    function __construct($conn)
+    function __construct(&$conn)
     {
         $this->conn=$conn;
     }
@@ -105,6 +105,7 @@ class Session
     {
         if (empty($table)) {
             $this->cache=[];
+            $this->db=null;
         } else {
             foreach ($this->cache as $key => $value) {
                 if (strstr($key, $table)) {

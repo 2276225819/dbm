@@ -2,8 +2,6 @@
 
 trait SqlIterator
 {
-
- 
     /** @var Connect */
     public $db;
     public $model;
@@ -43,7 +41,7 @@ trait SqlIterator
         if (empty(static::$qs[$hash])) {
             $query=$this->db->execute($sql, $args);
             $query->setFetchMode(\PDO::FETCH_ASSOC);
-            static::$qs[$hash]=$query; 
+            static::$qs[$hash]=$query;
             static::$cs[$hash]=$query->fetchAll();
         }
         return new \ArrayIterator(static::$cs[$hash]);

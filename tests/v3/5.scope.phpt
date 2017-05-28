@@ -28,8 +28,7 @@ print_r($conn->sql(User::class)->map(function(User $u){
 })); 
 
 echo "# clear cache\n";
-$cache = $conn->scope();
-$cache->clear();
+unset($u);
 
 echo "# new query\n";
 print_r($conn->sql(User::class)->map(function(User $u){
