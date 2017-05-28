@@ -2,14 +2,14 @@
 
 --FILE--
 <?php  
-include __DIR__."/../before.v4.php";
+include __DIR__."/../before.php";
 
 $conn = new \dbm\Connect('mysql:dbname=test','root','root');
 $conn->debug=true;
 
-echo $conn->model(Post::class)->delete(true)."\n";
-echo $conn->model(User::class)->delete(true)."\n";  
-echo $conn->model(PostType::class)->delete(true)."\n";  
+echo $conn->sql(Post::class)->delete(true)."\n";
+echo $conn->sql(User::class)->delete(true)."\n";  
+echo $conn->sql(PostType::class)->delete(true)."\n";  
 
 echo "\n[new]#user->save()\n";
 $user = new User;

@@ -2,25 +2,25 @@
 
 --FILE--
 <?php  
-include __DIR__."/../before.v4.php";
+include __DIR__."/../before.php";
 
 $conn = new \dbm\Connect('mysql:dbname=test','root','root');
 $conn->debug=true;
  
 //<!--SELECT * FROM `zz_user`  WHERE (1=1) AND (2=2 or 3=3)  ;-->
-print_r($conn->model(User::class)->whereAnd('1=1')->whereAnd('2=2 or 3=3')->all('Id'));
+print_r($conn->sql(User::class)->whereAnd('1=1')->whereAnd('2=2 or 3=3')->all('Id'));
 
 //<!--SELECT text,Id as `__KEY__` FROM `zz_post`  WHERE (`id`>4)  ;-->
-print_r($conn->model('zz_post','Id')->whereOr('id>4')->field('text')->keypair());
+print_r($conn->sql('zz_post','Id')->whereOr('id>4')->field('text')->keypair());
 
-//<!--SELECT *,name as `__KEY__` FROM `zz_user`  WHERE (`id`=2)  ;-->
-print_r($conn->model('zz_user','Id')->where('id=1')->where('id=3')->where('id=2')->keypair('name'));
+//<!--SELECT * FROM `zz_user`  WHERE (`id`=2)  ;-->
+print_r($conn->sql('zz_user','Id')->where('id=1')->where('id=3')->where('id=2')->keypair('name'));
 
-//<!--SELECT *,Id as `__KEY__` FROM `zz_user`  WHERE (`id`=1) OR (`id`=3)  ;-->
-print_r($conn->model('zz_user','Id')->whereOr('id=1')->whereOr('id=3')->keypair('Id','name'));
+//<!--SELECT * FROM `zz_user`  WHERE (`id`=1) OR (`id`=3)  ;-->
+print_r($conn->sql('zz_user','Id')->whereOr('id=1')->whereOr('id=3')->keypair('Id','name'));
 
 //<!--SELECT * FROM `zz_user`   ;-->
-print_r($conn->model(User::class)->map(function(User $u){
+print_r($conn->sql(User::class)->map(function(User $u){
     return "{$u['Id']}-{$u['name']}";
 }));
   
@@ -47,7 +47,7 @@ Array
         )
 
 )
-<!--SELECT *,name as `__KEY__` FROM `zz_user`  WHERE (`id`=2)  ;-->
+<!--SELECT * FROM `zz_user`  WHERE (`id`=2)  ;-->
 Array
 (
     [u2] => dbm\Model Object
@@ -58,7 +58,7 @@ Array
         )
 
 )
-<!--SELECT *,Id as `__KEY__` FROM `zz_user`  WHERE (`id`=1) OR (`id`=3)  ;-->
+<!--SELECT * FROM `zz_user`  WHERE (`id`=1) OR (`id`=3)  ;-->
 Array
 (
     [1] => u1

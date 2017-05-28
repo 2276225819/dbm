@@ -13,6 +13,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
 
     /////////////model///////////////
     /**
+     * Row
      * @param number|null $offset
      * @return \dbm\Model
      */
@@ -40,6 +41,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
     }
    
     /**
+     * Row
      * @param mixed[] ...$pkv
      * @return \dbm\Model
      */
@@ -54,14 +56,16 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
         }
         return $this;
     }
- 
     /**
      * $sql->val(FILED) as mixed
      * @param string $field
      * @return mixed
      */
-    function val($field, $val = null)
+    function val($field = null, $val = null)
     {
+        if ($field===null) {
+            return $this->toArray();
+        }
         if (isset($val)) {
             return $this->dirty[$field]=$val;
         } else {
@@ -106,6 +110,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
                 }
                 if (isset($s[$k])) {
                     $s[$k] = array_unique($s[$k]);
+                    sort($s[$k]);
                 }
             }
             if (isset($s)) {
@@ -159,10 +164,15 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
         if (empty($key)) {
             $key = $this->sql->pks[0];
         }
-        $this->sql->fStr.=",$key as __KEY__";
+        if ($this->sql->fStr!='*') {
+            $this->sql->fStr.=",$key as __KEY__";
+            $key = "__KEY__";
+        }
         foreach ($this as $row) {
-            $kstr = $row->list[0]['__KEY__'];
-            unset($row->list[0]['__KEY__']);
+            $kstr = $row->list[0][$key];
+            if ($key=='__KEY__') {
+                unset($row->list[0][$key]);
+            }
             if (empty($field)) {
                 $arr[$kstr]=clone $row;
             } elseif (isset($row->list[0][$field])) {
@@ -296,6 +306,9 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
         return $this;
     }
     /**
+     * Sql
+     * @param int $limit
+     * @param int $offset
      * @return \dbm\Model
      */
     function limit($limit, $offset = 0)
@@ -303,6 +316,22 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
         $this->sql->limit($limit, $offset);
         return $this;
     }
+    /**
+     * Sql
+     * @param mixed[] ...$pkv
+     * @return \dbm\Model
+     */
+    public function find(...$pkv)
+    {
+        if (is_array($pkv[0] && empty($pkv[0][0]))) {
+            $arr = $pkv[0];
+        } else {
+            $arr = array_combine($this->sql->pks, $pkv);
+        }
+        $this->sql->rArgs=$arr;
+        return $this->where($arr);
+    }
+ 
     /**
      * @return \dbm\Model
      */

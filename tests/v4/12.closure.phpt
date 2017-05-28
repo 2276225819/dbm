@@ -2,28 +2,28 @@
 
 --FILE--
 <?php  
-include __DIR__."/../before.v4.php";
+include __DIR__."/../before.php";
 
 $conn = new \dbm\Connect('mysql:dbname=test','root','root');
 $conn->debug=true;
  
 echo "# not cache\n";
-$conn->model(User::class)->each(function(User $u){
+$conn->sql(User::class)->each(function(User $u){
 	$u['name']=1;
 	$u->save(); 
 });  
 echo "# new query\n";
-print_r($conn->model(User::class)->map(function(User $u){
+print_r($conn->sql(User::class)->map(function(User $u){
 	return $u['name'];
 }));
 
 echo "# cache query\n";
-foreach ($conn->model(User::class) as $u){ 
+foreach ($conn->sql(User::class) as $u){ 
 	$u['name']=2;
 	$u->save(); 
 } 
 echo "# old query\n";
-print_r($conn->model(User::class)->map(function(User $u){
+print_r($conn->sql(User::class)->map(function(User $u){
 	return $u['name'];
 })); 
 
@@ -31,7 +31,7 @@ echo "# clear cache\n";
 unset($u);
 
 echo "# new query\n";
-print_r($conn->model(User::class)->map(function(User $u){
+print_r($conn->sql(User::class)->map(function(User $u){
 	return $u['name'];
 }));
 

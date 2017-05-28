@@ -2,24 +2,24 @@
 
 --FILE--
 <?php  
-include __DIR__."/../before.v4.php";
+include __DIR__."/../before.php";
 
 $conn = new \dbm\Connect('mysql:dbname=test','root','root');
 $conn->debug=true;
 
 //<!--SELECT * FROM `zz_post`  WHERE (`user_id` in (SELECT Id FROM `zz_user`  WHERE (`Id`=?)  )) AND (`post_type_id`=?)  ;1,1-->
-print_r($conn->model('zz_user','Id')->find(1)
+print_r($conn->sql('zz_user','Id')->find(1)
         ->ref('zz_post','Id',['user_id'=>'Id'])->whereAnd('post_type_id=?',"1")
         ->all());
 
 //<!--SELECT * FROM `zz_user`  WHERE (`Id`=?)  ;1-->
 //<!--SELECT * FROM `zz_post`  WHERE (`user_id`=?) AND (`post_type_id`=?)  ;1,1-->
-print_r($conn->model('zz_user','Id')->load(1)
+print_r($conn->sql('zz_user','Id')->load(1)
         ->ref('zz_post','Id',['user_id'=>'Id'])->whereAnd('post_type_id=?',"1")
         ->all());
 
 //<!--SELECT * FROM `zz_user`  WHERE (`Id` in (SELECT user_id FROM `zz_post`  WHERE (`id` in(3,4))  ))  ;-->
-print_r($conn->model(Post::class)->where('id in(3,4)')
+print_r($conn->sql(Post::class)->where('id in(3,4)')
         ->ref(User::class)->map(function(User $u){
             return "{$u['Id']}:{$u['name']}";
         }));

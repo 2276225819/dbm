@@ -39,9 +39,9 @@ print_r($conn->sql(User::class)->map(function(User $u){
 --EXPECT-- 
 # not cache
 <!--SELECT * FROM `zz_user`   ;-->
-<!--UPDATE `zz_user` SET `name`=?  WHERE `Id`=?;1,1-->
-<!--UPDATE `zz_user` SET `name`=?  WHERE `Id`=?;1,2-->
-<!--UPDATE `zz_user` SET `name`=?  WHERE `Id`=?;1,3-->
+<!--UPDATE `zz_user` SET `name`=?  WHERE (`Id`=?);1,1-->
+<!--UPDATE `zz_user` SET `name`=?  WHERE (`Id`=?);1,2-->
+<!--UPDATE `zz_user` SET `name`=?  WHERE (`Id`=?);1,3-->
 # new query
 <!--SELECT * FROM `zz_user`   ;-->
 Array
@@ -52,9 +52,9 @@ Array
 )
 # cache query
 <!--SELECT * FROM `zz_user`   ;-->
-<!--UPDATE `zz_user` SET `name`=?  WHERE `Id`=?;2,1-->
-<!--UPDATE `zz_user` SET `name`=?  WHERE `Id`=?;2,2-->
-<!--UPDATE `zz_user` SET `name`=?  WHERE `Id`=?;2,3-->
+<!--UPDATE `zz_user` SET `name`=?  WHERE (`Id`=?);2,1-->
+<!--UPDATE `zz_user` SET `name`=?  WHERE (`Id`=?);2,2-->
+<!--UPDATE `zz_user` SET `name`=?  WHERE (`Id`=?);2,3-->
 # old query
 Array
 (

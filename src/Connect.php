@@ -98,8 +98,8 @@ class Connect implements \ArrayAccess
      * @param array $pks
      * @return \dbm\Sql
      */
-    public function sql($model, $pks = [])
-    {
+    public function entity($model, $pks = null)
+    { 
         $pks = (array)$pks;
         if (class_exists($model) && isset($model::$table)) {
             $table = $model::$table;
@@ -114,15 +114,15 @@ class Connect implements \ArrayAccess
     }
     /**
      * ## dbm v4
-     * \dbm\Connnect->model(string $model)
+     * \dbm\Connnect->sql(string $model)
      *
-     * \dbm\Connnect->model(string $model ,array $pks )
+     * \dbm\Connnect->sql(string $model ,array $pks )
      *
      * @param string $model
      * @param array $pks
      * @return \dbm\Model
      */
-    public function model($model, $pks = null)
+    public function sql($model, $pks = null)
     { 
         if (empty(Session::$instance)) {
             Session::$instance = new Session($this); 

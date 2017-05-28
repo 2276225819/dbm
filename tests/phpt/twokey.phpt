@@ -38,36 +38,36 @@ echo "\n";
 
 ?>
 --EXPECTF--
-<!--SELECT * FROM `zz_user`  WHERE `Id`=?  ;1-->
+<!--SELECT * FROM `zz_user`  WHERE (`Id`=?)  ;1-->
 new friend:
 <!--INSERT INTO `zz_friend` (`uid2`,`uid1` )VALUES(?,?),(?,?);2,1,3,1-->
 2
 following:
-<!--SELECT * FROM `zz_friend`  WHERE `uid1`=?  ;1-->
+<!--SELECT * FROM `zz_friend`  WHERE (`uid1`=?)  ;1-->
 Array
 (
-    [0] => dbm\Entity Object
+    [0] => dbm\Model Object
         (
             [uid1] => 1
             [uid2] => 2
             [nickname] => 1->2
         )
 
-    [1] => dbm\Entity Object
+    [1] => dbm\Model Object
         (
             [uid1] => 1
             [uid2] => 3
             [nickname] => 1->3
         )
 
-    [2] => dbm\Entity Object
+    [2] => dbm\Model Object
         (
             [uid1] => 1
             [uid2] => 2
             [nickname] => 
         )
 
-    [3] => dbm\Entity Object
+    [3] => dbm\Model Object
         (
             [uid1] => 1
             [uid2] => 3
@@ -76,15 +76,15 @@ Array
 
 )
 followers:
-<!--SELECT * FROM `zz_friend`  WHERE `uid2`=?  ;1-->
+<!--SELECT * FROM `zz_friend`  WHERE (`uid2`=?)  ;1-->
 Array
 (
 )
 
 unfollow table;
-<!--SELECT * FROM `zz_friend`  WHERE `uid1`=? AND `uid2`=?  ;1,3-->
-<!--DELETE FROM `zz_friend`  WHERE `uid1`=? AND `uid2`=?;1,3-->
+<!--SELECT * FROM `zz_friend`  WHERE (`uid1`=? AND `uid2`=?)  ;1,3-->
+<!--DELETE FROM `zz_friend`  WHERE (`uid1`=? AND `uid2`=?);1,3-->
 
 unfollow model;
-<!--SELECT * FROM `zz_friend`  WHERE `uid1`=? AND `uid2`=?  ;1,2-->
-<!--DELETE FROM `zz_friend`  WHERE `uid1`=? AND `uid2`=?;1,2-->
+<!--SELECT * FROM `zz_friend`  WHERE (`uid1`=? AND `uid2`=?)  ;1,2-->
+<!--DELETE FROM `zz_friend`  WHERE (`uid1`=? AND `uid2`=?);1,2-->

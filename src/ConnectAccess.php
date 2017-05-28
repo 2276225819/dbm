@@ -43,11 +43,11 @@ trait ConnectAccess
     public function offsetGet($offset)
     {
         if (defined("$offset::Entity")) {
-            return $this->sql($offset);
+            return $this->entity($offset);
         }
 
         if (defined("$offset::Model")) {
-            return $this->model($offset);
+            return $this->sql($offset);
         }
         
         throw new \Exception("Error Processing Request", 1);

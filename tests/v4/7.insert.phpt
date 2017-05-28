@@ -2,24 +2,24 @@
 
 --FILE--
 <?php  
-include __DIR__."/../before.v4.php";
+include __DIR__."/../before.php";
 
 $conn = new \dbm\Connect('mysql:dbname=test','root','root');
 $conn->debug=true;
 
-echo $conn->model(Post::class)->delete(true)."\n";   
-echo $conn->model(User::class)->delete(true)."\n";  
+echo $conn->sql(Post::class)->delete(true)."\n";   
+echo $conn->sql(User::class)->delete(true)."\n";  
 
 
 echo "\n#sql[User::class]->insertMulit\n";
-$i = $conn->model(User::class)->insertMulit([
+$i = $conn->sql(User::class)->insertMulit([
 	['name'=>'u1'],  
 	['name'=>'u2'] 
 ]);
 echo $i;
 
 echo "\n#sql[Post::class]->insertMulit\n";
-$i = $conn->model(Post::class)->insert( 
+$i = $conn->sql(Post::class)->insert( 
 	['text'=>'insertMulit','user_id'=>'1','post_type_id'=>1]
 )->toArray();
 print_r($i);
@@ -27,12 +27,12 @@ print_r($i);
 
 
 echo "\n#sql[User::class](5)[Post::class]->insert\n";
-$conn->model(User::class)->load(5)->ref(Post::class)->insert([ 
+$conn->sql(User::class)->load(5)->ref(Post::class)->insert([ 
 	'text'=>'insertUser' ,'post_type_id'=>1
 ]); 
 try{ 
 echo "\n#sql[Post::class][0][PostType::class]->insert\n";
-$conn->model(Post::class)->get(0)->ref(PostType::class)->insert([
+$conn->sql(Post::class)->get(0)->ref(PostType::class)->insert([
 	'name'=>'type new'
 ]); 
 }catch(Throwable $e){

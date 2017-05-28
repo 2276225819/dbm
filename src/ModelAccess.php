@@ -20,7 +20,7 @@ trait ModelAccess
     }
     function __construct($sql = null)
     {
-        $this->sql = $sql??new Pql(static::$table, static::$pks);
+        $this->sql = $sql instanceof Pql?$sql:new Pql(static::$table, static::$pks);
         Session::$gc++;
     }
     function __clone()
@@ -51,10 +51,6 @@ trait ModelAccess
             return $arr;
         }
     }
-    function __toString()
-    {
-        return (string)$this->sql;//->getHash();
-    }
     function __invoke(...$pkv)
     {
         return $this->load(...$pkv);
@@ -68,6 +64,11 @@ trait ModelAccess
         $vals = Session::$instance->select($this->sql->field($attr));
         return $vals[0]['__VALUE__'];
     }
+    function __toString()
+    {
+        return (string)$this->sql;
+    }
+
     function getIterator()
     {
         if (!isset($this->list)) {
@@ -102,13 +103,16 @@ trait ModelAccess
     }
     function offsetSet($offset, $value)
     {
-        if (empty($this->data[$offset]) || $this->data[$offset]!=$value) {
-            $this->dirty[$offset]=$value;
-        }
-        if (isset($this->list)) {
+        if (isset($this->list[0])) {
+            if (empty($this->list[0][$offset]) or $this->list[0][$offset]!=$value) {
+                $this->dirty[$offset]=$value;
+            }
+        
             foreach ($this->list as &$row) {
                 $row[$offset]=$value;
             }
+        } else {
+            $this->dirty[$offset]=$value;
         }
     }
     function offsetGet($offset)
@@ -133,16 +137,6 @@ trait ModelAccess
 
 
 
-    function find(...$pkv)
-    {
-        if (is_array($pkv[0] && empty($pkv[0][0]))) {
-            $arr = $pkv[0];
-        } else {
-            $arr = array_combine($this->sql->pks, $pkv);
-        }
-        $this->sql->rArgs=$arr;
-        return $this->where($arr);
-    }
     function each($cb)
     {
         foreach ($this as $value) {
@@ -159,7 +153,44 @@ trait ModelAccess
         return $arr??[];
     }
 
-      
+
+
+    public function destroy(...$args)
+    {
+        return $this->delete(...$args);
+    }
+    public function and(...$args)
+    {
+        return $this->whereAnd(...$args);
+    }
+    public function or(...$args)
+    {
+        return $this->whereOr(...$args);
+    }
+    public function create(...$args)
+    {
+        return $this->save(...$args);
+    }
+
+    
+    public function set($data)
+    {
+        $data = array_merge($this->sql->rArgs, $data);
+        foreach ($this->sql->pks as $key) {
+            if (isset($data[$key]) && in_array($key, $this->sql->pks)) {
+                $where[$key]=$data[$key];
+            }
+        }
+        if (isset($where)) {
+            if ($row = $this->where($where)->get()) {
+                foreach ($data as $key => $value) {
+                    $row[$key]=$value;
+                }
+                return $row->save();
+            }
+        }
+        return (bool)$this->insert($data);
+    }
     public function many($model, $model_pks, $model_fks)
     {
         return $this->ref($model, (array)$model_pks,

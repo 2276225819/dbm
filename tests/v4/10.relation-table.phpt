@@ -2,12 +2,12 @@
 
 --FILE--
 <?php  
-include __DIR__."/../before.v4.php";
+include __DIR__."/../before.php";
 
 $conn = new \dbm\Connect('mysql:dbname=test','root','root');
 $conn->debug=true;
 
-foreach ($conn->model('zz_user','Id')->where('`id` in (1,3)') as $user) {
+foreach ($conn->sql('zz_user','Id')->where('`id` in (1,3)') as $user) {
 	echo $user->val('Id').":".$user->val('name')."\n"; 
 	foreach ($user->ref('zz_post','Id',['user_id'=>'Id']) as $post) {
 		echo "\tPOST:".$post->ref('zz_post_type','Id',['Id'=>'post_type_id'])->val('name');

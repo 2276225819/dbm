@@ -65,7 +65,7 @@ echo "\n";
 echo "dbm              :";
 $time=microtime(true);  
 for ($i=0; $i < $count; $i++) {
-    foreach($db->sql('zz_post','ID') as $row) 
+    foreach($db->entity('zz_post','ID') as $row) 
         $arr3 = $row->toArray()  ;
 }    
 echo microtime(true)-$time;
@@ -75,7 +75,7 @@ echo "\n";
 echo "dbm.v4           :";
 $time=microtime(true);  
 for ($i=0; $i < $count; $i++) {
-    foreach($db->model('zz_post','ID') as $row) 
+    foreach($db->sql('zz_post','ID') as $row) 
         $arr4 = $row->toArray();
 }    
 echo microtime(true)-$time;

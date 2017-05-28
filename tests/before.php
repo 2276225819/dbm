@@ -7,7 +7,7 @@ $sync->setPDO('mysql:host=127.0.0.1;dbname=test','root','root');
 $sync->push();
 $sync->clear();
 //////////// model ///////////////////
-class User extends dbm\Entity
+class User extends dbm\Model
 {
     static $table="zz_user";
 	static $pks=['Id'];  
@@ -17,7 +17,7 @@ class User extends dbm\Entity
 	];    
 } 
 
-class UserType  extends dbm\Entity
+class UserType  extends dbm\Model
 {
     static $table="zz_user_type";
     static $pks=['Id']; 
@@ -25,7 +25,7 @@ class UserType  extends dbm\Entity
 		User::class=>['type_id'=>'Id'],
 	]; 
 }
-class Post extends dbm\Entity
+class Post extends dbm\Model
 {
     static $table="zz_post";
     static $pks=['Id'];   
@@ -34,7 +34,7 @@ class Post extends dbm\Entity
     	PostType::class =>['Id'=>'post_type_id']
     ];  
 } 
-class PostType extends dbm\Entity
+class PostType extends dbm\Model
 {
     static $table="zz_post_type";
     static $pks=['Id'];   
@@ -42,7 +42,7 @@ class PostType extends dbm\Entity
 		Post::class=>['post_type_id'=>'Id'],
 	];
 }
-class Friend extends dbm\Entity
+class Friend extends dbm\Model
 {
     static $table="zz_friend";
     static $pks=['uid1','uid2'];    
@@ -76,7 +76,7 @@ $conn->sql(PostType::class)->insertMulit([
 $conn->sql(Post::class)->insertMulit([
 	['user_id'=>1,'post_type_id'=>1, 'text'=>'text1'],
 	['user_id'=>1,'post_type_id'=>1, 'text'=>'text2'],
-	['user_id'=>1,'post_type_id'=>1, 'text'=>'text3'],
+	['user_id'=>1,'post_type_id'=>2, 'text'=>'text3'],
 	['user_id'=>2,'post_type_id'=>3, 'text'=>'user2 22'],
 	['user_id'=>3,'post_type_id'=>2, 'text'=>'post32'],
 	['user_id'=>3,'post_type_id'=>1, 'text'=>'post31'],

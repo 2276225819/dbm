@@ -2,23 +2,23 @@
 
 --FILE--
 <?php  
-include __DIR__."/../before.v4.php";
+include __DIR__."/../before.php";
 
 $conn = new \dbm\Connect('mysql:dbname=test','root','root');
 $conn->debug=true;
  
 //<!--SELECT Id,name FROM `zz_user`   ;-->
-print_r($conn->model(User::class)->field(['Id','name'])->all());
+print_r($conn->sql(User::class)->field(['Id','name'])->all());
 
 //<!--SELECT Id as `id`,name FROM `zz_user`  WHERE (`id` =2 or `id`=3)  ;-->
-print_r($conn->model('zz_user','id')->field('Id as id,name')->whereAnd('id =2 or `id`=3')->all());
+print_r($conn->sql('zz_user','id')->field('Id as id,name')->whereAnd('id =2 or `id`=3')->all());
 
 //<!--SELECT text FROM `zz_post`  WHERE (`id` in (?,?) )  ;1,3-->
-print_r($conn->model('zz_post')->field('text')->whereAnd(['id'=>[1,3]])->all());
+print_r($conn->sql('zz_post')->field('text')->whereAnd(['id'=>[1,3]])->all());
 
 //<!--SELECT * FROM `zz_post`  WHERE (`user_id` in (SELECT Id FROM `zz_user`  WHERE (`Id`=?)  ))  ;2-->
-print_r($conn->model(Post::class)->whereAnd([
-    'user_id' => $conn->model('zz_user')->whereAnd(['Id'=>2])
+print_r($conn->sql(Post::class)->whereAnd([
+    'user_id' => $conn->sql('zz_user')->whereAnd(['Id'=>2])
 ])->all());
 
 ?>

@@ -2,35 +2,35 @@
 
 --FILE--
 <?php  
-include __DIR__."/../before.v4.php";
+include __DIR__."/../before.php";
 
 $conn = new \dbm\Connect('mysql:dbname=test','root','root');
 $conn->debug=true;
 
 //<!--SELECT * FROM `zz_user`   ;-->
 $a=$conn[User::class]['name'];
-$b=$conn->model('zz_user','Id')->val('name');
+$b=$conn->sql('zz_user','Id')->val('name');
 print_r([$a,$b]);
 
 //<!--SELECT * FROM `zz_user`    LIMIT 1 OFFSET 1 ;-->
 $a=$conn[User::class][1]['name'];
-$b=$conn->model('zz_user','Id')->get(1)->val('name');
+$b=$conn->sql('zz_user','Id')->get(1)->val('name');
 print_r([$a,$b]);    
 
 //<!--SELECT * FROM `zz_user`    LIMIT 1 OFFSET 1 ;-->
 $a=$conn[User::class]->limit(1,1);//['name'];
-$b=$conn->model('zz_user','Id')->limit(1,1);//->val('name');
+$b=$conn->sql('zz_user','Id')->limit(1,1);//->val('name');
 print_r([$a,$b]);   
 unset($a,$b); 
  
 //<!--SELECT * FROM `zz_user`  WHERE `Id`=?  ;3-->
 $a=$conn[User::class](3)['name'];
-$b=$conn->model('zz_user','Id')->load(3)->val('name');
+$b=$conn->sql('zz_user','Id')->load(3)->val('name');
 print_r([$a,$b]);  
 
 //<!--SELECT * FROM `zz_user`  WHERE `Id`=?  ;3-->
 $a=$conn[User::class]->find(3);
-$b=$conn->model('zz_user','Id')->find(3);
+$b=$conn->sql('zz_user','Id')->find(3);
 print_r([$a,$b]); 
 unset($a,$b); 
 

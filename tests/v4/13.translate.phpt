@@ -3,7 +3,7 @@
 --FILE--
 <?php
 
-include __DIR__."/../before.v4.php"; 
+include __DIR__."/../before.php"; 
 
 $conn = new \dbm\Connect('mysql:dbname=test', 'root', 'root');
 $conn->debug=true;
@@ -38,13 +38,13 @@ function commitTransaction(\dbm\Connect $conn)
 }
 
 commitTransaction($conn);
-echo "# ".json_encode($conn->model('zz_user')->all())."\n\n";
+echo "# ".json_encode($conn->sql('zz_user')->all())."\n\n";
 commitScope($conn);
-echo "# ".json_encode($conn->model('zz_user')->all())."\n\n";
+echo "# ".json_encode($conn->sql('zz_user')->all())."\n\n";
 rollbackTransaction($conn);
-echo "# ".json_encode($conn->model('zz_user')->all())."\n\n";
+echo "# ".json_encode($conn->sql('zz_user')->all())."\n\n";
 rollbackScope($conn);
-echo "# ".json_encode($conn->model('zz_user')->all())."\n\n";
+echo "# ".json_encode($conn->sql('zz_user')->all())."\n\n";
 ?>
 --EXPECT--
 <!--begin mysql:dbname=test-->

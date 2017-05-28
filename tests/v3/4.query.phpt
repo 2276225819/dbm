@@ -15,7 +15,7 @@ print_r($conn->sql(User::class)->get(2)->ref(UserType::class)->all());
 print_r($uids = $conn->sql('zz_user')->where('id =2 or `id`=3')->all('Id'));
 
 //<!--SELECT * FROM `zz_post`  WHERE  `user_id` in (?,?)   ;2,3-->
-print_r($conn->sql('zz_post')->where(['user_id'=>$uids])->keypair('Id'));
+print_r($conn->sql('zz_post','Id')->where(['user_id'=>$uids])->keypair('Id'));
 
 //<!--SELECT * FROM `zz_post`  WHERE  `user_id` in (?,?)   ;2,3-->
 print_r($conn->sql('zz_post')->where(['user_id'=>$uids])->keypair('Id','text'));
@@ -25,7 +25,7 @@ print_r($conn->sql('zz_post')->where(['user_id'=>$uids])->keypair('Id','text'));
 ?>
 --EXPECT--
 <!--SELECT * FROM `zz_user`    LIMIT 1 OFFSET 2 ;-->
-<!--SELECT * FROM `zz_user_type`  WHERE `Id`=?  ;2-->
+<!--SELECT * FROM `zz_user_type`  WHERE (`Id`=?)  ;2-->
 Array
 (
     [0] => UserType Object
@@ -35,16 +35,16 @@ Array
         )
 
 )
-<!--SELECT * FROM `zz_user`  WHERE `id` =2 or `id`=3  ;-->
+<!--SELECT * FROM `zz_user`  WHERE (`id` =2 or `id`=3)  ;-->
 Array
 (
     [0] => 2
     [1] => 3
 )
-<!--SELECT * FROM `zz_post`  WHERE  `user_id` in (?,?)   ;2,3-->
+<!--SELECT * FROM `zz_post`  WHERE (`user_id` in (?,?) )  ;2,3-->
 Array
 (
-    [4] => dbm\Entity Object
+    [4] => dbm\Model Object
         (
             [Id] => 4
             [post_type_id] => 3
@@ -52,7 +52,7 @@ Array
             [text] => user2 22
         )
 
-    [5] => dbm\Entity Object
+    [5] => dbm\Model Object
         (
             [Id] => 5
             [post_type_id] => 2
@@ -60,7 +60,7 @@ Array
             [text] => post32
         )
 
-    [6] => dbm\Entity Object
+    [6] => dbm\Model Object
         (
             [Id] => 6
             [post_type_id] => 1
@@ -69,7 +69,7 @@ Array
         )
 
 )
-<!--SELECT * FROM `zz_post`  WHERE  `user_id` in (?,?)   ;2,3-->
+<!--SELECT * FROM `zz_post`  WHERE (`user_id` in (?,?) )  ;2,3-->
 Array
 (
     [4] => user2 22
