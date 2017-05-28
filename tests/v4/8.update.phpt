@@ -47,6 +47,7 @@ User Object
 )
 
 [1:n]#user[Post]->save(),#post->save()
+<!--SELECT * FROM `zz_post`  WHERE (`user_id`=?)  ;4-->
 <!--INSERT INTO `zz_post` (`text`,`user_id` )VALUES(?,?);a,4-->
 <!--UPDATE `zz_post` SET `text`=?  WHERE (`Id`=?);b,7-->
 Post Object

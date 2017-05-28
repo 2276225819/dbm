@@ -77,7 +77,7 @@ class Session
         if (!empty($last_id)) { 
             $data[$sql->pks[0]]=$last_id;
         } 
-		$this->clean($sql->table);
+		//$this->clean($sql->table);
         return $data;
     }
 	function insertMulit($sql,$list){

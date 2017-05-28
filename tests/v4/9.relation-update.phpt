@@ -67,7 +67,6 @@ print_r([
 <!--INSERT INTO `zz_user_type` (`name` )VALUES(?);b-->
 <!--UPDATE `zz_user` SET `type_id`=?  WHERE (`Id`=?);4,5-->
 
-<!--SELECT * FROM `zz_user_type`  WHERE (`Id`=?)  ;3-->
 <!--UPDATE `zz_user_type` SET `name`=?  WHERE (`Id`=?);c,3-->
 <!--INSERT INTO `zz_user_type` (`name`,`Id` )VALUES(?,?);d,4-->
 
@@ -110,8 +109,8 @@ Array
 
     [user_type3] => UserType Object
         (
-            [Id] => 3
             [name] => a
+            [Id] => 3
         )
 
     [user_type4] => 

@@ -8,31 +8,30 @@ $conn = new \dbm\Connect('mysql:dbname=test','root','root');
 $conn->debug=true;
  
 echo "# not cache\n";
-$conn->session(User::class)->each(function(User $u){
+$conn->model(User::class)->each(function(User $u){
 	$u['name']=1;
 	$u->save(); 
 });  
 echo "# new query\n";
-print_r($conn->session(User::class)->map(function(User $u){
+print_r($conn->model(User::class)->map(function(User $u){
 	return $u['name'];
 }));
 
 echo "# cache query\n";
-foreach ($conn->session(User::class) as $u){ 
+foreach ($conn->model(User::class) as $u){ 
 	$u['name']=2;
 	$u->save(); 
 } 
 echo "# old query\n";
-print_r($conn->session(User::class)->map(function(User $u){
+print_r($conn->model(User::class)->map(function(User $u){
 	return $u['name'];
 })); 
 
 echo "# clear cache\n";
-$cache = $conn->scope();
-$cache->clear();
+unset($u);
 
 echo "# new query\n";
-print_r($conn->session(User::class)->map(function(User $u){
+print_r($conn->model(User::class)->map(function(User $u){
 	return $u['name'];
 }));
 
@@ -40,9 +39,9 @@ print_r($conn->session(User::class)->map(function(User $u){
 --EXPECT-- 
 # not cache
 <!--SELECT * FROM `zz_user`   ;-->
-<!--UPDATE `zz_user` SET `name`=?  WHERE `Id`=?;1,1-->
-<!--UPDATE `zz_user` SET `name`=?  WHERE `Id`=?;1,2-->
-<!--UPDATE `zz_user` SET `name`=?  WHERE `Id`=?;1,3-->
+<!--UPDATE `zz_user` SET `name`=?  WHERE (`Id`=?);1,1-->
+<!--UPDATE `zz_user` SET `name`=?  WHERE (`Id`=?);1,2-->
+<!--UPDATE `zz_user` SET `name`=?  WHERE (`Id`=?);1,3-->
 # new query
 <!--SELECT * FROM `zz_user`   ;-->
 Array
@@ -53,9 +52,9 @@ Array
 )
 # cache query
 <!--SELECT * FROM `zz_user`   ;-->
-<!--UPDATE `zz_user` SET `name`=?  WHERE `Id`=?;2,1-->
-<!--UPDATE `zz_user` SET `name`=?  WHERE `Id`=?;2,2-->
-<!--UPDATE `zz_user` SET `name`=?  WHERE `Id`=?;2,3-->
+<!--UPDATE `zz_user` SET `name`=?  WHERE (`Id`=?);2,1-->
+<!--UPDATE `zz_user` SET `name`=?  WHERE (`Id`=?);2,2-->
+<!--UPDATE `zz_user` SET `name`=?  WHERE (`Id`=?);2,3-->
 # old query
 Array
 (

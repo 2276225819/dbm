@@ -32,6 +32,7 @@ trait ModelAccess
  
     function __debugInfo()
     {
+        //return (array)$this;
         // if (!isset($this->list)) {
         //     $this->list = Session::$instance->select($this->sql);
         // }
@@ -43,7 +44,6 @@ trait ModelAccess
                 $arr['?']=json_encode($this->sql->rArgs);
             return $arr;
         }
-        //throw new \Exception("Error Processing Request", 1);
     }
     function __toString()
     {
@@ -67,8 +67,13 @@ trait ModelAccess
         if (!isset($this->list)) {
             $this->list = Session::$instance->select($this->sql);
         }
-        $model = clone $this;//new static($this->sql);
+        $model = clone $this;//new static($this->sql); 
+        $pks = $model->sql->pks; 
         foreach ($this->list as $row) {
+            foreach ($pks as $pk) { 
+                if(isset($row[$pk]))
+                    $model->sql->rArgs[$pk]=$row[$pk];
+            }
             $model->list = [$row];
             yield $model;
         }
@@ -81,10 +86,11 @@ trait ModelAccess
     }
     function offsetExists($offset)
     {
-        //return isset($this->data[$offset]);
+        return isset($this->data[$offset]);
     }
     function offsetUnset($offset)
     {
+        throw new Exception("Error Processing Request", 1);
         //unset($this->data[$offset]);
     }
     function offsetSet($offset, $value)
