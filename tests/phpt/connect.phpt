@@ -5,14 +5,13 @@
 <?php
 include __DIR__."/../before.php";
 
-$conn = new \dbm\Connect('mysql:dbname=test','root','root');
+$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root');
 $conn->debug=true;
 
 echo "#Connect->execute(STRING[,...args]); #PDOStatement\n";
 print_r($conn->execute('select 1+2+3+?+?',[4,5])->fetchAll(\PDO::FETCH_ASSOC));
 
 
-$cache = $conn->scope(); 
 echo "#Connect->sql(TABLE,...PKS)\n";
 $a=$conn->sql(User::class)->all();
 $b=$conn->sql('zz_user','Id')->all();

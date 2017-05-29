@@ -6,7 +6,7 @@ include __DIR__."/../before.php";
 
 $conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root');
 $conn->debug=true;
-
+ 
 echo "# not cache\n";
 $conn->sql(User::class)->each(function(User $u){
 	$u['name']=1;

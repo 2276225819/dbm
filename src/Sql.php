@@ -12,7 +12,7 @@ class Sql implements \IteratorAggregate, \ArrayAccess
     /**
      * $sql->val() as Model | $sql->val(FILED) as Model
      * @param int $offset
-     * @return Model
+     * @return Entity
      */
     public function get($offset = null)
     {
@@ -23,25 +23,40 @@ class Sql implements \IteratorAggregate, \ArrayAccess
      * @param string $field
      * @return mixed
      */
-    public function val($field = null)
+    public function val($field = null,$value=null)
     {
-        foreach ($this->getAllIterator() as $row) {
-            foreach ($this->rArgs as $k => $v) {
-                if ($row[$k]!=$v) {
-                    continue 2;
+        if(isset($value)){
+            if (isset($this->list[0])) {
+                if (empty($this->list[0][$offset]) or $this->list[0][$offset]!=$value) {
+                    $this->dirty[$offset]=$value;
                 }
+            
+                foreach ($this->list as &$row) {
+                    $row[$offset]=$value;
+                }
+            } else {
+                $this->dirty[$offset]=$value;
             }
-            return $field?$row[$field]:$row;
+        }else{
+            foreach ($this->getAllIterator() as $row) {
+                foreach ($this->rArgs as $k => $v) {
+                    if ($row[$k]!=$v) {
+                        continue 2;
+                    }
+                }
+                return $field?$row[$field]:$row;
+            }
         }
+ 
     }
     /**
      * Row
      * @param array ...$pkv
-     * @return Model
+     * @return Entity
      */
     public function load(...$pkv)
     {
-        return $this(...$pkv);
+        return $this(...$pkv)->get();
     }
 
 
@@ -72,7 +87,7 @@ class Sql implements \IteratorAggregate, \ArrayAccess
     /**
      * [ $Row, $Row... ] | [ $key, $key... ]
      * @param string $key
-     * @return Model[]
+     * @return Entity[]
      */
     public function all($key = null)
     {
@@ -86,7 +101,7 @@ class Sql implements \IteratorAggregate, \ArrayAccess
      * [ $key=>Row, $key=>Row... ] | [ $key => $val, $key => $val... ]
      * @param string $key
      * @param string $val
-     * @return Model[]
+     * @return Entity[]
      */
     public function keypair($key, $val = null)
     {
@@ -231,7 +246,7 @@ class Sql implements \IteratorAggregate, \ArrayAccess
      * Row
      * @param array $data
      * @param int $auto_increment_key
-     * @return Model
+     * @return Entity
      */
     public function insert($data, $auto_increment_key = null)
     {
@@ -329,15 +344,14 @@ class Sql implements \IteratorAggregate, \ArrayAccess
                 $where[$key]=$data[$key];
             }
         }
-        if (empty($where)) {
-            $this->insert($data);
-        } elseif ($row = $this->where($where)->get()) {
-            foreach ($data as $key => $value) {
-                $row[$key]=$value;
-            }
-            $row->save();
-        } else {
-            throw new Exception("Error Processing Request", 1);
-        }
+        if (isset($where)) {
+            if ($row = $this->where($where)->get()) {
+                foreach ($data as $key => $value) {
+                    $row[$key]=$value;
+                }
+                return $row->save(); 
+            } 
+        }    
+        return (bool)$this->insert($data);
     }
 }

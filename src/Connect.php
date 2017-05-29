@@ -1,41 +1,31 @@
 <?php namespace dbm;
 
 class Connect implements \ArrayAccess
-{ 
-	use ConnectAccess;
-	use ConnectTransaction;//deprecated
+{
+    use ConnectAccess;
 
-	
-    public $debug=false; 
-    public $attr=[
-        \PDO::ATTR_ERRMODE=>\PDO::ERRMODE_EXCEPTION,
-        \PDO::ATTR_PERSISTENT=>true,
-    ];
-
-    public function bulidSql($sql){ 
-        if( !preg_match("/[\r\n]/",$sql)  )   {
-            $sql = preg_replace($this->preg_key,$this->preg_val,$sql);   
-        } 
-        return $sql;
-    }
+    public $debug=false;
+    /**
+     * @return int
+     */
     public function lastInsertId()
     {
-        return $this->db->lastInsertId();
+        return static::$conn[$this->dns]->lastInsertId();
     }
-    /** 
+    /**
      * @param string $sql
      * @param array $args
      * @return \PDOStatement
      */
-    public function execute($sql, $args = [] ) 
-    {   
-        $sql = $this->bulidSql($sql); 
+    public function execute($sql, $args = [])
+    {
+        $sql = static::bulidSql($sql);
         if ($this->debug) {
-            echo "<!--$sql;".join($args,',')."-->\n";
+            echo "<!--$sql;".join($args, ',')."-->\n";
         }
         while (true) {
-            try { 
-                $query = $this->db->prepare($sql);
+            try {
+                $query = static::$conn[$this->dns]->prepare($sql);
                 return $query->execute($args)?$query:false;
             } catch (Throwable $e) {
                 if ($e->errorInfo[0] == 70100||$e->errorInfo[1] == 2006 || $e->errorInfo[1] == 2013) {
@@ -47,33 +37,98 @@ class Connect implements \ArrayAccess
             }
         }
     }
+    public function begin()
+    {
+        if ($this->debug) {
+            echo "<!--begin {$this->dns}-->\n";
+        } 
+        if($row=static::$conn[$this->dns]->beginTransaction()){}else{
+            throw new Exception("Error Processing Request", 1);
+            
+        }
+    }
+    public function commit()
+    {
+        if ($this->debug) {
+            echo "<!--commit {$this->dns}-->\n";
+        }
+        if($row=static::$conn[$this->dns]->commit()){}else{
+            throw new Exception("Error Processing Request", 1);
+        }
+    }
+    public function rollback()
+    {
+        if ($this->debug) {
+            echo "<!--rollback {$this->dns}-->\n";
+        }
+        if($row=static::$conn[$this->dns]->rollBack()){}else{
+            throw new Exception("Error Processing Request", 1);
+        }
+    }
+
+    public function inTransaction()
+    {
+        return static::$conn[$this->dns]->inTransaction();
+    }
  
 
-    /** 
-     * @param boolean $transaction 
-     * @return Transaction
+    /**
+     * ## Transaction
+     * $cache = \dbm\Connect->scope()
+     *
+     * ....
+     *
+     * $cache->commit();
+     *
+     * @param boolean $transaction
+     * @return \dbm\Transaction
      */
-	public function scope($transaction=false) { 
-		return new Transaction($transaction?$this->db:null);		
-	}
-    /** 
+    public function scope()
+    {
+        return new Transaction($this);
+    }
+
+    /**
+     * ## dbm v3
+     * \dbm\Connect->sql(string $model )
+     *
+     * \dbm\Connect->sql(string $model, array $pks )
+     *
      * @param string $model
      * @param array $pks
-     * @return Sql
+     * @return \dbm\Sql
      */
-	public function sql($model, $pks=[]) 
-	{ 
+    public function entity($model, $pks = null)
+    { 
         $pks = (array)$pks;
-        if (class_exists($model,false) && isset($model::$table) ) {
+        if (class_exists($model) && isset($model::$table)) {
             $table = $model::$table;
-			$pks = count($pks)?$pks:$model::$pks;
+            $pks = count($pks)?$pks:$model::$pks;
             $model = $model;
         } else {
             $table=$model;
-			$pks=(array)$pks;
-			$model = \dbm\Model::class;
+            $pks=(array)$pks;
+            $model = \dbm\Entity::class;
         }
-		return new \dbm\Sql($this,$table,$pks,$model);
-
-	} 
+        return new \dbm\Sql($this, $table, $pks, $model);
+    }
+    /**
+     * ## dbm v4
+     * \dbm\Connnect->sql(string $model)
+     *
+     * \dbm\Connnect->sql(string $model ,array $pks )
+     *
+     * @param string $model
+     * @param array $pks
+     * @return \dbm\Model
+     */
+    public function sql($model, $pks = null)
+    { 
+        if (empty(Session::$instance)) {
+            Session::$instance = new Session($this); 
+        } else {
+            Session::$instance->conn = $this;
+        }
+        return Model::byName($model, $pks);
+    }
 }

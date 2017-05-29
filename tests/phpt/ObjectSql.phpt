@@ -3,13 +3,13 @@ test
 --FILE--
 <?php
 include __DIR__.'/../before.php';
-$db = new \dbm\Connect('mysql:dbname=test','root','root'); 
+$db = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root'); 
 $db->debug=true;
 
 echo "#SQL->find(...PKV)          #ROW/THROW\n";
 $a=$db->sql('zz_user','Id')->find(3)->get(); 
-$b=$db[User::class](3);
-$c=$db[User::class](3333);
+$b=$db[User::class]->find(3)->get();
+$c=$db[User::class]->find(3333)->get();
 print_r([$a,$b,$c]);
 
 
@@ -64,8 +64,8 @@ print_r([$q,$w,$e,$r]);
 ?>
 --EXPECT--
 #SQL->find(...PKV)          #ROW/THROW
-<!--SELECT * FROM `zz_user`  WHERE `Id`=?  ;3-->
-<!--SELECT * FROM `zz_user`  WHERE `Id`=?  ;3333-->
+<!--SELECT * FROM `zz_user`  WHERE (`Id`=?)  ;3-->
+<!--SELECT * FROM `zz_user`  WHERE (`Id`=?)  ;3333-->
 Array
 (
     [0] => dbm\Model Object
@@ -98,7 +98,7 @@ Array
     [1] => u2
     [2] => u3
 )
-<!--SELECT * FROM `zz_user`  WHERE 1=0  ;-->
+<!--SELECT * FROM `zz_user`  WHERE (1=0)  ;-->
 Array
 (
 )
@@ -113,26 +113,27 @@ Array
 (
 )
 #SQL->val(FIELD)            #MIXED
-<!--SELECT count(1) FROM `zz_user`   ;-->
+<!--SELECT count(1) as `__VALUE__` FROM `zz_user`   ;-->
 3//////////////////////////
-<!--SELECT * FROM `zz_user`  WHERE `Id`=?  ;2-->
-<!--SELECT * FROM `zz_post`  WHERE `user_id`=?  ;2-->
+<!--SELECT * FROM `zz_post`  WHERE (`user_id` in (SELECT Id FROM `zz_user`  WHERE (`Id`=?)  ))  ;2-->
+<!--SELECT * FROM `zz_user`  WHERE (`Id`=?)  ;2-->
+<!--SELECT * FROM `zz_post`  WHERE (`user_id`=?)  ;2-->
 Array
 (
     [0] => user2 22
     [1] => user2 22
 )
 //////////////////////////
-<!--SELECT * FROM `zz_post`  WHERE `Id`=?  ;2-->
-<!--SELECT * FROM `zz_user`  WHERE `Id`=?  ;1-->
+<!--SELECT * FROM `zz_user`  WHERE (`Id` in (SELECT user_id FROM `zz_post`  WHERE (`Id`=?)  ))  ;2-->
+<!--SELECT * FROM `zz_post`  WHERE (`Id`=?)  ;2-->
+<!--SELECT * FROM `zz_user`  WHERE (`Id`=?)  ;1-->
 Array
 (
     [0] => u1
     [1] => u1
 )
 //////////////////////////
-<!--SELECT * FROM `zz_post`   ;-->
-<!--SELECT * FROM `zz_user`  WHERE `Id` in (?,?,?)   ;1,2,3-->
+<!--SELECT * FROM `zz_user`  WHERE (`Id` in (SELECT user_id FROM `zz_post`   ))  ;-->
 Array
 (
     [0] => u1
@@ -140,7 +141,7 @@ Array
     [2] => u1
     [3] => u1
 )
-<!--SELECT * FROM `zz_post`  WHERE `user_id` in (?,?,?)   ;1,2,3-->
+<!--SELECT * FROM `zz_post`  WHERE (`user_id` in (SELECT Id FROM `zz_user`   ))  ;-->
 Array
 (
     [0] => text1

@@ -2,8 +2,6 @@
 
 trait SqlRelation
 {
-
-  
     public function many($model, $model_pks, $model_fks)
     {
         return $this->relation($model, (array)$model_pks,

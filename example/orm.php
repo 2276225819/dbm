@@ -1,6 +1,47 @@
 <?php 
 include __DIR__."/../vendor/autoload.php";
 
+//////////////////// v4 /////////////////////////
+
+#Conn->execute(STRING[,...args]);     //PDOStatement
+#Conn->lastInsertId();                //int
+#Conn->debug;                         //bool 
+#Conn->scope();                       //Transaction
+#Conn->sql(TABLE,[...PK])             //Model{...}
+   
+#Model->get(INDEX)                    //Model{count=1}
+#Model[INDEX]                         //Model{count=1}
+#Model->load(...PK)                   //Model(count=1}
+#Model(...Pk)                         //Model(count=1)
+   
+#Model->find(...PK)                   //self(where Pk and Pk ...)
+#Model->limit(LIMIT,OFFSET)           //self{limit LIMIT offset OFFSET...}
+#Model->where(STRING)                 //self{where STRING...}
+#Model->whereAnd(STRING)              //self{and STRING...}
+#Model->whereOr(STRING)               //self{or STRING...}
+#Model->field(FIELD)                  //self{select FIELD...}
+#Model->ref(TABLE,[...PK],[...REF])   //self{where REF in (TABLE.PK)...}
+#Model[TABLE]                         //self{where REF in (TABLE.PK)...}
+   
+#Model->all()                         //[...Model{count=1}]
+#Model->keypair()                     //[...PK=>Model{count=1}]
+#Model->keypair(KEY)                  //[...KET=>Model{count=1}]
+#Model->all(FIELD)                    //[...VALUE]
+#Model->keypair(null,FIELD)           //[...PK=>VALUE]
+#Model->keypair(KEY,FIELD)            //[...KET=>VALUE]
+#Model->val(FIELD)                    //VALUE
+#Model[FIELD]                         //VALUE
+#Model->val(FIELD,VALUE)              //VALUE  changed
+#Model[FIELD]=VALUE                   //VALUE  changed
+   
+#Model->insert()      //Model
+#Model->update()      //RowCount
+#Model->delete()      //RowCount
+#Model->save()        //self{unset(changed)}
+#Model->set()         //Model
+
+
+
 ///////////////////// v3 ////////////////////////
 
 #Conn->execute(STRING[,...args]); #PDOStatement

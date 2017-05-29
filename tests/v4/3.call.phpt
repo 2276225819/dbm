@@ -17,7 +17,7 @@ $a[]= $conn[Post::class]->avg('Id');
 $a[]= $conn[Post::class]->sum('Id+post_type_id+user_id');//BUG
 print_r($a);
 
-$query = $conn[Post::class]->and('user_id=1');
+$query = $conn[Post::class]->whereAnd('user_id=1');
 $b[]= $query->count();
 $b[]= $query->sum('Id');
 $b[]= $query->avg('Id');

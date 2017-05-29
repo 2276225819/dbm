@@ -6,7 +6,7 @@ TODO:关联查询父级where默认删除条件重新查询
 include __DIR__.'/../before.php';
 
 
-$conn = new \dbm\Connect('mysql:dbname=test','root','root'); 
+$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root'); 
 $conn->debug=true;
 foreach ($conn->sql(User::class)->and('Id=? or `Id`=3','1') as  $user) {
     echo "USER:".$user['name']."\n";
@@ -22,14 +22,14 @@ foreach ($conn->sql(User::class)->and('Id=? or `Id`=3','1') as  $user) {
 } 
 ?>
 --EXPECT-- 
-<!--SELECT * FROM `zz_user`  WHERE `Id`=? or `Id`=3  ;1-->
+<!--SELECT * FROM `zz_user`  WHERE (`Id`=? or `Id`=3)  ;1-->
 USER:u1
-<!--SELECT * FROM `zz_post`  WHERE `user_id` in (?,?)  AND text like ?  ;1,3,%3%-->
+<!--SELECT * FROM `zz_post`  WHERE (`user_id` in (?,?) ) AND (text like ?)  ;1,3,%3%-->
    POST:3  text3
-<!--SELECT * FROM `zz_user`  WHERE `Id` in (?,?)   ;1,3-->
+<!--SELECT * FROM `zz_user`  WHERE (`Id` in (?,?) )  ;1,3-->
    USER:u1
-<!--SELECT * FROM `zz_post_type`  WHERE `Id` in (?,?)   ;1,2-->
-   TYPE:type1
+<!--SELECT * FROM `zz_post_type`  WHERE (`Id` in (?,?) )  ;1,2-->
+   TYPE:type2
 
 USER:u3
    POST:5  post32

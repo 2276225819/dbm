@@ -1,101 +1,379 @@
 <?php namespace dbm;
 
+class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
+{
+    const Model=true;
 
-class Model implements \ArrayAccess ,\JsonSerializable
-{   
     use ModelAccess;
-    static $table;
-    static $ref;
-	
-    /** @var Connect  */
-    public $db;
-	
-    /** @var Sql  */
-    public $pq;
+    
+    /**
+     * @var Pql
+     */
+    public $sql;
 
-    /** 
+    /////////////model///////////////
+    /**
+     * $sql->get()       as Model{count=1}
+     *
+     * $sql->get(OFFSET) as Model{count=1}
+     *
+     * @param number|null $offset
+     * @return \dbm\Model
+     */
+    function get($offset = null)
+    {
+        if (is_numeric($offset)) {
+            $this->limit(1, $offset);
+            $offset = 0;
+        } else {
+            $offset = 0;
+        }
+        $list = Session::$instance->select($this->sql);
+        if (empty($list[$offset])) {
+            return null;
+        }
+        return new static($this->sql,$list[$offset]);
+    }
+   
+    /**
+     * $sql->load(...ID) as Model{count=1}
+     *
+     * @param mixed[] ...$pkv
+     * @return \dbm\Model
+     */
+    function load(...$pkv)
+    { 
+        $sql = (clone $this->sql)->find(...$pkv);
+        $list = Session::$instance->select($sql);
+        if (empty($list[0])) {
+            return null;
+        }
+        return new static($this->sql,$list[0]);
+    }
+    /**
+     * $sql->val() as array
+     *
+     * $sql->val(FILED) as mixed
+     *
+     * $sql->val(FIELD,VALUE) as VALUE
+     *
      * @param string $field
      * @return mixed
      */
-    public function val($field)
+    function val($field = null, $value = null)
     {
-        return $this->data[$field];
+        if ($field===null) {
+            $data = $this->data+Session::$instance->select($this->sql)[0]; 
+            return $data;
+        }
+        if ($value===null) {
+            $data = $this->data+Session::$instance->select($this->sql)[0]; 
+            return $data[$field]??null;
+        } 
+        if(!isset($this->data[$field]) || $this->data[$field]!=$value) {
+            $this->data[$field] = $value;
+            $this->dirty[$field]= $value;
+        }
     }
-    /** 
-     * @return array
-     */
-	public function toArray() {
-		return $this->data;
-	}
-    /** 
+    
+    /**
      * @param string $model
      * @param array $pks
      * @param array $ref
-     * @return Sql
+     * @return \dbm\Model
      */
-    public function ref($model,$pks=NULL,$ref=NULL) 
+    function ref($model, $pks = null, $ref = null)
     {
-		if(is_string($pks))$pks=(array)$pks;
-		if(!is_array($pks))$pks = static::$pks;
-		if(!is_array($ref))$ref = static::$ref[$model];
- 
-		$sql= $this->pq->relation($model,(array)$pks,(array)$ref);
-        foreach ($ref as $k => $v) {
-            $sql->rArgs[$k]=$this[$v];
-        }   
-		$sql->rModel=$this;
-		$sql->rref=$ref;
-        return $sql;
-    }  
-    /** 
-     * @return bool
-     */
-    public function create() 
-    {  
-        $this->pq->insert($this->dirty);
-        if ($last_id = $this->db->lastInsertId()) {
-        	$pks = $this->pq->pks;
-            if (count($pks)==1) {
-                $this->data[$pks[0]] = $last_id;
+        $model = Model::byName($model, $pks);
+        if (empty($ref) && isset(static::$ref[get_class($model)])) {
+            $ref = static::$ref[get_class($model)];
+        }
+        if (empty($this->data)) {
+            $keys=join(array_keys($ref), ',');
+            $query = $this->sql->field(array_values($ref));
+            $model->sql->and([$keys=>$query]);
+            $_ref = array_flip($ref);
+            foreach ($this->sql->rArgs as $k => $v) {
+                if (isset($_ref[$k])) {
+                    $model->sql->rArgs[$_ref[$k]]=$v;
+                }
+            }
+        } else {
+            $thisdata = Session::$instance->select($this->sql, true);
+            foreach ($ref as $k => $f) {
+                foreach ($thisdata as $row) {
+                    if (!empty($row[$f])) {
+                        $s[$k][]=$row[$f];
+                    }
+                }
+                if (isset($s[$k])) {
+                    $s[$k] = array_unique($s[$k]);
+                    sort($s[$k]);
+                }
+            }
+            if (isset($s)) {
+                $model->sql->and($s);
+            }
+            foreach ($ref as $k => $v) {
+                if ($val=$this->val($v)) {
+                    $model->sql->rArgs[$k]=$val;
+                }
+            }
+            if (!empty($thisdata)) {
+                do {
+                    foreach ($ref as $k => $v) {
+                        if (!in_array($k, $model::$pks)) {
+                            break 2;
+                        }
+                    }
+                    $model->sql->rmodel = $this;
+                    $model->sql->rref = $ref;
+                } while (false);
             }
         }
-        //???????????????????
-        if ($arr = $this->pkv()) {
-            $this->pq->where($arr); 
+
+        
+        return $model;
+    }
+    /**
+     * [ $key, $key... ] | [ $pk, $pk...]
+     * @param string $field
+     * @return \dbm\Model[]
+     */
+    function all($field = null)
+    {
+        $arr = array();
+        foreach ($this as $row) {
+            if (empty($field)) {
+                $arr[]=clone $row;
+            } else {
+                $arr[]=$row->data[$field];
+            }
         }
-        $this->dirty=[];//clear
-        return true;
+        return $arr;
     }
 
-    /** 
-     * @param array $pks
-     * @return bool
+    /**
+     * [ $key=>Row, $key=>Row... ] | [ $key => $val, $key => $val... ]
+     * @param string $key
+     * @param string $field
+     * @return \dbm\Model[]
      */
-    public function save($pks=null)
-    { 
-        if (empty($this->dirty)) {
-            return false;
+    function keypair($key = null, $field = null)
+    {
+        $arr=[];
+        if (empty($key)) {
+            $key = $this->sql->pks[0];
         }
-        if (!($arr = $this->pkv($pks))) {
-			if(!$this->create())
-				throw new Exception("Error Processing Request", 1);
-			return $this->data;
-        } 
-        $sql = clone $this->pq;
-        $result = $sql->where($arr)->update($this->dirty);
-        $this->dirty=[];//clear
-        return $result;
+        if ($this->sql->fStr!='*') {
+            $this->sql->fStr.=",$key as __KEY__";
+            $key = "__KEY__";
+        }
+        foreach ($this as $row) {
+            $kstr = $row->data[$key];
+            if ($key=='__KEY__') {
+                unset($row->data[$key]);
+            }
+            if (empty($field)) {
+                $arr[$kstr]=clone $row;
+            } else {
+                $arr[$kstr]=$row->data[$field];
+            }
+        }
+        return $arr;
     }
-    /** 
-     * @param array $pks
-     * @return bool
+
+    /////////////curd/////////////
+
+    /**
+     * Row{count=1}
+     * @param array $data
+     * @return \dbm\Model
      */
-    public function destroy($pks=null)
+    function insert($arr)
+    {
+        $sql = $this->sql;
+        $data = Session::$instance->insert($sql, $arr); 
+        if (isset($sql->rmodel)) {
+            unset($sql->rArgs); 
+            foreach ($sql->rref as $i => $k) {
+                $sql->rmodel[$k]=$data[$i];
+            } 
+            $sql->rmodel->save();
+        }
+        return new static(clone $sql,$data);
+    }
+    /**
+     * RowCount
+     * @param array $data
+     * @param array ...$arr
+     * @return int
+     */
+    function update($data, ...$arr)
+    {
+        $sql = $this->sql;
+        if (empty($sql->wStr)) {
+            throw new \Exception("Require Where Column", 1);
+        }
+        $count = Session::$instance->update($sql, $data, ...$arr);
+        if ($row = &Session::$instance->cache[$s=(string)$sql]) {
+            foreach ($row as &$value) {
+                $value = array_merge($value, $data);
+            }
+        }
+        return $count;
+    }
+    /**
+     * RowCount
+     * @param array $list
+     * @return int
+     */
+    function insertMulit($list)
+    {
+        if (!count($list)) {
+            throw new \Exception("Error Muilt Column", 1);
+        }
+        $count = Session::$instance->insertMulit($this->sql, $list);
+        return $count;
+    }
+
+    /**
+     * RowCount
+     * @return int
+     */
+    function delete($force = false)
+    {
+        $sql = $this->sql;
+        if (!$force && empty($sql->wStr)) {
+            throw new \Exception("Require Where Column", 1);
+        }
+        $count = Session::$instance->delete($sql);
+        return $count;
+    }
+
+
+
+    /**
+     * self
+     * @param array $dirty
+     * @return void
+     */
+    function save($dirty = [])
+    {
+        $dirty += $this->dirty; 
+        if (!count($dirty)) {
+            throw new \Exception("Require Change Column", 1);
+        }
+        if(!empty($this->sql->rArgs)){
+            $this->where($this->sql->rArgs);
+        }
+        if(empty($this->sql->wStr)){
+            $row = $this->insert($dirty);
+            $this->data = $row->data;
+            $this->sql = $row->sql;
+        }else{
+            $this->update($dirty); 
+        }
+        $this->dirty=[];
+        return $this;
+        //return true;
+        //return $this->dirty; 
+    }
+
+    /**
+     * Model{count=1}
+     * @param array $data
+     * @return \dbm\Model
+     */
+    function set($data)
     { 
-        if (!($arr = $this->pkv($pks))) {
-            throw new \Exception("Error Processing Request", 1);
-        } 
-        $result = $this->pq->where($arr)->delete();
-        return $result;
+        $data += $this->sql->rArgs;
+        foreach ($this->sql->pks as $key) {
+            if (isset($data[$key])) {
+                $where[$key]=$data[$key];
+            }
+        }
+        if (isset($where)) {
+            if ($row = (clone $this)->where($where)->get()) {
+                foreach ($data as $key => $value) {
+                    $row[$key]=$value;
+                }
+                $row->save();
+                return $row;
+            }
+        }
+        return $this->insert($data);
+    }
+    /////////////sql///////////////
+    
+    /**
+     * @return \dbm\Model
+     */
+    function where($w, ...$arr)
+    {
+        $this->sql->where($w, ...$arr);
+        return $this;
+    }
+    /**
+     * @return \dbm\Model
+     */
+    function whereAnd($w, ...$arr)
+    {
+        $this->sql->and($w, ...$arr);
+        return $this;
+    }
+    /**
+     * @return \dbm\Model
+     */
+    function whereOr($w, ...$arr)
+    {
+        $this->sql->or($w, ...$arr);
+        return $this;
+    }
+    /**
+     * Sql
+     * @param int $limit
+     * @param int $offset
+     * @return \dbm\Model
+     */
+    function limit($limit, $offset = 0)
+    {
+        $this->sql->limit($limit, $offset);
+        return $this;
+    }
+    /**
+     * Sql
+     * @param mixed[] ...$pkv
+     * @return \dbm\Model
+     */
+    public function find(...$pkv)
+    {
+        $this->sql->find(...$pkv);
+        return $this;
+    }
+ 
+    /**
+     * @return \dbm\Model
+     */
+    function order($order, ...$arr)
+    {
+        $this->sql->order($order, ...$arr);
+        return $this;
+    }
+    /**
+     * @return \dbm\Model
+     */
+    function field($arr)
+    {
+        $this->sql->field($arr);
+        return $this;
+    }
+    /**
+     * @return \dbm\Model
+     */
+    function join($str)
+    {
+        $this->sql->join($str);
+        return $this;
     }
 }

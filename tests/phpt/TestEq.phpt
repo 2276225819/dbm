@@ -4,7 +4,7 @@
 <?php
 include __DIR__.'/../before.php';
 
-$conn = new \dbm\Connect('mysql:dbname=test','root','root');
+$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root');
 $conn->debug=true;
 
 $user = $conn->sql(User::class) ;
@@ -12,7 +12,7 @@ $user = $conn->sql(User::class) ;
 
 print_r($user->keypair('name','Id'));
 echo "\n";
-print_r($user->get()->val('name'));
+print_r($user->val('name'));
 echo "\n"; 
 print_r($user->all('name'));
 

@@ -27,8 +27,14 @@ class TableBlock{
 						$this->index[]=$str;   
 				}else{ 
 					$of = preg_match('/^`?(\S+?)`?\s/',$str,$arr); 
-					if(!empty($arr[1]))
-						$this->cols[strtolower($arr[1])]="`{$arr[1]}` ".substr($str,strlen($arr[0]));				
+					if(!empty($arr[1])){
+						////// BUG /////
+						$str = preg_replace('/DEFAULT\s+([\d\.]+)/',"DEFAULT '$1'",$str);
+						$str = preg_replace('/DEFAULT\s+current_timestamp\(\)/',"DEFAULT CURRENT_TIMESTAMP",$str);
+						////// BUG /////
+
+						$this->cols[strtolower($arr[1])]="`{$arr[1]}` ".substr($str,strlen($arr[0]));	
+					}			
 				}  
 			}  
 		}

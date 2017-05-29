@@ -2,8 +2,6 @@
 
 trait SqlAccess
 {
-
-    
     /** @var Connect */
     public $db;
     public $model;
@@ -45,9 +43,12 @@ trait SqlAccess
     }
     public function __call($name, $args)
     {
-        $attr="$name({$args[0]})";
+        if (!count($args)) {
+            $args[0]='1';
+        }
+        $attr="$name({$args[0]}) as __VALUE__";
         foreach ($this->field($attr)->getAllIterator() as $row) {
-            return $row[$attr];
+            return $row['__VALUE__'];
         }
     }
 
@@ -94,7 +95,7 @@ trait SqlAccess
     }
     public function __invoke(...$pkv)
     {
-        return $this->find(...$pkv)->get();
+        return $this->find(...$pkv);//->get();
     }
 
     

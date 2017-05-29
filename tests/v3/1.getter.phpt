@@ -4,7 +4,7 @@
 <?php  
 include __DIR__."/../before.php";
 
-$conn = new \dbm\Connect('mysql:dbname=test','root','root');
+$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root');
 $conn->debug=true;
 
 //$cache = $conn->scope();
@@ -60,25 +60,23 @@ Array
     [0] => u2
     [1] => u2
 )
-<!--SELECT * FROM `zz_user`   ;-->
-<!--SELECT * FROM `zz_post`  WHERE `user_id` in (?,?,?)   ;1,2,3-->
-<!--SELECT * FROM `zz_user`   ;-->
-<!--SELECT * FROM `zz_post`  WHERE `user_id` in (?,?,?)   ;1,2,3-->
+<!--SELECT * FROM `zz_post`  WHERE (`user_id` in (SELECT Id FROM `zz_user`   ))  ;-->
+<!--SELECT * FROM `zz_post`  WHERE (`user_id` in (SELECT Id FROM `zz_user`   ))  ;-->
 Array
 (
     [0] => text1
     [1] => text1
 )
 <!--SELECT * FROM `zz_user`    LIMIT 1 OFFSET 1 ;-->
-<!--SELECT * FROM `zz_post`  WHERE `user_id`=?  ;2-->
+<!--SELECT * FROM `zz_post`  WHERE (`user_id`=?)  ;2-->
 <!--SELECT * FROM `zz_user`    LIMIT 1 OFFSET 1 ;-->
-<!--SELECT * FROM `zz_post`  WHERE `user_id`=?  ;2-->
+<!--SELECT * FROM `zz_post`  WHERE (`user_id`=?)  ;2-->
 Array
 (
     [0] => user2 22
     [1] => user2 22
 )
-<!--SELECT * FROM `zz_user`  WHERE `Id`=?  ;3-->
+<!--SELECT * FROM `zz_user`  WHERE (`Id`=?)  ;3-->
 Array
 (
     [0] => User Object
@@ -97,7 +95,7 @@ Array
 
 )
 <!--SELECT * FROM `zz_user`    LIMIT 1 OFFSET 1 ;-->
-<!--SELECT * FROM `zz_post`  WHERE `user_id`=?  ;2-->
+<!--SELECT * FROM `zz_post`  WHERE (`user_id`=?)  ;2-->
 Array
 (
     [0] => Post Object

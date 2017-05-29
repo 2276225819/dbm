@@ -70,7 +70,7 @@ class DBSync{
 			$qs = array_merge($qs,$table->clearFrom($this->tables[$tn]));  
 		}
 		foreach ($this->tables as $tn => $table) { 
-			$qs = array_merge($qs,$table->diffFrom($tables[$tn])); 
+			$qs = array_merge($qs,$table->diffFrom($tables[$tn]??null)); 
 		}
 		return $qs;
 	}
@@ -83,12 +83,22 @@ class DBSync{
 	public function reset(){
 
 	}
-
+    /**
+     * 删除本地结构文件
+     *
+     * @return void
+     */
+    public function delete(){
+        $this->tables=[];
+    }
+    /**
+     * 清空数据库数据 
+     * @return void
+     */
     public function clear(){
 		foreach ($this->tables as $tn => $table) { 
-            $str[]="truncate {$table->name};\n";
-        } 
-        $this->db->execute(join($str));
+            $this->db->execute("truncate {$table->name};");
+        }  
     }
 
     /** 

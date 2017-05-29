@@ -2,8 +2,6 @@
 
 trait SqlIterator
 {
-
- 
     /** @var Connect */
     public $db;
     public $model;
@@ -44,36 +42,37 @@ trait SqlIterator
             $query=$this->db->execute($sql, $args);
             $query->setFetchMode(\PDO::FETCH_ASSOC);
             static::$qs[$hash]=$query;
-            static::$cs[$hash]=[];
+            static::$cs[$hash]=$query->fetchAll();
         }
+        return new \ArrayIterator(static::$cs[$hash]);
  
         // if (static::$qs[$hash]===true) {
         //     yield from new \ArrayIterator(static::$cs[$hash]);
         //     return;
         // }
-        while (true) {
-            if (static::$qs[$hash]===true) {
-                for ($c=count(static::$cs[$hash]); $i < $c; $i++) {
-                    yield static::$cs[$hash][$i];
-                }
-                return;
-            }
-            if (isset(static::$cs[$hash][$i])) {
-                yield static::$cs[$hash][$i++];
-                continue;
-            }
-            if ($i<2) {
-                if ($row = static::$qs[$hash]->fetch()) {
-                    yield static::$cs[$hash][$i++]=$row;
-                    continue;
-                }
-            }
-            foreach (static::$qs[$hash]->fetchAll() as $value) {
-                yield static::$cs[$hash][]=$value;
-            }
-            static::$qs[$hash]=true;
-            return;
-        }
+        // while (true) {
+        //     if (static::$qs[$hash]===true) {
+        //         for ($c=count(static::$cs[$hash]); $i < $c; $i++) {
+        //             yield static::$cs[$hash][$i];
+        //         }
+        //         return;
+        //     }
+        //     if (isset(static::$cs[$hash][$i])) {
+        //         yield static::$cs[$hash][$i++];
+        //         continue;
+        //     }
+        //     if ($i<2) {
+        //         if ($row = static::$qs[$hash]->fetch()) {
+        //             yield static::$cs[$hash][$i++]=$row;
+        //             continue;
+        //         }
+        //     }
+        //     foreach (static::$qs[$hash]->fetchAll() as $value) {
+        //         yield static::$cs[$hash][]=$value;
+        //     }
+        //     static::$qs[$hash]=true;
+        //     return;
+        // }
     }
     public function getIterator($i = 0)
     {

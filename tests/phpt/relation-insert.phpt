@@ -5,7 +5,7 @@
 <?php
 include __DIR__."/../before.php";
  
-$conn = new \dbm\Connect('mysql:dbname=test','root','root');
+$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root');
 $conn->sql('zz_user_type')->where('1=1')->delete();
 $conn->debug=true; 
 
@@ -53,8 +53,8 @@ $sql = $user[Post::class]->set([
 ?>
 --EXPECTF--  
 <!--SELECT * FROM `zz_user`   ;-->
-<!--INSERT INTO `zz_user_type` SET `name`=?,Id=?;aa,1-->
-<!--INSERT INTO `zz_user_type` SET `name`=?,Id=?;bb,1-->
+<!--INSERT INTO `zz_user_type` (`name`,`Id` )VALUES(?,?);aa,1-->
+<!--INSERT INTO `zz_user_type` (`name`,`Id` )VALUES(?,?);bb,1-->
 Array
 (
     [0] => dbm\Model Object
@@ -65,11 +65,10 @@ Array
 
     [1] => 
 )
-<!--SELECT * FROM `zz_user_type`  WHERE `Id`=?  ;1-->
-<!--UPDATE `zz_user_type` SET `name`=?  WHERE `Id`=?;b,1-->
-<!--UPDATE `zz_user_type` SET `name`=?  WHERE `Id`=?;c,1-->
+<!--UPDATE `zz_user_type` SET `name`=?  WHERE (`Id`=?);b,1-->
+<!--UPDATE `zz_user_type` SET `name`=?  WHERE (`Id`=?);c,1-->
 
-<!--INSERT INTO `zz_post` SET `text`=?,user_id=?;u1t1,1-->
-<!--INSERT INTO `zz_post` SET `text`=?,user_id=?;u1t2,1-->
-<!--INSERT INTO `zz_post` SET `user_id`=?,text=?;1,u1t1-->
-<!--INSERT INTO `zz_post` SET `user_id`=?,text=?;1,u1t2-->  
+<!--INSERT INTO `zz_post` (`text`,`user_id` )VALUES(?,?);u1t1,1-->
+<!--INSERT INTO `zz_post` (`text`,`user_id` )VALUES(?,?);u1t2,1-->
+<!--INSERT INTO `zz_post` (`text`,`user_id` )VALUES(?,?);u1t1,1-->
+<!--INSERT INTO `zz_post` (`text`,`user_id` )VALUES(?,?);u1t2,1-->

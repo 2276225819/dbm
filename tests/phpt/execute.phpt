@@ -6,7 +6,7 @@
 
 include __DIR__."/../before.php";
 
-$conn = new \dbm\Connect('mysql:dbname=test','root','root');
+$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root');
 $conn->debug=true;
 
 $a = $conn->execute("select * from `zz_post`");
@@ -68,12 +68,12 @@ Array
     [1] => 0
     [2] => 1
 )
-<!--insert zz_test values(?),(?),(?),(?),(?);1,1,1,1,1-->
+<!--insert `zz_test` values(?),(?),(?),(?),(?);1,1,1,1,1-->
 Array
 (
     [0] => PDOStatement Object
         (
-            [queryString] => insert zz_test values(?),(?),(?),(?),(?)
+            [queryString] => insert `zz_test` values(?),(?),(?),(?),(?)
         )
 
     [1] => 5
@@ -83,12 +83,12 @@ Array
 (
     [0] => 0
 )
-<!--drop table zz_test ;-->
+<!--drop table `zz_test` ;-->
 Array
 (
     [0] => PDOStatement Object
         (
-            [queryString] => drop table zz_test 
+            [queryString] => drop table `zz_test` 
         )
 
     [1] => 0
