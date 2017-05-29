@@ -13,8 +13,8 @@ $post = $conn->sql(Post::class)->find(1);
 $user = $post[User::class]->get();
 $user['name']='aaaaaaaaaaaaaa';
 $user->save();
- 
 
+unset($user,$post);
 echo "////////////////////////////////////\n";
 
 $user = $conn->sql(User::class)->load(1);  

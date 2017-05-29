@@ -3,6 +3,10 @@ include __DIR__."/../vendor/autoload.php";
 
 //////////////////// v4 /////////////////////////
 
+#Conn->execute(STRING[,...args]);     //PDOStatement
+#Conn->lastInsertId();                //int
+#Conn->debug;                         //bool 
+#Conn->scope();                       //Transaction
 #Conn->sql(TABLE,[...PK])             //Model{...}
    
 #Model->get(INDEX)                    //Model{count=1}
@@ -30,18 +34,11 @@ include __DIR__."/../vendor/autoload.php";
 #Model->val(FIELD,VALUE)              //VALUE  changed
 #Model[FIELD]=VALUE                   //VALUE  changed
    
-   
-#Model{changed count=1}->insert()      //Model
-#Model{changed ...}->insert()          //Model
-#Model{changed count=1}->update()      //RowCount
-#Model{changed ...}->update()          //RowCount
-#Model{changed count=1}->delete()      //RowCount
-#Model{changed ...}->delete()          //RowCount
-   
-#Model{changed count=1}->save()        //self{unset(changed)}
-#Model{changed ...}->save()            //self{unset(changed)}
-#Model{changed count=1}->set()   
-#Model{changed ...}->set()   
+#Model->insert()      //Model
+#Model->update()      //RowCount
+#Model->delete()      //RowCount
+#Model->save()        //self{unset(changed)}
+#Model->set()         //Model
 
 
 

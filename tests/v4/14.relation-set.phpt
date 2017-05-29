@@ -72,9 +72,9 @@ print_r([
 
 ---------------------------
 <!--INSERT INTO `zz_post` (`text`,`user_id` )VALUES(?,?);a,4-->
-<!--INSERT INTO `zz_post` (`user_id`,`text` )VALUES(?,?);5,b-->
+<!--INSERT INTO `zz_post` (`text`,`user_id` )VALUES(?,?);b,5-->
 
-<!--INSERT INTO `zz_post` (`user_id`,`text` )VALUES(?,?);4,c-->
+<!--INSERT INTO `zz_post` (`text`,`user_id` )VALUES(?,?);c,4-->
 <!--INSERT INTO `zz_post` (`text`,`user_id` )VALUES(?,?);d,5-->
 
 Array
@@ -121,15 +121,15 @@ Array
 
     [user_post2] => Post Object
         (
-            [user_id] => 5
             [text] => b
+            [user_id] => 5
             [Id] => 8
         )
 
     [user_post3] => Post Object
         (
-            [user_id] => 4
             [text] => c
+            [user_id] => 4
             [Id] => 9
         )
 

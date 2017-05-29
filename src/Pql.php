@@ -107,6 +107,15 @@ class Pql
         }
         return $this->uncache();
     }
+    public function find(...$pkv){ 
+        if (is_array($pkv[0] && empty($pkv[0][0]))) {
+            $arr = $pkv[0];
+        } else {
+            $arr = array_combine($this->pks, $pkv);
+        }
+        $this->rArgs=$arr;
+        return $this->where($arr)->uncache();
+    }
     
     /**
      * ... FROM [TABLE] JOIN {$str} ...

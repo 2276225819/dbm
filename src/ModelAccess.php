@@ -2,27 +2,47 @@
 
 trait ModelAccess
 {
-
+    public $data=[];
+    public $dirty=[];
  
     static $table='...';
     static $pks=[];
     static $ref=[];
-    
-    public static function byName($table, $pks)
+  
+    function __construct($sql = null, $data = [])
     {
-        if (class_exists($table) && isset($table::$table)) {
-            $sql = new Pql($table::$table, $pks??$table::$pks);
-            return new $table($sql);
-        } else {
-            $sql = new Pql($table, $pks);
-            return new Model($sql);
+        if (!$sql instanceof Pql) {
+             $sql = new Pql(static::$table, static::$pks);
         }
-    }
-    function __construct($sql = null)
-    {
-        $this->sql = $sql instanceof Pql?$sql:new Pql(static::$table, static::$pks);
+        if(!empty($data)){ 
+            foreach ($sql->pks as $key) {
+                if (isset($data[$key])) {
+                    $sql->rArgs[$key]=$data[$key];
+                }
+            }
+            $sql->where($sql->rArgs);
+            Session::$instance->cache[$s=(string)$sql]=[$data];
+        }
+        $this->sql = $sql;
+        $this->data = $data; 
         Session::$gc++;
     }
+    function getIterator()
+    {
+        $list  = Session::$instance->select($this->sql); 
+        $model = new static(clone $this->sql); 
+        $pks = $model->sql->pks;
+        foreach ($list as $data) {
+            foreach ($pks as $pk) {
+                if (isset($data[$pk])) {
+                    $model->sql->rArgs[$pk]=$data[$pk];
+                }
+            }
+            $model->data = $data;
+            yield $model;
+        }
+    }
+
     function __clone()
     {
         Session::$gc++;
@@ -41,8 +61,8 @@ trait ModelAccess
         // if (!isset($this->list)) {
         //     $this->list = Session::$instance->select($this->sql);
         // }
-        if (isset($this->list[0])) {
-            return $this->list[0];
+        if (!empty($this->data)) {
+            return $this->data;
         } else {
             $arr[":"]=(string)$this->sql;
             if (isset($this->sql->rArgs)) {
@@ -71,35 +91,17 @@ trait ModelAccess
         return $vals[0]['__VALUE__'];
     }
     /**
-     * hash 
+     * hash
      */
     function __toString()
     {
         return (string)$this->sql;
     }
 
-    function getIterator()
-    {
-        if (!isset($this->list)) {
-            $this->list = Session::$instance->select($this->sql);
-        }
-        $model = clone $this;//new static($this->sql);
-        $pks = $model->sql->pks;
-        foreach ($this->list as $row) {
-            foreach ($pks as $pk) {
-                if (isset($row[$pk])) {
-                    $model->sql->rArgs[$pk]=$row[$pk];
-                }
-            }
-            $model->list = [$row];
-            yield $model;
-        }
-    }
-
 
     function jsonSerialize()
     {
-        return $this->list[0];
+        return $this->data;
     }
     function offsetExists($offset)
     {
@@ -111,11 +113,11 @@ trait ModelAccess
         //unset($this->data[$offset]);
     }
     function offsetSet($offset, $value)
-    { 
-        if(is_null($offset) && is_array($value)){
-            return $this->insert($value); 
-        }else{
-            return $this->val($offset,$value); 
+    {
+        if (is_null($offset) && is_array($value)) {
+            return $this->insert($value);
+        } else {
+            return $this->val($offset, $value);
         }
     }
     
@@ -136,10 +138,7 @@ trait ModelAccess
     }
     function toArray()
     {
-        if (!isset($this->list)) {
-            $this->list = Session::$instance->select($this->sql);
-        }
-        return $this->list[0];
+        return $this->val();
     }
 
 
@@ -180,7 +179,17 @@ trait ModelAccess
     }
 
     
-  
+      
+    /**
+     * ... FROM [TABLE] JOIN {$str} ...
+     * @param string  $str
+     * @return Sql
+     */
+    public function join($str)
+    {
+        $this->sql->join($str);
+        return $this;
+    }
     public function many($model, $model_pks, $model_fks)
     {
         return $this->ref($model, (array)$model_pks,
@@ -192,5 +201,17 @@ trait ModelAccess
         return $this->ref($model, (array)$model_pks,
             array_combine((array)$model_pks, (array)$local_fks)
         );
+    }
+
+      
+    public static function byName($table, $pks)
+    {
+        if (class_exists($table) && isset($table::$table)) {
+            $sql = new Pql($table::$table, $pks??$table::$pks);
+            return new $table($sql);
+        } else {
+            $sql = new Pql($table, $pks);
+            return new Model($sql);
+        }
     }
 }

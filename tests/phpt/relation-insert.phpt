@@ -70,5 +70,5 @@ Array
 
 <!--INSERT INTO `zz_post` (`text`,`user_id` )VALUES(?,?);u1t1,1-->
 <!--INSERT INTO `zz_post` (`text`,`user_id` )VALUES(?,?);u1t2,1-->
-<!--INSERT INTO `zz_post` (`user_id`,`text` )VALUES(?,?);1,u1t1-->
-<!--INSERT INTO `zz_post` (`user_id`,`text` )VALUES(?,?);1,u1t2-->
+<!--INSERT INTO `zz_post` (`text`,`user_id` )VALUES(?,?);u1t1,1-->
+<!--INSERT INTO `zz_post` (`text`,`user_id` )VALUES(?,?);u1t2,1-->

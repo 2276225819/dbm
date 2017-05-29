@@ -19,7 +19,7 @@ print_r($user);
 
 echo "\n[1:n]#user[Post]->save(),#post->save()\n";
 $posts = $user->ref(Post::class);
-$post = $posts->save(['text'=>'a']); 
+$post = $posts->set(['text'=>'a']); 
 $post['text']='b';
 $post->save(); 
 print_r($post); 
@@ -47,9 +47,8 @@ User Object
 )
 
 [1:n]#user[Post]->save(),#post->save()
-<!--SELECT * FROM `zz_post`  WHERE (`user_id`=?)  ;4-->
 <!--INSERT INTO `zz_post` (`text`,`user_id` )VALUES(?,?);a,4-->
-<!--UPDATE `zz_post` SET `text`=?  WHERE (`Id`=?);b,7-->
+<!--UPDATE `zz_post` SET `text`=?  WHERE (`user_id`=? AND `Id`=?);b,4,7-->
 Post Object
 (
     [text] => b
@@ -59,7 +58,7 @@ Post Object
 
 [1:n]#posts[PostType]->save()
 <!--INSERT INTO `zz_post_type` (`name` )VALUES(?);a-->
-<!--UPDATE `zz_post` SET `post_type_id`=?  WHERE (`Id`=?);5,7-->
+<!--UPDATE `zz_post` SET `post_type_id`=?  WHERE (`user_id`=? AND `Id`=?);5,4,7-->
 Post Object
 (
     [text] => b
