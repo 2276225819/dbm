@@ -6,7 +6,7 @@ TODO:关联查询父级where默认删除条件重新查询
 include __DIR__.'/../before.php';
 
 
-$conn = new \dbm\Connect('mysql:dbname=test','root','root'); 
+$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root'); 
 $conn->debug=true;
 foreach ($conn->sql(User::class)->and('Id=? or `Id`=3','1') as  $user) {
     echo "USER:".$user['name']."\n";

@@ -4,7 +4,7 @@ include __DIR__."/../vendor/autoload.php";
 $sync = new \dbm\DBSync(__DIR__."/../example/example.sql"); 
 $sync->setPDO('mysql:host=127.0.0.1;dbname=test','root','root');
 //$sync->pull();  
-$sync->push();
+//$sync->push();
 $sync->clear();
 //////////// model ///////////////////
 class User extends dbm\Model
@@ -48,7 +48,7 @@ class Friend extends dbm\Model
     static $pks=['uid1','uid2'];    
 }
 
-$conn = new \dbm\Connect('mysql:dbname=test','root','root');
+$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root');
 $conn->sql(User::class)->insertMulit([ 
 	['type_id'=>1,'name'=>'u1'],
 	['type_id'=>1,'name'=>'u2'],

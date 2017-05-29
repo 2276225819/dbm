@@ -14,9 +14,15 @@ class Pql
 
     public function __toString()
     {
-        return Connect::bulidSql($this->bulidSelect()).';'.join($this->bulidArgs(), ',');
+        if(empty($this->hash)){
+            $this->hash = Connect::bulidSql($this->bulidSelect()).';'.join($this->bulidArgs(), ',');
+        }
+        return $this->hash;
     }
-
+	public function uncache(){
+        $this->hash=null;
+        return $this;
+    }
     /**
      * ... LIMIT {$limit} OFFSET {$offset} ...
      * @param int $limit
@@ -29,7 +35,7 @@ class Pql
         if (!empty($offset)) {
             $this->lStr.=' OFFSET '.intval($offset).' ';
         }
-        return $this;
+        return $this->uncache();
     }
     /**
      * ... ORDER {$order} ...
@@ -41,7 +47,7 @@ class Pql
     {
         $this->oStr=" ORDER BY ".$order;
         $this->oArgs=$arr;
-        return $this;
+        return $this->uncache();
     }
     /**
      * SELECT {$fileds} FROM ...
@@ -56,7 +62,7 @@ class Pql
 		else{
 			$this->fStr=$fields;
 		} 
-        return $this;
+        return $this->uncache();
     }
 
     /**
@@ -71,7 +77,7 @@ class Pql
             $this->wArgs=[];
             $this->wStr=" WHERE (".$this->kvSQL($this->wArgs, ' AND ', $w, $arr).")";
         }
-        return $this;
+        return $this->uncache();
     }
     /**
      * ... WHERE ... AND {$w} ...
@@ -85,7 +91,7 @@ class Pql
             $this->wStr.=empty($this->wStr)?" WHERE ":" AND ";
             $this->wStr.="(".$this->kvSQL($this->wArgs, ' AND ', $w, $arr).")"; 
         }
-        return $this;
+        return $this->uncache();
     }
     /**
      * ... WHERE ... OR {$w} ...
@@ -99,7 +105,7 @@ class Pql
             $this->wStr.=empty($this->wStr)?" WHERE ":" OR ";
             $this->wStr.="(".$this->kvSQL($this->wArgs, ' OR ', $w, $arr).")";
         }
-        return $this;
+        return $this->uncache();
     }
     
     /**
@@ -110,7 +116,7 @@ class Pql
     public function join($str)
     {
         $this->jStr=" $str";
-        return $this;
+        return $this->uncache();
     }
     public function kvSQL(&$param, $jtag = ' AND ', $arr, $attr = null, $sql = '')
     {
@@ -165,7 +171,6 @@ class Pql
         return "SELECT {$this->fStr} FROM {$this->table}{$this->jStr} {$this->wStr} {$this->oStr} {$this->lStr}";
     } 
 
-	
 
 
 

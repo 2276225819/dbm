@@ -4,7 +4,7 @@
 <?php  
 include __DIR__."/../before.php";
 
-$conn = new \dbm\Connect('mysql:dbname=test','root','root');
+$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root');
 $conn->debug=true;
 
 //<!--SELECT * FROM `zz_post`  WHERE (`user_id` in (SELECT Id FROM `zz_user`  WHERE (`Id`=?)  )) AND (`post_type_id`=?)  ;1,1-->
