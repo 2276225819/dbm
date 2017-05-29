@@ -51,10 +51,16 @@ trait ModelAccess
             return $arr;
         }
     }
+    /**
+     * 查分多条语句可以分别缓存，所以使用load(id)不用find(id)
+     */
     function __invoke(...$pkv)
     {
         return $this->load(...$pkv);
     }
+    /**
+     * 聚合函数
+     */
     function __call($name, $args)
     {
         if (!count($args)) {
@@ -64,6 +70,9 @@ trait ModelAccess
         $vals = Session::$instance->select($this->sql->field($attr));
         return $vals[0]['__VALUE__'];
     }
+    /**
+     * hash 
+     */
     function __toString()
     {
         return (string)$this->sql;
@@ -102,19 +111,17 @@ trait ModelAccess
         //unset($this->data[$offset]);
     }
     function offsetSet($offset, $value)
-    {
-        if (isset($this->list[0])) {
-            if (empty($this->list[0][$offset]) or $this->list[0][$offset]!=$value) {
-                $this->dirty[$offset]=$value;
-            }
-        
-            foreach ($this->list as &$row) {
-                $row[$offset]=$value;
-            }
-        } else {
-            $this->dirty[$offset]=$value;
+    { 
+        if(is_null($offset) && is_array($value)){
+            return $this->insert($value); 
+        }else{
+            return $this->val($offset,$value); 
         }
     }
+    
+    /**
+     * 查分多条语句可以分别缓存，所以使用get(0)，不用limit(1,0)
+     */
     function offsetGet($offset)
     {
         if (is_numeric($offset)) {
@@ -173,24 +180,7 @@ trait ModelAccess
     }
 
     
-    public function set($data)
-    {
-        $data = array_merge($this->sql->rArgs, $data);
-        foreach ($this->sql->pks as $key) {
-            if (isset($data[$key]) && in_array($key, $this->sql->pks)) {
-                $where[$key]=$data[$key];
-            }
-        }
-        if (isset($where)) {
-            if ($row = $this->where($where)->get()) {
-                foreach ($data as $key => $value) {
-                    $row[$key]=$value;
-                }
-                return $row->save();
-            }
-        }
-        return (bool)$this->insert($data);
-    }
+  
     public function many($model, $model_pks, $model_fks)
     {
         return $this->ref($model, (array)$model_pks,

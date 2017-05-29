@@ -23,17 +23,32 @@ class Sql implements \IteratorAggregate, \ArrayAccess
      * @param string $field
      * @return mixed
      */
-    public function val($field = null)
+    public function val($field = null,$value=null)
     {
-        foreach ($this->getAllIterator() as $row) {
-            foreach ($this->rArgs as $k => $v) {
-                if ($row[$k]!=$v) {
-                    continue 2;
+        if(isset($value)){
+            if (isset($this->list[0])) {
+                if (empty($this->list[0][$offset]) or $this->list[0][$offset]!=$value) {
+                    $this->dirty[$offset]=$value;
                 }
+            
+                foreach ($this->list as &$row) {
+                    $row[$offset]=$value;
+                }
+            } else {
+                $this->dirty[$offset]=$value;
             }
-            return $field?$row[$field]:$row;
+        }else{
+            foreach ($this->getAllIterator() as $row) {
+                foreach ($this->rArgs as $k => $v) {
+                    if ($row[$k]!=$v) {
+                        continue 2;
+                    }
+                }
+                return $field?$row[$field]:$row;
+            }
         }
-    }
+ 
+   }
     /**
      * Row
      * @param array ...$pkv

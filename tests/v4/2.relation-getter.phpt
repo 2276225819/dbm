@@ -7,11 +7,15 @@ include __DIR__."/../before.php";
 $conn = new \dbm\Connect('mysql:dbname=test','root','root');
 $conn->debug=true;
 
+////////////聚合查询join//////////////
 //<!--SELECT * FROM `zz_post`  WHERE `user_id` in (SELECT Id FROM `zz_user`   )  ;-->
 $a=$conn[User::class][Post::class]['text']; 
 $b=$conn->sql('zz_user','Id')->ref('zz_post','Id',['user_id'=>'Id'])->val('text');  
 print_r([$a,$b]); 
 
+
+
+///////////查询查分多语句//////////////
 //<!--SELECT * FROM `zz_user`  WHERE (`Id`=?)  ;1-->
 //<!--SELECT * FROM `zz_post`  WHERE `user_id`=?  ;1--> 
 $a=$conn[User::class](1)[Post::class]['text']; 
@@ -24,6 +28,8 @@ $a=$conn[User::class][1][Post::class]['text'];
 $b=$conn->sql('zz_user','Id')->get(1)->ref('zz_post','Id',['user_id'=>'Id'])->val('text'); 
 print_r([$a,$b]); 
 
+
+///////////查询合并语句/////////////
 $a=$conn->sql('zz_user','Id')->find(2)
         ->ref('zz_post','Id',['user_id'=>'Id'])->limit(1,0)
         ->val('text');  

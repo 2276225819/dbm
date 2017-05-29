@@ -26,7 +26,7 @@ $post = $user[Post::class]->insertMulit([
 
 echo "////////////////////////////////////\n";
 
-$pt = new PostType($conn);
+$pt = new PostType;
 $pt['name']='aaa';
 $pt->create();
 

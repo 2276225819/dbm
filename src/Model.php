@@ -61,21 +61,33 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
      * @param string $field
      * @return mixed
      */
-    function val($field = null, $val = null)
+    function val($field = null, $value = null)
     {
         if ($field===null) {
             return $this->toArray();
         }
-        if (isset($val)) {
-            return $this->dirty[$field]=$val;
-        } else {
+        if ($value===null) {
             if (!isset($this->list)) {
                 $this->list = Session::$instance->select($this->sql);
             }
             if (isset($this->list[0][$field])) {
                 return $this->list[0][$field];
             }
+        } else {
+            if (isset($this->list[0])) {
+                if (empty($this->list[0][$field]) or $this->list[0][$field]!=$value) {
+                    $this->dirty[$field]=$value;
+                }
+            
+                foreach ($this->list as &$row) {
+                    $row[$field]=$value;
+                }
+            } else {
+                $this->dirty[$field]=$value;
+            }
         }
+
+      
     }
     
     /**
@@ -123,6 +135,9 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
             }
         }
         do {
+            if (empty($this->list) || count($this->list)!=1) {
+                break;
+            }
             foreach ($ref as $k => $v) {
                 if (!in_array($k, $model::$pks)) {
                     break 2;
@@ -185,7 +200,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
     /////////////curd/////////////
 
     /**
-     * Row
+     * Row(1)
      * @param array $data
      * @return \dbm\Model
      */
@@ -221,7 +236,12 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
         if (empty($sql->wStr)) {
             throw new \Exception("Require Where Column", 1);
         }
-        $count = Session::$instance->update($sql, $data, ...$arr);
+        $count = Session::$instance->update($sql, $data, ...$arr); 
+        if($row = &Session::$instance->cache[$s=(string)$sql]){
+            foreach ($row as &$value) { 
+                $value = array_merge($value,$data);
+            }
+        } 
         return $count;
     }
     /**
@@ -254,7 +274,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
 
 
     /**
-     * Row
+     * $this;
      * @param array $dirty
      * @return \dbm\Model
      */
@@ -265,20 +285,43 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
             throw new \Exception("Require Change Column", 1);
         }
         $sql = $this->sql;
-        if (isset($sql->rArgs)) {
+        if (count($sql->rArgs)) {
             $this->where($sql->rArgs);
         }
         if (empty($sql->wStr) || empty($this->get())) {
             $row = $this->insert($dirty);
             $this->list=$row->list;
-            return $this;
-        }
-        
-        $this->update($dirty);
-        $this->dirty=[];
-        return $this;
+        } else {
+            $this->update($dirty);
+            $this->dirty=[];
+        } 
+        return $this;;
     }
-    
+
+    /**
+     * Row(1)  
+     * @param array $data
+     * @return \dbm\Model
+     */
+    function set($data)
+    { 
+        $data = array_merge($this->sql->rArgs, $data);
+        foreach ($this->sql->pks as $key) {
+            if (isset($data[$key]) && in_array($key, $this->sql->pks)) {
+                $where[$key]=$data[$key];
+            }
+        }
+        if (isset($where)) {
+            if ($row = $this->where($where)->get()) {
+                foreach ($data as $key => $value) {
+                    $row[$key]=$value;
+                }
+                $row->save(); 
+                return $row;
+            } 
+        }    
+        return $this->insert($data);
+    }
     /////////////sql///////////////
     
     /**

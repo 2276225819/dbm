@@ -13,23 +13,23 @@ echo $conn->sql(PostType::class)->delete(true)."\n";
 
 echo "\n---------------------------\n";
 $user1 = $conn->sql(User::class)->insert(['name'=>'a']); 
-$user2 = $conn->sql(User::class)->save(['name'=>'b']); 
+$user2 = $conn->sql(User::class)->set(['name'=>'b']); 
 
 echo "\n---------------------------\n";
 $type1 = $user1->ref(UserType::class)->insert(['name'=>'a']);
-$type2 = $user2->ref(UserType::class)->save(['name'=>'b']); 
+$type2 = $user2->ref(UserType::class)->set(['name'=>'b']); 
 echo "\n";
 try{ 
-$type3 = $user1->ref(UserType::class)->save(['name'=>'c']);
+$type3 = $user1->ref(UserType::class)->set(['name'=>'c']);
 $type4 = $user2->ref(UserType::class)->insert(['name'=>'d']);
 }catch(Throwable $e){}
 
 echo "\n---------------------------\n";
 $post1 = $user1->ref(Post::class)->insert(['text'=>'a']);
-$post2 = $user2->ref(Post::class)->save(['text'=>'b']); 
+$post2 = $user2->ref(Post::class)->set(['text'=>'b']); 
 echo "\n";
 try{ 
-$post3 = $user1->ref(Post::class)->save(['text'=>'c']);
+$post3 = $user1->ref(Post::class)->set(['text'=>'c']);
 $post4 = $user2->ref(Post::class)->insert(['text'=>'d']);  
 }catch(Throwable $e){}
 echo "\n"; 
@@ -72,11 +72,9 @@ print_r([
 
 ---------------------------
 <!--INSERT INTO `zz_post` (`text`,`user_id` )VALUES(?,?);a,4-->
-<!--SELECT * FROM `zz_post`  WHERE (`user_id`=?)  ;5-->
-<!--INSERT INTO `zz_post` (`text`,`user_id` )VALUES(?,?);b,5-->
+<!--INSERT INTO `zz_post` (`user_id`,`text` )VALUES(?,?);5,b-->
 
-<!--SELECT * FROM `zz_post`  WHERE (`user_id`=?)  ;4-->
-<!--UPDATE `zz_post` SET `text`=?  WHERE (`user_id`=?);c,4-->
+<!--INSERT INTO `zz_post` (`user_id`,`text` )VALUES(?,?);4,c-->
 <!--INSERT INTO `zz_post` (`text`,`user_id` )VALUES(?,?);d,5-->
 
 Array
@@ -109,7 +107,7 @@ Array
 
     [user_type3] => UserType Object
         (
-            [name] => a
+            [name] => c
             [Id] => 3
         )
 
@@ -123,24 +121,23 @@ Array
 
     [user_post2] => Post Object
         (
-            [text] => b
             [user_id] => 5
+            [text] => b
             [Id] => 8
         )
 
     [user_post3] => Post Object
         (
-            [Id] => 7
-            [post_type_id] => 
             [user_id] => 4
-            [text] => a
+            [text] => c
+            [Id] => 9
         )
 
     [user_post4] => Post Object
         (
             [text] => d
             [user_id] => 5
-            [Id] => 9
+            [Id] => 10
         )
 
 )
