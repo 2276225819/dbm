@@ -123,12 +123,8 @@ class Connect implements \ArrayAccess
      * @return \dbm\Model
      */
     public function sql($model, $pks = null)
-    { 
-        if (empty(Session::$instance)) {
-            Session::$instance = new Session($this); 
-        } else {
-            Session::$instance->conn = $this;
-        }
+    {  
+        Session::$instance->conn = $this; 
         return Model::byName($model, $pks);
     }
 }

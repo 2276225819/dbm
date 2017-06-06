@@ -21,6 +21,9 @@ trait ConnectAccess
         class_exists(Model::class);
         class_exists(Session::class);
         class_exists(Pql::class);
+
+
+        Session::$instance = new Session($this); 
     } 
     public function reload()
     {  

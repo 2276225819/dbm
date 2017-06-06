@@ -46,6 +46,7 @@ trait ModelAccess
     function __clone()
     {
         Session::$gc++;
+        $this->sql = clone $this->sql;//BUG
     }
     function __destruct()
     {
@@ -87,6 +88,7 @@ trait ModelAccess
             $args[0]='1';
         }
         $attr = "$name({$args[0]}) as __VALUE__";
+        $this->sql->rArgs=[];//BUG
         $vals = Session::$instance->select($this->sql->field($attr));
         return $vals[0]['__VALUE__'];
     }
@@ -207,7 +209,7 @@ trait ModelAccess
     public static function byName($table, $pks)
     {
         if (class_exists($table) && isset($table::$table)) {
-            $sql = new Pql($table::$table, $pks??$table::$pks);
+            $sql = new Pql($table::$table, $pks?:$table::$pks);
             return new $table($sql);
         } else {
             $sql = new Pql($table, $pks);
