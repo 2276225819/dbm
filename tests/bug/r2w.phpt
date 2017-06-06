@@ -10,9 +10,9 @@ $conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root');
 $conn->debug=true;
 foreach ($conn->sql(User::class)->and('Id=? or `Id`=3','1') as  $user) {
     echo "USER:".$user['name']."\n";
-    #### ERROR ######
+    #### BUG ######
     # foreach ($user[Post::class]->where("text like ?","%3%") as $post) {
-    #### ERROR ######
+    #### BUG ######
     foreach ($user[Post::class]->and("text like ?","%3%") as $post) {
         echo "   POST:".$post['Id']."  ".$post['text']."\n";   
         echo "   USER:".$post->ref('zz_user',['Id'],['Id'=>'user_id'])['name']."\n";  

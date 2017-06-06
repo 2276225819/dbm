@@ -20,7 +20,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
      * @param number|null $offset
      * @return \dbm\Model
      */
-    function get($offset = null)
+    public function get($offset = null)
     {
         if (is_numeric($offset)) {
             $this->limit(1, $offset);
@@ -41,7 +41,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
      * @param mixed[] ...$pkv
      * @return \dbm\Model
      */
-    function load(...$pkv)
+    public function load(...$pkv)
     { 
         $sql = (clone $this->sql)->find(...$pkv);
         $list = Session::$instance->select($sql);
@@ -60,14 +60,16 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
      * @param string $field
      * @return mixed
      */
-    function val($field = null, $value = null)
+    public function val($field = null, $value = null)
     {
         if ($field===null) {
-            $data = $this->data+Session::$instance->select($this->sql)[0]; 
+            $data = $this->data; 
+            $data += Session::$instance->select($this->sql)[0]??[];
             return $data;
         }
         if ($value===null) {
-            $data = $this->data+Session::$instance->select($this->sql)[0]; 
+            $data = $this->data; 
+            $data +=Session::$instance->select($this->sql)[0]??[];
             return $data[$field]??null;
         } 
         if(!isset($this->data[$field]) || $this->data[$field]!=$value) {
@@ -82,12 +84,12 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
      * @param array $ref
      * @return \dbm\Model
      */
-    function ref($model, $pks = null, $ref = null)
+    public function ref($table, $pks = [], $ref = [])
     {
-        $model = Model::byName($model, $pks);
-        if (empty($ref) && isset(static::$ref[get_class($model)])) {
-            $ref = static::$ref[get_class($model)];
-        }
+        $model = static::byName($table, $pks);
+        if (empty($ref) && isset(static::$ref[$table])){
+            $ref = static::$ref[$table];  
+        } 
         if (empty($this->data)) {
             $keys=join(array_keys($ref), ',');
             $query = $this->sql->field(array_values($ref));
@@ -102,9 +104,9 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
             $thisdata = Session::$instance->select($this->sql, true);
             foreach ($ref as $k => $f) {
                 foreach ($thisdata as $row) {
-                    if (!empty($row[$f])) {
-                        $s[$k][]=$row[$f];
-                    }
+                    //if (!empty($row[$f])) {
+                        $s[$k][]=$row[$f]??null;
+                    //}
                 }
                 if (isset($s[$k])) {
                     $s[$k] = array_unique($s[$k]);
@@ -140,7 +142,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
      * @param string $field
      * @return \dbm\Model[]
      */
-    function all($field = null)
+    public function all($field = null)
     {
         $arr = array();
         foreach ($this as $row) {
@@ -159,7 +161,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
      * @param string $field
      * @return \dbm\Model[]
      */
-    function keypair($key = null, $field = null)
+    public function keypair($key = null, $field = null)
     {
         $arr=[];
         if (empty($key)) {
@@ -190,9 +192,10 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
      * @param array $data
      * @return \dbm\Model
      */
-    function insert($arr)
+    public function insert($arr,$pks=[])
     {
         $sql = $this->sql;
+        $sql->pks=\array_merge($sql->pks, (array)$pks);
         $data = Session::$instance->insert($sql, $arr); 
         if (isset($sql->rmodel)) {
             unset($sql->rArgs); 
@@ -209,7 +212,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
      * @param array ...$arr
      * @return int
      */
-    function update($data, ...$arr)
+    public function update($data, ...$arr)
     {
         $sql = $this->sql;
         if (empty($sql->wStr)) {
@@ -228,7 +231,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
      * @param array $list
      * @return int
      */
-    function insertMulit($list)
+    public function insertMulit($list)
     {
         if (!count($list)) {
             throw new \Exception("Error Muilt Column", 1);
@@ -241,7 +244,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
      * RowCount
      * @return int
      */
-    function delete($force = false)
+    public function delete($force = false)
     {
         $sql = $this->sql;
         if (!$force && empty($sql->wStr)) {
@@ -258,16 +261,17 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
      * @param array $dirty
      * @return void
      */
-    function save($dirty = [])
+    public function save($dirty = [])
     {
         $dirty += $this->dirty; 
         if (!count($dirty)) {
-            throw new \Exception("Require Change Column", 1);
+            //->set(no changed)
+            return $this;//throw new \Exception("Require Change Column", 1);
         }
         if(!empty($this->sql->rArgs)){
             $this->where($this->sql->rArgs);
         }
-        if(empty($this->sql->wStr)){
+        if(empty($this->sql->wStr) || !$this->data){  
             $row = $this->insert($dirty);
             $this->data = $row->data;
             $this->sql = $row->sql;
@@ -285,7 +289,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
      * @param array $data
      * @return \dbm\Model
      */
-    function set($data)
+    public function set($data)
     { 
         $data += $this->sql->rArgs;
         foreach ($this->sql->pks as $key) {
@@ -309,7 +313,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
     /**
      * @return \dbm\Model
      */
-    function where($w, ...$arr)
+    public function where($w, ...$arr)
     {
         $this->sql->where($w, ...$arr);
         return $this;
@@ -317,7 +321,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
     /**
      * @return \dbm\Model
      */
-    function whereAnd($w, ...$arr)
+    public function whereAnd($w, ...$arr)
     {
         $this->sql->and($w, ...$arr);
         return $this;
@@ -325,7 +329,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
     /**
      * @return \dbm\Model
      */
-    function whereOr($w, ...$arr)
+    public function whereOr($w, ...$arr)
     {
         $this->sql->or($w, ...$arr);
         return $this;
@@ -336,7 +340,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
      * @param int $offset
      * @return \dbm\Model
      */
-    function limit($limit, $offset = 0)
+    public function limit($limit, $offset = 0)
     {
         $this->sql->limit($limit, $offset);
         return $this;
@@ -355,7 +359,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
     /**
      * @return \dbm\Model
      */
-    function order($order, ...$arr)
+    public function order($order, ...$arr)
     {
         $this->sql->order($order, ...$arr);
         return $this;
@@ -363,7 +367,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
     /**
      * @return \dbm\Model
      */
-    function field($arr)
+    public function field($arr)
     {
         $this->sql->field($arr);
         return $this;
@@ -371,7 +375,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
     /**
      * @return \dbm\Model
      */
-    function join($str)
+    public function join($str)
     {
         $this->sql->join($str);
         return $this;
