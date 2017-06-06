@@ -15,7 +15,7 @@ $user->save();
 print_r($user);
 
 $type = $user[UserType::class];
-$val = $user[UserType::class]->val();
+$val = $user[UserType::class]->get();
 print_r([$type,$val]); 
 ?>
 --EXPECT--
@@ -27,6 +27,7 @@ User Object
     [name] => u2
     [type_id] => 0
 )
+<!--SELECT * FROM `zz_user_type`  WHERE (`Id`=?)  ;0-->
 Array
 (
     [0] => UserType Object

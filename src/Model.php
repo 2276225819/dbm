@@ -51,7 +51,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
         return new static($this->sql,$list[0]);
     }
     /**
-     * $sql->val() as array
+     * $sql->val() as pkv
      *
      * $sql->val(FILED) as mixed
      *
@@ -63,9 +63,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
     public function val($field = null, $value = null)
     {
         if ($field===null) {
-            $data = $this->data; 
-            $data += Session::$instance->select($this->sql)[0]??[];
-            return $data;
+            $field = $this->sql->pks[0];
         }
         if ($value===null) {
             $data = $this->data; 

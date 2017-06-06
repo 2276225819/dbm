@@ -29,6 +29,8 @@ include __DIR__."/../vendor/autoload.php";
 #Model->all(FIELD)                    //[...VALUE]
 #Model->keypair(null,FIELD)           //[...PK=>VALUE]
 #Model->keypair(KEY,FIELD)            //[...KET=>VALUE]
+#Model->val()                         //PKV
+#Model[NULL]                          //PKV
 #Model->val(FIELD)                    //VALUE
 #Model[FIELD]                         //VALUE
 #Model->val(FIELD,VALUE)              //VALUE  changed

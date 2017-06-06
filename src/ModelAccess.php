@@ -140,7 +140,7 @@ trait ModelAccess
     }
     function toArray()
     {
-        return $this->val();
+        return $this->data;
     }
 
 
