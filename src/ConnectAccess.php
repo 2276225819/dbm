@@ -42,6 +42,7 @@ trait ConnectAccess
     }
     public function offsetExists($offset)
     {
+        return $this[$offset];
     }
     public function offsetGet($offset)
     {

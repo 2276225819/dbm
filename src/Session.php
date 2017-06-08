@@ -23,15 +23,15 @@ class Session
             $ssql = $sql->bulidSelect();
             $args = $sql->bulidArgs();
 			$fetch = $this->conn->execute($ssql, $args);
-			$fetch->setFetchMode(\PDO::FETCH_ASSOC);
+			$fetch->setFetchMode(\PDO::FETCH_OBJ);
 			$this->cache[$hash]=$fetch->fetchAll(); 
 		}
 		if($all or !count($sql->rArgs)){
 			return $this->cache[$hash];
-		}else{
+		}else{ 
 			foreach ($this->cache[$hash] as $row) {
 				foreach ($sql->rArgs as $k => $v) {
-					if ($row[$k]!=$v) {
+					if ($row->$k!=$v) {
 						continue 2;
 					}
 				}
@@ -62,6 +62,10 @@ class Session
     function insert($sql, $data)
     {
         $data = array_merge($data, $sql->rArgs, $sql->sArgs); 
+        foreach ($data as $key => $value) {
+             if(\in_array($key,$sql->pks))
+                unset($data[$key]);
+        }
         $sql1 = '';
         $sql2 = ",(".substr(str_repeat(",?", count($data)), 1).")"; 
         foreach ($data as $key => $value) {

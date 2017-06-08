@@ -8,7 +8,7 @@ $conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root');
 $conn->debug=true;
  
 echo "# not cache\n";
-$conn->sql(User::class)->each(function(User $u){
+$conn->sql(User::class)->whereAnd('id>1')->each(function(User $u){
 	$u['name']=1;
 	$u->save(); 
 });  
@@ -38,10 +38,8 @@ print_r($conn->sql(User::class)->map(function(User $u){
 ?>
 --EXPECT-- 
 # not cache
-<!--SELECT * FROM `zz_user`   ;-->
-<!--UPDATE `zz_user` SET `name`=?  WHERE (`Id`=?);1,1-->
-<!--UPDATE `zz_user` SET `name`=?  WHERE (`Id`=?);1,2-->
-<!--UPDATE `zz_user` SET `name`=?  WHERE (`Id`=?);1,3-->
+<!--SELECT * FROM `zz_user`  WHERE (`id`>1)  ;-->
+<!--UPDATE `zz_user` SET `name`=?  WHERE (`id`>1);1-->
 # new query
 <!--SELECT * FROM `zz_user`   ;-->
 Array
