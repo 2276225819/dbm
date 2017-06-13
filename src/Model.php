@@ -406,12 +406,5 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
         $this->sql->field($arr);
         return $this;
     }
-    /**
-     * @return \dbm\Model
-     */
-    public function join($str)
-    {
-        $this->sql->join($str);
-        return $this;
-    }
+ 
 }

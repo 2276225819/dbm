@@ -180,12 +180,12 @@ trait ModelAccess
     public function create(...$args)
     {
         return $this->save(...$args);
-    }
+    }   
 
     
       
     /**
-     * ... FROM [TABLE] JOIN {$str} ...
+     * ... FROM [TABLE] {$str} ...
      * @param string  $str
      * @return Sql
      */
@@ -193,7 +193,17 @@ trait ModelAccess
     {
         $this->sql->join($str);
         return $this;
+    }     
+    /**
+     * ... GROUP BY {$str} ...
+     * @return \dbm\Model
+     */
+    public function group($str){
+        $this->sql->group($str);
+        return $this; 
     }
+
+
     public function many($model, $model_pks, $model_fks)
     {
         return $this->ref($model, (array)$model_pks,
