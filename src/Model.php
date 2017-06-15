@@ -269,56 +269,6 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
 
 
     /**
-     * self
-     * @param array $dirty
-     * @return void
-     */
-    public function save($dirty = [])
-    {
-        $dirty += $this->dirty; 
-        if (!count($dirty)) {
-            //->set(no changed)
-            return $this;//throw new \Exception("Require Change Column", 1);
-        }
-      
-        $model = empty($this->data)?$this:clone $this;
-        if(!empty($model->sql->rArgs)){
-            $model->where($model->sql->rArgs);
-        }
-        if(empty($model->sql->wStr) || empty($model->data)){  
-            $row = $model->insert($dirty);
-            $model->data = $row->data;
-            $model->sql = $row->sql;
-        }else{
-            $model->update($dirty); 
-        }
- 
-        // if(empty($this->sql->rArgs) && (empty($this->sql->wStr) || empty($this->data))){  
-        //     $row = $this->insert($dirty);
-        //     $this->data = $row->data;
-        //     $this->sql = $row->sql;
-        // }else{  
-        //     $sql = $this->sql;
-        //     $count = Session::$instance->update($sql, $dirty ); 
-        //     if (isset(Session::$instance->cache[$s=(string)$sql])) {
-        //         foreach (Session::$instance->cache[$s] as $value) {
-        //             foreach ($dirty as $k => $v) { 
-        //                 $value->$k=$v;
-        //             } 
-        //         } 
-        //     }   
-        // }
-       
-
-
-
-        $this->dirty=[];
-        return $this;
-        //return true;
-        //return $this->dirty; 
-    }
-
-    /**
      * Model{count=1}
      * @param array $data
      * @return \dbm\Model
@@ -406,5 +356,5 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
         $this->sql->field($arr);
         return $this;
     }
- 
+
 }

@@ -24,10 +24,10 @@ $post['text']='b';
 $post->save(); 
 print_r($post); 
 
-echo "\n[1:n]#posts[PostType]->save()\n";  
-$ptype = $post->ref(PostType::class)->save(['name'=>'a']);  
-print_r($post); 
-print_r($ptype);  
+// echo "\n[1:n]#posts[PostType]->save()\n";  
+// $ptype = $post->ref(PostType::class)->save(['name'=>'a']);  
+// print_r($post); 
+// print_r($ptype);  
 
 ?>
 --EXPECT--
@@ -54,20 +54,4 @@ Post Object
     [text] => b
     [user_id] => 4
     [Id] => 7
-)
-
-[1:n]#posts[PostType]->save()
-<!--INSERT INTO `zz_post_type` (`name` )VALUES(?);a-->
-<!--UPDATE `zz_post` SET `post_type_id`=?  WHERE (`user_id`=? AND `Id`=?);5,4,7-->
-Post Object
-(
-    [text] => b
-    [user_id] => 4
-    [Id] => 7
-    [post_type_id] => 5
-)
-PostType Object
-(
-    [name] => a
-    [Id] => 5
 )

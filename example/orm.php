@@ -36,11 +36,13 @@ include __DIR__."/../vendor/autoload.php";
 #Model->val(FIELD,VALUE)              //VALUE  changed
 #Model[FIELD]=VALUE                   //VALUE  changed
    
-#Model->insert()      //Model
-#Model->update()      //RowCount
-#Model->delete()      //RowCount
-#Model->save()        //self{unset(changed)}
-#Model->set()         //Model
+#Model->set(ARRAT)         //Model
+#Model->insert(ARRAT)      //Model
+#Model->update(ARRAT)      //RowCount
+#Model->delete(BOOL)       //RowCount
+
+
+#Model->save()             //self{unset(changed)}
 
 
 

@@ -177,15 +177,41 @@ trait ModelAccess
     {
         return $this->whereOr(...$args);
     }
-    public function create(...$args)
+    public function create()
     {
-        return $this->save(...$args);
-    }   
+        $row = $this->insert($this->dirty);
+        $this->data = $row->data;
+        $this->sql = $row->sql; 
+    } 
+    public function save()
+    { 
+        // $dirty += $this->dirty; 
+        // if (!count($dirty)) {
+        //     //->set(no changed)
+        //     return $this; 
+        // } 
+        if(!count($this->dirty)){ 
+            //->set(no changed)
+            return $this;  
+        }
+        $model = empty($this->data)?$this:clone $this;
+        if(!empty($model->sql->rArgs)){
+            $model->where($model->sql->rArgs);
+        } 
+        if(empty($model->sql->wStr) || empty($model->data)){  
+            $model->create( ); 
+        }else{
+            $model->update($this->dirty); 
+        }
+  
+        $this->dirty=[];
+        return $this; 
+    }
 
     
       
     /**
-     * ... FROM [TABLE] {$str} ...
+     * ... FROM [TABLE] JOIN {$str} ...
      * @param string  $str
      * @return Sql
      */
@@ -203,7 +229,7 @@ trait ModelAccess
         return $this; 
     }
 
-
+    
     public function many($model, $model_pks, $model_fks)
     {
         return $this->ref($model, (array)$model_pks,
@@ -216,12 +242,12 @@ trait ModelAccess
             array_combine((array)$model_pks, (array)$local_fks)
         );
     }
-    public function sql($model,$pks){
+    public function sql($model, $pks = null){
         return self::byName($model,$pks);
     }
 
       
-    public static function byName($table, $pks)
+    public static function byName($table, $pks = null)
     {
         if (class_exists($table) && isset($table::$table)) {
             $sql = new Pql($table::$table, $pks?:$table::$pks);

@@ -60,12 +60,12 @@ class Session
         return $query->rowCount();
     }
     function insert($sql, $data)
-    {
-        $data = array_merge($data, $sql->rArgs, $sql->sArgs); 
-        foreach ($data as $key => $value) {
+    { 
+        foreach ($sql->rArgs as $key => $value) { 
              if(\in_array($key,$sql->pks))
-                unset($data[$key]);
-        }
+                continue;
+            $data[$key]=$value; 
+        } 
         $sql1 = '';
         $sql2 = ",(".substr(str_repeat(",?", count($data)), 1).")"; 
         foreach ($data as $key => $value) {
