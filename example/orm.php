@@ -29,6 +29,7 @@ include __DIR__."/../vendor/autoload.php";
 #Model->all(FIELD)                    //[...VALUE]
 #Model->keypair(null,FIELD)           //[...PK=>VALUE]
 #Model->keypair(KEY,FIELD)            //[...KET=>VALUE]
+
 #Model->val()                         //PKV
 #Model[NULL]                          //PKV
 #Model->val(FIELD)                    //VALUE
@@ -36,13 +37,14 @@ include __DIR__."/../vendor/autoload.php";
 #Model->val(FIELD,VALUE)              //VALUE  changed
 #Model[FIELD]=VALUE                   //VALUE  changed
    
-#Model->set(ARRAT)         //Model
-#Model->insert(ARRAT)      //Model
-#Model->update(ARRAT)      //RowCount
+#Model->update(ARRAY)      //RowCount
 #Model->delete(BOOL)       //RowCount
+#Model->replace(ARRAY)     //RowCount    
+#Model->insert(ARRAY)      //Model
 
 
-#Model->save()             //self{unset(changed)}
+#Model->set(ARRAT)         //Model                非原子级操作(进程不安全(删除预定
+#Model->save()             //self{unset(changed)} 非原子级操作(进程不安全(删除预定
 
 
 

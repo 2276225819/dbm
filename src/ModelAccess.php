@@ -211,6 +211,31 @@ trait ModelAccess
     
       
     /**
+     * Model{count=1}
+     * @param array $data
+     * @return \dbm\Model
+     */
+    public function set($data)
+    { 
+        $data += $this->sql->rArgs;
+        foreach ($this->sql->pks as $key) {
+            if (isset($data[$key])) {
+                $where[$key]=$data[$key];
+            }
+        }
+        if (isset($where)) {
+            if ($row = (clone $this)->where($where)->get()) {
+                foreach ($data as $key => $value) {
+                    $row[$key]=$value;
+                }
+                $row->save();
+                return $row;
+            }
+        }
+        return $this->insert($data);
+    }
+    
+    /**
      * ... FROM [TABLE] JOIN {$str} ...
      * @param string  $str
      * @return Sql

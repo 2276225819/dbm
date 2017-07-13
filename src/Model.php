@@ -216,6 +216,9 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
         }
         return new static(clone $sql,$data);
     }
+
+
+
     /**
      * RowCount
      * @param array $data
@@ -266,32 +269,24 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
         return $count;
     }
 
-
-
     /**
-     * Model{count=1}
-     * @param array $data
-     * @return \dbm\Model
+     * RowCount
+     * @return int
      */
-    public function set($data)
+    public function replace($data,...$arr)
     { 
-        $data += $this->sql->rArgs;
-        foreach ($this->sql->pks as $key) {
-            if (isset($data[$key])) {
-                $where[$key]=$data[$key];
-            }
+        $sql = $this->sql;
+
+        $param = [];
+        $data = $sql->kvSQL($param, ',', $data, $arr);
+        $param = array_merge($param, $sql->wArgs);
+		$str="REPLACE {$sql->table} SET {$data}";
+        if (!($query = Session::$instance->conn->execute($str, $param))) {
+            throw new \Exception("Error Processing Replace", 1);
         }
-        if (isset($where)) {
-            if ($row = (clone $this)->where($where)->get()) {
-                foreach ($data as $key => $value) {
-                    $row[$key]=$value;
-                }
-                $row->save();
-                return $row;
-            }
-        }
-        return $this->insert($data);
+        return $query->rowCount();
     }
+
     /////////////sql///////////////
     
     /**
