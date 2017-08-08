@@ -27,7 +27,7 @@ class Connect implements \ArrayAccess
             try {
                 $query = static::$conn[$this->dns]->prepare($sql);
                 return $query->execute($args)?$query:false;
-            } catch (Throwable $e) {
+            } catch (\Throwable $e) {
                 if ($e->errorInfo[0] == 70100||$e->errorInfo[1] == 2006 || $e->errorInfo[1] == 2013) {
                     sleep(1);//必须的？？
                     $this->reload();
