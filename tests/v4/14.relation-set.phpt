@@ -19,19 +19,19 @@ echo "\n---------------------------\n";
 $type1 = $user1->ref(UserType::class)->insert(['name'=>'a']);
 $type2 = $user2->ref(UserType::class)->set(['name'=>'b']); 
 echo "\n";
-try{ 
+ 
 $type3 = $user1->ref(UserType::class)->set(['name'=>'c']);
 $type4 = $user2->ref(UserType::class)->insert(['name'=>'d']);
-}catch(Throwable $e){}
+ 
 
 echo "\n---------------------------\n";
 $post1 = $user1->ref(Post::class)->insert(['text'=>'a']);
 $post2 = $user2->ref(Post::class)->set(['text'=>'b']); 
 echo "\n";
-try{ 
+ 
 $post3 = $user1->ref(Post::class)->set(['text'=>'c']);
 $post4 = $user2->ref(Post::class)->insert(['text'=>'d']);  
-}catch(Throwable $e){}
+ 
 echo "\n"; 
 
 print_r([
@@ -68,7 +68,8 @@ print_r([
 <!--UPDATE `zz_user` SET `type_id`=?  WHERE (`Id`=?);4,5-->
 
 <!--UPDATE `zz_user_type` SET `name`=?  WHERE (`Id`=?);c,3-->
-<!--INSERT INTO `zz_user_type` (`name`,`Id` )VALUES(?,?);d,4-->
+<!--INSERT INTO `zz_user_type` (`name` )VALUES(?);d-->
+<!--UPDATE `zz_user` SET `type_id`=?  WHERE (`Id`=?);5,5-->
 
 ---------------------------
 <!--INSERT INTO `zz_post` (`text`,`user_id` )VALUES(?,?);a,4-->
@@ -90,12 +91,12 @@ Array
         (
             [name] => b
             [Id] => 5
-            [type_id] => 4
+            [type_id] => 5
         )
 
     [user_type1] => UserType Object
         (
-            [name] => a
+            [name] => c
             [Id] => 3
         )
 
@@ -111,7 +112,12 @@ Array
             [Id] => 3
         )
 
-    [user_type4] => 
+    [user_type4] => UserType Object
+        (
+            [name] => d
+            [Id] => 5
+        )
+
     [user_post1] => Post Object
         (
             [text] => a

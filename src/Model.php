@@ -51,7 +51,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
         return new static($this->sql,$list[0]);
     }
     /**
-     * $sql->val() as array
+     * $sql->val() as pkv
      *
      * $sql->val(FILED) as mixed
      *
@@ -63,18 +63,27 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
     public function val($field = null, $value = null)
     {
         if ($field===null) {
-            $data = $this->data; 
-            $data += Session::$instance->select($this->sql)[0]??[];
-            return $data;
+            $field = $this->sql->pks[0];
         }
+        // if ($value===null) {
+        //     //BUG
+        //     $data = array_merge(
+        //         (array)($this->data??[]),
+        //         (array)(Session::$instance->select($this->sql)[0]??[])
+        //     ) ;   
+        //     return $data[$field]??null;
+        // }         
         if ($value===null) {
-            $data = $this->data; 
-            $data +=Session::$instance->select($this->sql)[0]??[];
+            $data = [];
+            $data+=(array)($this->data??[]);
+            $data+=(array)(Session::$instance->select($this->sql)[0]??[]); 
             return $data[$field]??null;
         } 
-        if(!isset($this->data[$field]) || $this->data[$field]!=$value) {
-            $this->data[$field] = $value;
-            $this->dirty[$field]= $value;
+        if(!isset($this->data->$field) || $this->data->$field!=$value) {
+            if(isset($this->data)){
+                $this->data->$field = $value; 
+            }
+            $this->dirty[$field]=$value;
         }
     }
     
@@ -105,7 +114,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
             foreach ($ref as $k => $f) {
                 foreach ($thisdata as $row) {
                     //if (!empty($row[$f])) {
-                        $s[$k][]=$row[$f]??null;
+                        $s[$k][]=$row->$f??null;
                     //}
                 }
                 if (isset($s[$k])) {
@@ -124,7 +133,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
             if (!empty($thisdata)) {
                 do {
                     foreach ($ref as $k => $v) {
-                        if (!in_array($k, $model::$pks)) {
+                        if (!in_array($k, $model->sql->pks)) {
                             break 2;
                         }
                     }
@@ -149,7 +158,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
             if (empty($field)) {
                 $arr[]=clone $row;
             } else {
-                $arr[]=$row->data[$field];
+                $arr[]=$row->data->$field;
             }
         }
         return $arr;
@@ -172,14 +181,14 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
             $key = "__KEY__";
         }
         foreach ($this as $row) {
-            $kstr = $row->data[$key];
+            $kstr = $row->data->$key;
             if ($key=='__KEY__') {
-                unset($row->data[$key]);
+                unset($row->data->$key);
             }
             if (empty($field)) {
                 $arr[$kstr]=clone $row;
             } else {
-                $arr[$kstr]=$row->data[$field];
+                $arr[$kstr]=$row->data->$field;
             }
         }
         return $arr;
@@ -198,14 +207,18 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
         $sql->pks=\array_merge($sql->pks, (array)$pks);
         $data = Session::$instance->insert($sql, $arr); 
         if (isset($sql->rmodel)) {
+            $model = clone $sql->rmodel;
             unset($sql->rArgs); 
             foreach ($sql->rref as $i => $k) {
-                $sql->rmodel[$k]=$data[$i];
+                $model[$k]=$data[$i];
             } 
-            $sql->rmodel->save();
+            $model->save();
         }
         return new static(clone $sql,$data);
     }
+
+
+
     /**
      * RowCount
      * @param array $data
@@ -219,11 +232,13 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
             throw new \Exception("Require Where Column", 1);
         }
         $count = Session::$instance->update($sql, $data, ...$arr);
-        if ($row = &Session::$instance->cache[$s=(string)$sql]) {
-            foreach ($row as &$value) {
-                $value = array_merge($value, $data);
-            }
-        }
+        if (isset(Session::$instance->cache[$s=(string)$sql])) {
+            foreach (Session::$instance->cache[$s] as $value) {
+                foreach ($data as $k => $v) { 
+                    $value->$k=$v;
+                } 
+            } 
+        }   
         return $count;
     }
     /**
@@ -254,60 +269,24 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
         return $count;
     }
 
-
-
     /**
-     * self
-     * @param array $dirty
-     * @return void
+     * RowCount
+     * @return int
      */
-    public function save($dirty = [])
-    {
-        $dirty += $this->dirty; 
-        if (!count($dirty)) {
-            //->set(no changed)
-            return $this;//throw new \Exception("Require Change Column", 1);
-        }
-        if(!empty($this->sql->rArgs)){
-            $this->where($this->sql->rArgs);
-        }
-        if(empty($this->sql->wStr) || !$this->data){  
-            $row = $this->insert($dirty);
-            $this->data = $row->data;
-            $this->sql = $row->sql;
-        }else{
-            $this->update($dirty); 
-        }
-        $this->dirty=[];
-        return $this;
-        //return true;
-        //return $this->dirty; 
-    }
-
-    /**
-     * Model{count=1}
-     * @param array $data
-     * @return \dbm\Model
-     */
-    public function set($data)
+    public function replace($data,...$arr)
     { 
-        $data += $this->sql->rArgs;
-        foreach ($this->sql->pks as $key) {
-            if (isset($data[$key])) {
-                $where[$key]=$data[$key];
-            }
+        $sql = $this->sql;
+
+        $param = [];
+        $data = $sql->kvSQL($param, ',', $data, $arr);
+        $param = array_merge($param, $sql->wArgs);
+		$str="REPLACE {$sql->table} SET {$data}";
+        if (!($query = Session::$instance->conn->execute($str, $param))) {
+            throw new \Exception("Error Processing Replace", 1);
         }
-        if (isset($where)) {
-            if ($row = (clone $this)->where($where)->get()) {
-                foreach ($data as $key => $value) {
-                    $row[$key]=$value;
-                }
-                $row->save();
-                return $row;
-            }
-        }
-        return $this->insert($data);
+        return $query->rowCount();
     }
+
     /////////////sql///////////////
     
     /**
@@ -372,12 +351,5 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
         $this->sql->field($arr);
         return $this;
     }
-    /**
-     * @return \dbm\Model
-     */
-    public function join($str)
-    {
-        $this->sql->join($str);
-        return $this;
-    }
+
 }

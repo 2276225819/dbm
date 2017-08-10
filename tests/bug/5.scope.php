@@ -1,5 +1,5 @@
 --TEST--
-
+缓存bug
 --FILE--
 <?php  
 include __DIR__."/../before.php";
@@ -22,6 +22,7 @@ foreach ($conn->sql(User::class) as $u){
 	$u['name']=2;
 	$u->save(); 
 } 
+
 echo "# old query\n";
 print_r($conn->sql(User::class)->map(function(User $u){
 	return $u['name'];
@@ -39,9 +40,7 @@ print_r($conn->sql(User::class)->map(function(User $u){
 --EXPECT-- 
 # not cache
 <!--SELECT * FROM `zz_user`   ;-->
-<!--UPDATE `zz_user` SET `name`=?  WHERE (`Id`=?);1,1-->
-<!--UPDATE `zz_user` SET `name`=?  WHERE (`Id`=?);1,2-->
-<!--UPDATE `zz_user` SET `name`=?  WHERE (`Id`=?);1,3-->
+<!--UPDATE `zz_user` SET `name`=? ;1-->
 # new query
 <!--SELECT * FROM `zz_user`   ;-->
 Array
@@ -52,9 +51,7 @@ Array
 )
 # cache query
 <!--SELECT * FROM `zz_user`   ;-->
-<!--UPDATE `zz_user` SET `name`=?  WHERE (`Id`=?);2,1-->
-<!--UPDATE `zz_user` SET `name`=?  WHERE (`Id`=?);2,2-->
-<!--UPDATE `zz_user` SET `name`=?  WHERE (`Id`=?);2,3-->
+<!--UPDATE `zz_user` SET `name`=? ;2-->
 # old query
 Array
 (

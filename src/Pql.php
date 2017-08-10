@@ -2,7 +2,7 @@
 
 class Pql
 {
-    public $table='',$jStr='', $wStr='',$lStr='',$oStr='',$fStr='*';
+    public $table='',$jStr='',$gStr='', $wStr='',$lStr='',$oStr='',$fStr='*';
     public $rArgs=[],$wArgs=[], $fArgs=[], $sArgs=[],$oArgs=[];
 	public $pks=[]; 
     
@@ -127,6 +127,16 @@ class Pql
         $this->jStr=" $str";
         return $this->uncache();
     }
+    /**
+     * ... GROUP BY {$str} ...
+     * @param string  $str
+     * @return Pql
+     */
+    public function group($str)
+    {
+        $this->gStr=" GROUP BY $str";
+        return $this->uncache();
+    }
     public function kvSQL(&$param, $jtag = ' AND ', $arr, $attr = null, $sql = '')
     {
         if (is_array($arr)) {
@@ -177,7 +187,7 @@ class Pql
     }
     public function bulidSelect()
     {
-        return "SELECT {$this->fStr} FROM {$this->table}{$this->jStr} {$this->wStr} {$this->oStr} {$this->lStr}";
+        return "SELECT {$this->fStr} FROM {$this->table}{$this->jStr} {$this->wStr}{$this->gStr} {$this->oStr} {$this->lStr}";
     } 
 
 

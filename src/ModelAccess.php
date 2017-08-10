@@ -2,29 +2,31 @@
 
 trait ModelAccess
 {
-    public $data=[];
+    //public $data=[];
     public $dirty=[];
  
     static $table='...';
     static $pks=[];
     static $ref=[];
   
-    function __construct($sql = null, $data = [])
+    function __construct($sql = null, $data = null)
     {
         if (!$sql instanceof Pql) {
              $sql = new Pql(static::$table, static::$pks);
         }
         if(!empty($data)){ 
+            $data = (object)$data;
             foreach ($sql->pks as $key) {
-                if (isset($data[$key])) {
-                    $sql->rArgs[$key]=$data[$key];
+                if (isset($data->$key)) {
+                    $sql->rArgs[$key]=$data->$key;
                 }
             }
             $sql->where($sql->rArgs);
             Session::$instance->cache[$s=(string)$sql]=[$data];
+            $this->data =  $data;
         }
         $this->sql = $sql;
-        $this->data = $data; 
+        //$this->data = $data; 
         Session::$gc++;
     }
     function getIterator()
@@ -34,11 +36,11 @@ trait ModelAccess
         $pks = $model->sql->pks;
         foreach ($list as $data) {
             foreach ($pks as $pk) {
-                if (isset($data[$pk])) {
-                    $model->sql->rArgs[$pk]=$data[$pk];
+                if (isset($data->$pk)) {
+                    $model->sql->rArgs[$pk]=$data->$pk;
                 }
             }
-            $model->data = $data;
+            $model->data = (object)$data;
             yield $model;
         }
     }
@@ -63,7 +65,7 @@ trait ModelAccess
         //     $this->list = Session::$instance->select($this->sql);
         // }
         if (!empty($this->data)) {
-            return $this->data;
+            return (array)$this->data;
         } else {
             $arr[":"]=(string)$this->sql;
             if (isset($this->sql->rArgs)) {
@@ -90,7 +92,7 @@ trait ModelAccess
         $attr = "$name({$args[0]}) as __VALUE__";
         $this->sql->rArgs=[];//BUG
         $vals = Session::$instance->select($this->sql->field($attr));
-        return $vals[0]['__VALUE__'];
+        return $vals[0]->__VALUE__;
     }
     /**
      * hash
@@ -107,7 +109,7 @@ trait ModelAccess
     }
     function offsetExists($offset)
     {
-        return isset($this->data[$offset]);
+        return $this[$offset];
     }
     function offsetUnset($offset)
     {
@@ -140,7 +142,7 @@ trait ModelAccess
     }
     function toArray()
     {
-        return $this->val();
+        return (array)($this->data??[]);
     }
 
 
@@ -175,13 +177,64 @@ trait ModelAccess
     {
         return $this->whereOr(...$args);
     }
-    public function create(...$args)
+    public function create()
     {
-        return $this->save(...$args);
+        $row = $this->insert($this->dirty);
+        $this->data = $row->data;
+        $this->sql = $row->sql; 
+    } 
+    public function save()
+    { 
+        // $dirty += $this->dirty; 
+        // if (!count($dirty)) {
+        //     //->set(no changed)
+        //     return $this; 
+        // } 
+        if(!count($this->dirty)){ 
+            //->set(no changed)
+            return $this;  
+        }
+        $model = empty($this->data)?$this:clone $this;
+        if(!empty($model->sql->rArgs)){
+            $model->where($model->sql->rArgs);
+        } 
+        if(empty($model->sql->wStr) || empty($model->data)){  
+            $model->create( ); 
+        }else{
+            $model->update($this->dirty); 
+        }
+  
+        $this->dirty=[];
+        return $this; 
     }
 
     
       
+    /**
+     * Model{count=1}
+     * @param array $data
+     * @return \dbm\Model
+     */
+    public function set($data)
+    { 
+        $data += $this->sql->rArgs;
+        foreach ($this->sql->pks as $key) {
+            if (isset($data[$key])) {
+                $where[$key]=$data[$key];
+            }
+        }
+        if (isset($where)) {
+            if ($row = (clone $this)->where($where)->get()) {
+                foreach ($data as $key => $value) {
+                    $row[$key]=$value;
+                }
+                $row->save();
+                return $row;
+            }
+        }
+        return $this->insert($data);
+    }
+    
     /**
      * ... FROM [TABLE] JOIN {$str} ...
      * @param string  $str
@@ -191,7 +244,17 @@ trait ModelAccess
     {
         $this->sql->join($str);
         return $this;
+    }     
+    /**
+     * ... GROUP BY {$str} ...
+     * @return \dbm\Model
+     */
+    public function group($str){
+        $this->sql->group($str);
+        return $this; 
     }
+
+    
     public function many($model, $model_pks, $model_fks)
     {
         return $this->ref($model, (array)$model_pks,
@@ -204,9 +267,12 @@ trait ModelAccess
             array_combine((array)$model_pks, (array)$local_fks)
         );
     }
+    public function sql($model, $pks = null){
+        return self::byName($model,$pks);
+    }
 
       
-    public static function byName($table, $pks)
+    public static function byName($table, $pks = null)
     {
         if (class_exists($table) && isset($table::$table)) {
             $sql = new Pql($table::$table, $pks?:$table::$pks);

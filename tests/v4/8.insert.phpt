@@ -29,15 +29,11 @@ print_r($i);
 echo "\n#sql[User::class](5)[Post::class]->insert\n";
 $conn->sql(User::class)->load(5)->ref(Post::class)->insert([ 
 	'text'=>'insertUser' ,'post_type_id'=>1
-]); 
-try{ 
+]);  
 echo "\n#sql[Post::class][0][PostType::class]->insert\n";
 $conn->sql(Post::class)->get(0)->ref(PostType::class)->insert([
 	'name'=>'type new'
-]); 
-}catch(Throwable $e){
-	echo $e->getMessage();
-}
+]);
 
 
 echo "\n---------------\n";
@@ -77,15 +73,17 @@ Array
 
 #sql[Post::class][0][PostType::class]->insert
 <!--SELECT * FROM `zz_post`    LIMIT 1;-->
-<!--INSERT INTO `zz_post_type` (`name`,`Id` )VALUES(?,?);type new,1-->
-SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '1' for key 'PRIMARY'
+<!--INSERT INTO `zz_post_type` (`name` )VALUES(?);type new-->
+<!--UPDATE `zz_post` SET `post_type_id`=?  WHERE (`Id`=?);5,7-->
+
 ---------------
 <!--SELECT * FROM `zz_post`   ;-->
-{"Id":"7","post_type_id":"1","user_id":"1","text":"insertMulit"}
+{"Id":"7","post_type_id":"5","user_id":"1","text":"insertMulit"}
 {"Id":"8","post_type_id":"1","user_id":"5","text":"insertUser"}
 <!--SELECT * FROM `zz_post_type`   ;-->
 {"Id":"1","name":"type1"}
 {"Id":"2","name":"type2"}
 {"Id":"3","name":"type3"}
 {"Id":"4","name":"nn"}
+{"Id":"5","name":"type new"}
 ---------------
