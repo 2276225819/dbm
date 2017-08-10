@@ -1,5 +1,58 @@
 <?php 
-include __DIR__."/../vendor/autoload.php";
+include __DIR__."/../vendor/autoload.php"; 
+
+//////////////////// v5 /////////////////////////
+
+#Conn->execute(STRING[,...args]);  //PDOStatement
+#Conn->lastInsertId();             //int
+#Conn->debug;                      //bool 
+#Conn->scope();                    //Transaction
+#Conn->sql(TABLE,[PK])             //#Conn[CLASS]   
+
+#Model->where(STRING)          //self{table,where STRING...}
+#Model->whereAnd(STRING)       //self{table,and STRING...}
+#Model->whereOr(STRING)        //self{table,or STRING...}
+#Model->order(STRING)          //self{table,order by STRING...}
+#Model->field(FIELD)           //self{table,select FIELD...}
+#Model->find([PK])             //self{table,where PK=...} 
+#Model->limit(OFFSET)          //self{table,limit OFFSET... } 
+
+#Model->all()                  //[...Model{table,row} ] 
+#Model->all(FILED)             //[...VALUE]
+#Model->all(FN)                //[...FN() ] 
+#Model->keypair(KEY)           //[...KEY=>Model{table,row}  ]
+#Model->keypair(KEY,FIELD)     //[...KEY=>VALUE ]
+#Model->keypair(KEY,FN)        //[...KEY=>FN() ]
+#Model->toArray()              //row  
+
+#Model->val(KEY,VALUE)         //VOID  
+#Model->val(REF,Model)         //VOID       
+#Model->insert(ARRAY,...)      //Model  
+#Model->update(ARRAY)          //RowCount 
+#Model->delete(BOOL)           //RowCount  
+#Model->replace(ARRAY)         //RowCount    
+    
+#Model->get(OFFSET)             #Model[OFFSET] //Model{table,row}   
+#Model->load([PK])              #Model(PK...)  //Model{table,w,row}
+#Model->sql(TABLE,[PK])         #Model[REF]    //Model{table,pk}   
+#Model->ref(TABLE,[PK],[P=>F])  #Model[REF]    //Model{table,ref,pk}   
+#Model->val(KEY)                #Model[KEY]    //VALUE or PK
+#Model->count()
+#Model->avg()
+#Model->sum()
+ 
+#Model[] = VALUE         > ERROR 
+#Model[] = Model{table}  > insert TABLE  ^ 
+#Model[] = Model{table}  > insert TABLE set TABLE.FK = Model.PK ^
+#Model[] = Model{table}  > insert TABLE , Model[FK] = TABLE.PK  ^  
+#Model[KEY] = VALUE      > Model[KEY] = VALUE ^
+#Model[REF] = Model      > insert set REF.pk = Model.fk REF or update ^
+#Model[REF] = Model      > update REF where REF.FK = Model.pk ^ 
+#unset(Model[KEY])       > Model[KEY] = NULL ^ 
+#unset(Model[REF])       > delete REF where REF.FK = Model.PK ^
+#unset(Model[REF])       > delete REF where REF.PK = Model.FK ^  
+  
+ 
 
 //////////////////// v4 /////////////////////////
 

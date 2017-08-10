@@ -12,6 +12,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
     public $sql;
 
     /////////////model///////////////
+
     /**
      * $sql->get()       as Model{count=1}
      *
@@ -33,8 +34,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
             return null;
         }
         return new static($this->sql,$list[$offset]);
-    }
-   
+    } 
     /**
      * $sql->load(...ID) as Model{count=1}
      *
@@ -55,7 +55,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
      *
      * $sql->val(FILED) as mixed
      *
-     * $sql->val(FIELD,VALUE) as VALUE
+     * $sql->val(FIELD,VALUE) as VOID
      *
      * @param string $field
      * @return mixed
@@ -85,8 +85,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
             }
             $this->dirty[$field]=$value;
         }
-    }
-    
+    } 
     /**
      * @param string $model
      * @param array $pks
@@ -146,24 +145,43 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
         
         return $model;
     }
+    /** 
+     * @param [type] $model
+     * @param [type] $pks
+     * @return \dbm\Model
+     */
+    public function sql($model, $pks = null){
+        return self::byName($model,$pks);
+    } 
+    
+    /////////////collection/////////////// 
+
     /**
-     * [ $key, $key... ] | [ $pk, $pk...]
-     * @param string $field
+     * [ $key, $key... ] | [ Model, Model... ]
+     * @param string|callable $field
      * @return \dbm\Model[]
      */
     public function all($field = null)
     {
-        $arr = array();
-        foreach ($this as $row) {
-            if (empty($field)) {
-                $arr[]=clone $row;
-            } else {
-                $arr[]=$row->data->$field;
-            }
-        }
+        $arr=[];
+        switch(true){
+            case \is_callable($field):
+                foreach ($this as $row) {
+                    $arr[]=\call_user_func($field,clone $row);
+                }
+                break;
+            case \is_string($field):
+                foreach ($this as $row) {
+                    $arr[]=$row->data->$field;
+                }
+                break;
+            default: 
+                foreach ($this as $row) {
+                    $arr[]=clone $row;
+                }
+        } 
         return $arr;
-    }
-
+    } 
     /**
      * [ $key=>Row, $key=>Row... ] | [ $key => $val, $key => $val... ]
      * @param string $key
@@ -179,21 +197,38 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
         if ($this->sql->fStr!='*') {
             $this->sql->fStr.=",$key as __KEY__";
             $key = "__KEY__";
-        }
-        foreach ($this as $row) {
-            $kstr = $row->data->$key;
-            if ($key=='__KEY__') {
-                unset($row->data->$key);
-            }
-            if (empty($field)) {
-                $arr[$kstr]=clone $row;
-            } else {
-                $arr[$kstr]=$row->data->$field;
-            }
-        }
-        return $arr;
+        } 
+        switch(true){
+            case \is_callable($field):
+                foreach ($this as $row) {
+                    $kstr = $row->data->$key;
+                    if ($key=='__KEY__') {
+                        unset($row->data->$key);
+                    }
+                    $arr[$kstr]=\call_user_func($field,clone $row);
+                }
+                break;
+            case \is_string($field):
+                foreach ($this as $row) {
+                    $kstr = $row->data->$key;
+                    if ($key=='__KEY__') {
+                        unset($row->data->$key);
+                    }
+                    $arr[$kstr]=$row->data->$field;
+                }
+                break;
+            default:  
+                foreach ($this as $row) {  
+                    $kstr = $row->data->$key;
+                    if ($key=='__KEY__') {
+                        unset($row->data->$key);
+                    }
+                    $arr[$kstr]=clone $row;
+                }
+        } 
+        return $arr; 
     }
-
+ 
     /////////////curd/////////////
 
     /**
@@ -215,10 +250,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
             $model->save();
         }
         return new static(clone $sql,$data);
-    }
-
-
-
+    } 
     /**
      * RowCount
      * @param array $data
@@ -240,21 +272,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
             } 
         }   
         return $count;
-    }
-    /**
-     * RowCount
-     * @param array $list
-     * @return int
-     */
-    public function insertMulit($list)
-    {
-        if (!count($list)) {
-            throw new \Exception("Error Muilt Column", 1);
-        }
-        $count = Session::$instance->insertMulit($this->sql, $list);
-        return $count;
-    }
-
+    } 
     /**
      * RowCount
      * @return int
@@ -267,8 +285,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
         }
         $count = Session::$instance->delete($sql);
         return $count;
-    }
-
+    } 
     /**
      * RowCount
      * @return int
@@ -333,8 +350,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
     {
         $this->sql->find(...$pkv);
         return $this;
-    }
- 
+    } 
     /**
      * @return \dbm\Model
      */

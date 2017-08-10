@@ -207,7 +207,20 @@ trait ModelAccess
         $this->dirty=[];
         return $this; 
     }
-
+    
+    /**
+     * RowCount
+     * @param array $list
+     * @return int
+     */
+    public function insertMulit($list)
+    {
+        if (!count($list)) {
+            throw new \Exception("Error Muilt Column", 1);
+        }
+        $count = Session::$instance->insertMulit($this->sql, $list);
+        return $count;
+    }
     
       
     /**
@@ -267,11 +280,6 @@ trait ModelAccess
             array_combine((array)$model_pks, (array)$local_fks)
         );
     }
-    public function sql($model, $pks = null){
-        return self::byName($model,$pks);
-    }
-
-      
     public static function byName($table, $pks = null)
     {
         if (class_exists($table) && isset($table::$table)) {
