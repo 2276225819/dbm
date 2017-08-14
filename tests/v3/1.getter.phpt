@@ -77,6 +77,7 @@ Array
     [1] => user2 22
 )
 <!--SELECT * FROM `zz_user`  WHERE (`Id`=?)  ;3-->
+<!--SELECT * FROM `zz_user`  WHERE (`Id`=?)  ;3-->
 Array
 (
     [0] => User Object
@@ -94,6 +95,8 @@ Array
         )
 
 )
+<!--SELECT * FROM `zz_user`    LIMIT 1 OFFSET 1 ;-->
+<!--SELECT * FROM `zz_post`  WHERE (`user_id`=?)  ;2-->
 <!--SELECT * FROM `zz_user`    LIMIT 1 OFFSET 1 ;-->
 <!--SELECT * FROM `zz_post`  WHERE (`user_id`=?)  ;2-->
 Array

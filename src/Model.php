@@ -29,11 +29,11 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
         } else {
             $offset = 0;
         }
-        $list = Session::$instance->select($this->sql);
+        $list = $this->session->select($this->sql);
         if (empty($list[$offset])) {
             return null;
         }
-        return new static($this->sql,$list[$offset]);
+        return new static($this->session,clone $this->sql,$list[$offset]);
     } 
     /**
      * $sql->load(...ID) as Model{count=1}
@@ -44,11 +44,11 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
     public function load(...$pkv)
     { 
         $sql = (clone $this->sql)->find(...$pkv);
-        $list = Session::$instance->select($sql);
+        $list = $this->session->select($sql);
         if (empty($list[0])) {
             return null;
         }
-        return new static($this->sql,$list[0]);
+        return new static($this->session,$this->sql,$list[0]);
     }
     /**
      * $sql->val() as pkv
@@ -69,14 +69,14 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
         //     //BUG
         //     $data = array_merge(
         //         (array)($this->data??[]),
-        //         (array)(Session::$instance->select($this->sql)[0]??[])
+        //         (array)($this->session->select($this->sql)[0]??[])
         //     ) ;   
         //     return $data[$field]??null;
         // }         
         if ($value===null) {
             $data = [];
             $data+=(array)($this->data??[]);
-            $data+=(array)(Session::$instance->select($this->sql)[0]??[]); 
+            $data+=(array)($this->session->select($this->sql)[0]??[]); 
             return $data[$field]??null;
         } 
         if(!isset($this->data->$field) || $this->data->$field!=$value) {
@@ -94,7 +94,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
      */
     public function ref($table, $pks = [], $ref = [])
     {
-        $model = static::byName($table, $pks);
+        $model = static::byName($this->session,$table, $pks);
         if (empty($ref) && isset(static::$ref[$table])){
             $ref = static::$ref[$table];  
         } 
@@ -109,7 +109,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
                 }
             }
         } else {
-            $thisdata = Session::$instance->select($this->sql, true);
+            $thisdata = $this->session->select($this->sql, true);
             foreach ($ref as $k => $f) {
                 foreach ($thisdata as $row) {
                     //if (!empty($row[$f])) {
@@ -151,7 +151,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
      * @return \dbm\Model
      */
     public function sql($model, $pks = null){
-        return self::byName($model,$pks);
+        return self::byName($this->session,$model,$pks);
     } 
     
     /////////////collection/////////////// 
@@ -240,7 +240,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
     {
         $sql = $this->sql;
         $sql->pks=\array_merge($sql->pks, (array)$pks);
-        $data = Session::$instance->insert($sql, $arr); 
+        $data = $this->session->insert($sql, $arr); 
         if (isset($sql->rmodel)) {
             $model = clone $sql->rmodel;
             unset($sql->rArgs); 
@@ -249,7 +249,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
             } 
             $model->save();
         }
-        return new static(clone $sql,$data);
+        return new static($this->session,clone $sql,$data);
     } 
     /**
      * RowCount
@@ -263,9 +263,9 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
         if (empty($sql->wStr)) {
             throw new \Exception("Require Where Column", 1);
         }
-        $count = Session::$instance->update($sql, $data, ...$arr);
-        if (isset(Session::$instance->cache[$s=(string)$sql])) {
-            foreach (Session::$instance->cache[$s] as $value) {
+        $count = $this->session->update($sql, $data, ...$arr);
+        if (isset($this->session->cache[$s=(string)$sql])) {
+            foreach ($this->session->cache[$s] as $value) {
                 foreach ($data as $k => $v) { 
                     $value->$k=$v;
                 } 
@@ -283,7 +283,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
         if (!$force && empty($sql->wStr)) {
             throw new \Exception("Require Where Column", 1);
         }
-        $count = Session::$instance->delete($sql);
+        $count = $this->session->delete($sql);
         return $count;
     } 
     /**
@@ -298,7 +298,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
         $data = $sql->kvSQL($param, ',', $data, $arr);
         $param = array_merge($param, $sql->wArgs);
 		$str="REPLACE {$sql->table} SET {$data}";
-        if (!($query = Session::$instance->conn->execute($str, $param))) {
+        if (!($query = $this->session->conn->execute($str, $param))) {
             throw new \Exception("Error Processing Replace", 1);
         }
         return $query->rowCount();

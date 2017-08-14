@@ -19,7 +19,7 @@ echo "\n";
  
 echo $conn[User::class][Post::class]['text'];
 echo "\n";
- 
+
 
 foreach ($conn[User::class] as $row) {
 echo "-----------------------\n"; 

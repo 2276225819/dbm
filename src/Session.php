@@ -10,9 +10,9 @@ class Session
     /** 
      * @var Session
      */
-    public static $instance;
-    public static $gc;
-    function __construct(&$conn)
+    public $instance;
+    //public $gc;
+    function __construct($conn)
     {
         $this->conn=$conn;
     }
@@ -105,6 +105,27 @@ class Session
         return $query->rowCount();
 	}
 
+    function replace($sql,$data)
+    {
+        $param = [];
+        $str = $sql->kvSQL($param, ',', $data);
+        $str = "REPLACE {$sql->table} SET {$str}";
+        $param = array_merge($param, $sql->wArgs);
+        if (!($query = $this->conn->execute($str, $param))) {
+            throw new \Exception("Error Processing Update", 1);
+        }
+        //AUTO INCREMENT
+        $last_id = $this->conn->lastInsertId();
+        if (!empty($last_id)) { 
+            $data[$sql->pks[0]]=$last_id;
+        }    
+        ///////// unpure /////////
+        $data = (object)$data;
+        $sql->where($sql->pkv($data)); 
+        $this->cache[$s=(string)$sql]=[ $data ];
+        ///////// unpure /////////   
+        return $data;
+    }
     function clean($table = null)
     {
         if (empty($table)) {

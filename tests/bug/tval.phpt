@@ -13,17 +13,17 @@ echo isset($conn[User::class][0]['name']);
 $a = $conn[User::class];
 echo isset($a[0]['name'])?'1':'0';
 
-$a = $conn[User::class];
+//$a = $conn[User::class];
 echo isset($a[0]['ewfw'])?'1':'0';
 
-$a = $conn[User::class];
+//$a = $conn[User::class];
 echo isset($a[484878]['ewfw'])?'1':'0';
 
 
-$a = $conn[User::class][0];
+$a = $a[0];
 echo isset($a['name'])?'1':'0';
 
-$a = $conn[User::class][0];
+//$a = $conn[User::class][0];
 echo isset($a['frwe'])?'1':'0';
 
  

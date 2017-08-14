@@ -16,14 +16,14 @@ trait ConnectAccess
         if(empty(static::$conn[$this->dns])){
             $this->reload(); 
         }
-        class_exists(Sql::class);
-        class_exists(Entity::class);
+        // class_exists(Sql::class);
+        // class_exists(Entity::class);
         class_exists(Model::class);
         class_exists(Session::class);
         class_exists(Pql::class);
-
-
-        Session::$instance = new Session($this); 
+  
+        
+        //Session::$instance = new Session($this); 
     } 
     public function reload()
     {  

@@ -65,6 +65,7 @@ print_r([$q,$w,$e,$r]);
 --EXPECT--
 #SQL->find(...PKV)          #ROW/THROW
 <!--SELECT * FROM `zz_user`  WHERE (`Id`=?)  ;3-->
+<!--SELECT * FROM `zz_user`  WHERE (`Id`=?)  ;3-->
 <!--SELECT * FROM `zz_user`  WHERE (`Id`=?)  ;3333-->
 Array
 (
@@ -86,12 +87,14 @@ Array
 )
 #SQL->get(INDEX)            #ROW/NULL
 <!--SELECT * FROM `zz_user`   ;-->
+<!--SELECT * FROM `zz_user`   ;-->
 Array
 (
     [0] => u1
     [1] => u1
 )
 #SQL->all(KEY)              #[VALUE,VALUE...]/[]
+<!--SELECT * FROM `zz_user`   ;-->
 Array
 (
     [0] => u1
@@ -103,12 +106,14 @@ Array
 (
 )
 #SQL->keypair(KEY,VAL)      #[KEY=>VALUE,KEY=>VALUE...]/[]
+<!--SELECT * FROM `zz_user`   ;-->
 Array
 (
     [u1] => 1
     [u2] => 2
     [u3] => 3
 )
+<!--SELECT * FROM `zz_user`  WHERE (1=0)  ;-->
 Array
 (
 )
@@ -134,6 +139,8 @@ Array
 )
 //////////////////////////
 <!--SELECT * FROM `zz_user`  WHERE (`Id` in (SELECT user_id FROM `zz_post`   ))  ;-->
+<!--SELECT * FROM `zz_user`  WHERE (`Id` in (SELECT user_id FROM `zz_post`   ))  ;-->
+<!--SELECT * FROM `zz_user`  WHERE (`Id` in (SELECT user_id FROM `zz_post`   ))  ;-->
 Array
 (
     [0] => u1
@@ -141,6 +148,8 @@ Array
     [2] => u1
     [3] => u1
 )
+<!--SELECT * FROM `zz_post`  WHERE (`user_id` in (SELECT Id FROM `zz_user`   ))  ;-->
+<!--SELECT * FROM `zz_post`  WHERE (`user_id` in (SELECT Id FROM `zz_user`   ))  ;-->
 <!--SELECT * FROM `zz_post`  WHERE (`user_id` in (SELECT Id FROM `zz_user`   ))  ;-->
 Array
 (

@@ -1,5 +1,5 @@
 --TEST--
-
+缓存bug 
 --FILE--
 <?php  
 include __DIR__."/../before.php";

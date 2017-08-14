@@ -3,14 +3,16 @@
 trait ModelAccess
 {
     //public $data=[];
+    public $session;
     public $dirty=[];
  
     static $table='...';
     static $pks=[];
     static $ref=[];
   
-    function __construct($sql = null, $data = null)
+    function __construct($session,$sql = null, $data = null)
     {
+        $this->session = $session;
         if (!$sql instanceof Pql) {
              $sql = new Pql(static::$table, static::$pks);
         }
@@ -22,17 +24,18 @@ trait ModelAccess
                 }
             }
             $sql->where($sql->rArgs);
-            Session::$instance->cache[$s=(string)$sql]=[$data];
+            $this->session->cache[$s=(string)$sql]=[$data];
             $this->data =  $data;
         }
         $this->sql = $sql;
         //$this->data = $data; 
-        Session::$gc++;
+        //Session::$gc++;
     }
     function getIterator()
     {
-        $list  = Session::$instance->select($this->sql); 
-        $model = new static(clone $this->sql); 
+        $list  = $this->session->select($this->sql); 
+        $model = new static($this->session,clone $this->sql); 
+        $model->session = $this->session;
         $pks = $model->sql->pks;
         foreach ($list as $data) {
             foreach ($pks as $pk) {
@@ -47,22 +50,22 @@ trait ModelAccess
 
     function __clone()
     {
-        Session::$gc++;
+        //Session::$gc++;
         $this->sql = clone $this->sql;//BUG
     }
     function __destruct()
     {
-        Session::$gc--;
-        if (Session::$gc==0) {
-            Session::$instance->clean();
-        }
+        // Session::$gc--;
+        // if (Session::$gc==0) {
+        //     $this->session->clean();
+        // }
     }
  
     function __debugInfo()
     {
         //return (array)$this;
         // if (!isset($this->list)) {
-        //     $this->list = Session::$instance->select($this->sql);
+        //     $this->list = $this->session->select($this->sql);
         // }
         if (!empty($this->data)) {
             return (array)$this->data;
@@ -91,7 +94,7 @@ trait ModelAccess
         }
         $attr = "$name({$args[0]}) as __VALUE__";
         $this->sql->rArgs=[];//BUG
-        $vals = Session::$instance->select($this->sql->field($attr));
+        $vals = $this->session->select($this->sql->field($attr));
         return $vals[0]->__VALUE__;
     }
     /**
@@ -218,7 +221,7 @@ trait ModelAccess
         if (!count($list)) {
             throw new \Exception("Error Muilt Column", 1);
         }
-        $count = Session::$instance->insertMulit($this->sql, $list);
+        $count = $this->session->insertMulit($this->sql, $list);
         return $count;
     }
     
@@ -280,14 +283,15 @@ trait ModelAccess
             array_combine((array)$model_pks, (array)$local_fks)
         );
     }
-    public static function byName($table, $pks = null)
+    public static function byName($session,$table, $pks = null)
     {
         if (class_exists($table) && isset($table::$table)) {
             $sql = new Pql($table::$table, $pks?:$table::$pks);
-            return new $table($sql);
+            $model= new $table($session,$sql);
         } else {
             $sql = new Pql($table, $pks);
-            return new Model($sql);
-        }
+            $model= new Model($session,$sql);
+        } 
+        return $model;
     }
 }

@@ -31,6 +31,7 @@ Array
 )
 #Connect->sql(TABLE,...PKS)
 <!--SELECT * FROM `zz_user`   ;-->
+<!--SELECT * FROM `zz_user`   ;-->
 Array
 (
     [0] => Array
