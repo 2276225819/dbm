@@ -50,11 +50,11 @@ print_r([
 
 ?>
 --EXPECT--
-<!--DELETE FROM `zz_post` ;-->
+<!--DELETE FROM `zz_post`  WHERE (1);-->
 6
-<!--DELETE FROM `zz_user` ;-->
+<!--DELETE FROM `zz_user`  WHERE (1);-->
 3
-<!--DELETE FROM `zz_post_type` ;-->
+<!--DELETE FROM `zz_post_type`  WHERE (1);-->
 4
 
 ---------------------------
@@ -63,13 +63,13 @@ print_r([
 
 ---------------------------
 <!--INSERT INTO `zz_user_type` (`name` )VALUES(?);a-->
-<!--UPDATE `zz_user` SET `type_id`=?  WHERE (`Id`=?);3,4-->
+<!--INSERT INTO `zz_user` (`type_id`,`Id` )VALUES(?,?) ON DUPLICATE KEY UPDATE `type_id`=?;3,4,3-->
 <!--INSERT INTO `zz_user_type` (`name` )VALUES(?);b-->
-<!--UPDATE `zz_user` SET `type_id`=?  WHERE (`Id`=?);4,5-->
+<!--INSERT INTO `zz_user` (`type_id`,`Id` )VALUES(?,?) ON DUPLICATE KEY UPDATE `type_id`=?;4,5,4-->
 
-<!--UPDATE `zz_user_type` SET `name`=?  WHERE (`Id`=?);c,3-->
+<!--INSERT INTO `zz_user_type` (`name`,`Id` )VALUES(?,?) ON DUPLICATE KEY UPDATE `name`=?;c,3,c-->
 <!--INSERT INTO `zz_user_type` (`name` )VALUES(?);d-->
-<!--UPDATE `zz_user` SET `type_id`=?  WHERE (`Id`=?);5,5-->
+<!--INSERT INTO `zz_user` (`type_id`,`Id` )VALUES(?,?) ON DUPLICATE KEY UPDATE `type_id`=?;5,5,5-->
 
 ---------------------------
 <!--INSERT INTO `zz_post` (`text`,`user_id` )VALUES(?,?);a,4-->

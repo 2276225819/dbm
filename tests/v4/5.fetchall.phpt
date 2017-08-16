@@ -48,13 +48,13 @@ Array
 <!--SELECT Id as `id`,name FROM `zz_user`  WHERE (`id` =2 or `id`=3)  ;-->
 Array
 (
-    [0] => dbm\Model Object
+    [0] => dbm\Collection Object
         (
             [id] => 2
             [name] => u2
         )
 
-    [1] => dbm\Model Object
+    [1] => dbm\Collection Object
         (
             [id] => 3
             [name] => u3
@@ -64,12 +64,12 @@ Array
 <!--SELECT text FROM `zz_post`  WHERE (`id` in (?,?) )  ;1,3-->
 Array
 (
-    [0] => dbm\Model Object
+    [0] => dbm\Collection Object
         (
             [text] => text1
         )
 
-    [1] => dbm\Model Object
+    [1] => dbm\Collection Object
         (
             [text] => text3
         )

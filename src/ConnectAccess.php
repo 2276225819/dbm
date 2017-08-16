@@ -17,18 +17,18 @@ trait ConnectAccess
             $this->reload(); 
         }
         // class_exists(Sql::class);
-        // class_exists(Entity::class);
         class_exists(Model::class);
         class_exists(Session::class);
-        class_exists(Pql::class);
-  
-        
+
+        class_exists(Entity::class);//v3
+        class_exists(Pql::class); //v4
+        class_exists(Collection::class); //v5
         //Session::$instance = new Session($this); 
     } 
     public function reload()
     {  
         //相同dns可能会共用`链接`和`事务`（ATTR_PERSISTENT）
-        //声明多个相同dns链接，启用其中一个链接事务然后删除另一个链接，会停止所有相同dns链接的事务。
+        //声明多个相同 dns 的 PDO对象 ，启用 其中一个 PDO对象 的事务，然后回滚 另一个 PDO对象，会停止所有相同dns链接的事务。
         $db = new \PDO($this->dns, $this->name, $this->pass, $this->attr);
         $db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         static::$conn[$this->dns]=$db; 
@@ -47,12 +47,16 @@ trait ConnectAccess
     public function offsetGet($offset)
     {
         if (defined("$offset::Entity")) {
-            return $this->entity($offset);
+            return $this->entity($offset);//v3
         }
 
         if (defined("$offset::Model")) {
-            return $this->sql($offset);
+            return $this->v4($offset);//v4
         }
+
+        //if (defined("$offset::Collection")) {
+            return $this->sql($offset);//v5
+        //}
         
         throw new \Exception("Error Processing Request", 1);
     }

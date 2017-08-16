@@ -122,9 +122,12 @@ class Connect implements \ArrayAccess
      * @param array $pks
      * @return \dbm\Model
      */
-    public function sql($model, $pks = null)
-    {  
-        //Session::$instance->conn = $this; 
+    public function v4($model, $pks = null)
+    {   
         return Model::byName(new Session($this),$model, $pks);
+    }
+
+    public function sql($model,$pks=null){
+        return Collection::byName(new Session($this),$model,$pks);
     }
 }

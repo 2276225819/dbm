@@ -25,18 +25,18 @@ foreach ($db[User::class] ->order('Id desc') as $user) {
 ?>
 --EXPECTF--
 <!--SELECT * FROM `zz_user`   ORDER BY Id desc ;-->
-<!--UPDATE `zz_user` SET `Name`=?  WHERE (`Id`=?);4,3-->
+<!--INSERT INTO `zz_user` (`Name`,`Id` )VALUES(?,?) ON DUPLICATE KEY UPDATE `Name`=?;4,3,4-->
 4
 <!--SELECT * FROM `zz_user_type`  WHERE (`Id` in (?,?) )  ;1,2-->
   t:ty21
 <!--SELECT * FROM `zz_post`  WHERE (`user_id` in (?,?,?) )  ;1,2,3-->
   p:post32
   p:post31
-<!--UPDATE `zz_user` SET `Name`=?  WHERE (`Id`=?);4,2-->
+<!--INSERT INTO `zz_user` (`Name`,`Id` )VALUES(?,?) ON DUPLICATE KEY UPDATE `Name`=?;4,2,4-->
 4
   t:tysfdpe1
   p:user2 22
-<!--UPDATE `zz_user` SET `Name`=?  WHERE (`Id`=?);4,1-->
+<!--INSERT INTO `zz_user` (`Name`,`Id` )VALUES(?,?) ON DUPLICATE KEY UPDATE `Name`=?;4,1,4-->
 4
   t:tysfdpe1
   p:text1

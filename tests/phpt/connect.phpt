@@ -61,21 +61,21 @@ Array
 
     [1] => Array
         (
-            [0] => dbm\Model Object
+            [0] => dbm\Collection Object
                 (
                     [Id] => 1
                     [name] => u1
                     [type_id] => 1
                 )
 
-            [1] => dbm\Model Object
+            [1] => dbm\Collection Object
                 (
                     [Id] => 2
                     [name] => u2
                     [type_id] => 1
                 )
 
-            [2] => dbm\Model Object
+            [2] => dbm\Collection Object
                 (
                     [Id] => 3
                     [name] => u3

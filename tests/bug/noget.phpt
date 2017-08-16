@@ -36,8 +36,8 @@ echo "-----------------------\n";
 
 ?>
 --EXPECTF--
-<!--DELETE FROM `zz_user_type` ;-->
-<!--DELETE FROM `zz_post` ;-->
+<!--DELETE FROM `zz_user_type`  WHERE (1);-->
+<!--DELETE FROM `zz_post`  WHERE (1);-->
 <!--SELECT * FROM `zz_user`   ;-->
 u1
 <!--SELECT * FROM `zz_user_type`  WHERE (`Id` in (SELECT type_id FROM `zz_user`   ))  ;-->

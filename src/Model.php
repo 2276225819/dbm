@@ -240,7 +240,7 @@ class Model implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
     {
         $sql = $this->sql;
         $sql->pks=\array_merge($sql->pks, (array)$pks);
-        $data = $this->session->insert($sql, $arr); 
+        $data = (array) $this->session->insert($sql, $arr); 
         if (isset($sql->rmodel)) {
             $model = clone $sql->rmodel;
             unset($sql->rArgs); 

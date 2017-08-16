@@ -49,9 +49,9 @@ echo "---------------\n\n";
 
 ?>
 --EXPECT-- 
-<!--DELETE FROM `zz_post` ;-->
+<!--DELETE FROM `zz_post`  WHERE (1);-->
 6
-<!--DELETE FROM `zz_user` ;-->
+<!--DELETE FROM `zz_user`  WHERE (1);-->
 3
 
 #sql[User::class]->insertMulit
@@ -74,7 +74,7 @@ Array
 #sql[Post::class][0][PostType::class]->insert
 <!--SELECT * FROM `zz_post`    LIMIT 1;-->
 <!--INSERT INTO `zz_post_type` (`name` )VALUES(?);type new-->
-<!--UPDATE `zz_post` SET `post_type_id`=?  WHERE (`Id`=?);5,7-->
+<!--INSERT INTO `zz_post` (`post_type_id`,`Id` )VALUES(?,?) ON DUPLICATE KEY UPDATE `post_type_id`=?;5,7,5-->
 
 ---------------
 <!--SELECT * FROM `zz_post`   ;-->

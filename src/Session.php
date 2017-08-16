@@ -10,7 +10,7 @@ class Session
     /** 
      * @var Session
      */
-    public $instance;
+    //public $instance;
     //public $gc;
     function __construct($conn)
     {
@@ -25,7 +25,7 @@ class Session
 			$fetch = $this->conn->execute($ssql, $args);
 			$fetch->setFetchMode(\PDO::FETCH_OBJ);
 			$this->cache[$hash]=$fetch->fetchAll(); 
-		}
+        } 
 		if($all or !count($sql->rArgs)){
 			return $this->cache[$hash];
 		}else{ 
@@ -81,7 +81,11 @@ class Session
         if (!empty($last_id)) { 
             $data[$sql->pks[0]]=$last_id;
         } 
-		//$this->clean($sql->table);
+        ///////// unpure /////////
+        $data = (object)$data;
+        $sql->where($sql->pkv($data)); 
+        $this->cache[$s=(string)$sql]=[ $data ];
+        ///////// unpure /////////    
         return $data;
     }
 	function insertMulit($sql,$list){

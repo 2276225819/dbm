@@ -75,10 +75,10 @@ Array
 )
 <!--SELECT * FROM `zz_user`    LIMIT 1;-->
 <!--INSERT INTO `zz_user_type` (`name` )VALUES(?);u1-->
-<!--UPDATE `zz_user` SET `type_id`=?  WHERE (`Id`=?);5,4-->
+<!--INSERT INTO `zz_user` (`type_id`,`Id` )VALUES(?,?) ON DUPLICATE KEY UPDATE `type_id`=?;5,4,5-->
 <!--SELECT * FROM `zz_user`    LIMIT 1;-->
 <!--INSERT INTO `zz_user_type` (`name` )VALUES(?);u2-->
-<!--UPDATE `zz_user` SET `type_id`=?  WHERE (`Id`=?);6,4-->
+<!--INSERT INTO `zz_user` (`type_id`,`Id` )VALUES(?,?) ON DUPLICATE KEY UPDATE `type_id`=?;6,4,6-->
 Array
 (
     [0] => Array

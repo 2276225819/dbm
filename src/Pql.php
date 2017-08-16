@@ -4,12 +4,13 @@ class Pql
 {
     public $table='',$jStr='',$gStr='', $wStr='',$lStr='',$oStr='',$fStr='*';
     public $rArgs=[],$wArgs=[], $fArgs=[], $sArgs=[],$oArgs=[];
-	public $pks=[]; 
+	public $pks=[];//,$ref=[]; 
     
-    public function __construct($table,$pks)
+    public function __construct($table,$pks)//,$ref=[])
     {
         $this->table=$table;
         $this->pks=(array)$pks;
+        //$this->ref=(array)$ref;
     } 
 
     public function __toString()
@@ -63,8 +64,7 @@ class Pql
 			$this->fStr=$fields;
 		} 
         return $this->uncache();
-    }
-
+    } 
     /**
      * ... WHERE {$w} ...
      * @param string|array $w
@@ -143,8 +143,8 @@ class Pql
             foreach ($arr as $key => $v) {
 				if(strstr($key,',')){
 					$key="($key)";
-				}
-                if($v instanceof Model){
+				} 
+                if( isset($v->sql) ){
                     $v = $v->field($this->pks)->sql;
                 }
 				if ($v instanceof Pql){ 
@@ -190,7 +190,13 @@ class Pql
         return "SELECT {$this->fStr} FROM {$this->table}{$this->jStr} {$this->wStr}{$this->gStr} {$this->oStr} {$this->lStr}";
     } 
 
-
+    public function pkv($data){
+        
+        foreach ($this->pks as $k) {
+            $arr[$k]=$data[$k];
+        } 
+        return $arr;
+    }
 
 
 }

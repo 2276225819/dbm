@@ -9,50 +9,49 @@ include __DIR__."/../vendor/autoload.php";
 #Conn->scope();                    //Transaction
 #Conn->sql(TABLE,[PK])             //#Conn[CLASS]   
 
-#Model->where(STRING)          //self{table,where STRING...}
-#Model->whereAnd(STRING)       //self{table,and STRING...}
-#Model->whereOr(STRING)        //self{table,or STRING...}
-#Model->order(STRING)          //self{table,order by STRING...}
-#Model->field(FIELD)           //self{table,select FIELD...}
-#Model->find([PK])             //self{table,where PK=...} 
-#Model->limit(OFFSET)          //self{table,limit OFFSET... } 
+#Model->where(STRING)             //self{table,where STRING...}
+#Model->whereAnd(STRING)          //self{table,and STRING...}
+#Model->whereOr(STRING)           //self{table,or STRING...}
+#Model->order(STRING)             //self{table,order by STRING...}
+#Model->field(FIELD)              //self{table,select FIELD...}
+#Model->find([PK])                //self{table,where PK=...} 
+#Model->limit(OFFSET)             //self{table,limit OFFSET... } 
 
-#Model->all()                  //[...Model{table,row} ] 
-#Model->all(FILED)             //[...VALUE]
-#Model->all(FN)                //[...FN() ] 
-#Model->keypair(KEY)           //[...KEY=>Model{table,row}  ]
-#Model->keypair(KEY,FIELD)     //[...KEY=>VALUE ]
-#Model->keypair(KEY,FN)        //[...KEY=>FN() ]
-#Model->toArray()              //row  
+#Model->getIterator()             //iterator() => self{table,row} 
+#Model->all()                     //[...Model{table,row} ] 
+#Model->all(FILED)                //[...VALUE]
+#Model->all(FN)                   //[...FN() ] 
+#Model->keypair(KEY)              //[...KEY=>Model{table,row}  ]
+#Model->keypair(KEY,FIELD)        //[...KEY=>VALUE ]
+#Model->keypair(KEY,FN)           //[...KEY=>FN() ]
+#Model->toArray()                 //row  
+#Model->count()                   //int   parent.where支持关联查询??
+#Model->avg()                     //int   parent.where支持关联查询??
+#Model->sum()                     //int   parent.where支持关联查询??
+#Model->max()                     //int   parent.where支持关联查询??
+#Model->mix()                     //int   parent.where支持关联查询??
+ 
+#Model->load([PK])               #Model(PK...)  //Model{table,w,row}
+#Model->get(OFFSET)              #Model[OFFSET] //Model{table,row}   
+#Model->val(KEY)                 #Model[KEY]    //VALUE or PK
+#Model->sql(TABLE,[PK])          #Model[REF]    //Model{table,pk}   
+#Model->ref(TABLE,[PK],[PK=>FK]) #Model[REF]    //Model{table,ref,pk}   
+#Model->ref(TABLE,[PK],[FK=>PK]) #Model[REF]    //Model{table,ref,pk}    
 
-#Model->val(KEY,VALUE)         //VOID  
-#Model->val(REF,Model)         //VOID       
-#Model->insert(ARRAY,...)      //Model  
-#Model->update(ARRAY)          //RowCount 
-#Model->delete(BOOL)           //RowCount  
-#Model->replace(ARRAY)         //RowCount    
-    
-#Model->get(OFFSET)             #Model[OFFSET] //Model{table,row}   
-#Model->load([PK])              #Model(PK...)  //Model{table,w,row}
-#Model->sql(TABLE,[PK])         #Model[REF]    //Model{table,pk}   
-#Model->ref(TABLE,[PK],[P=>F])  #Model[REF]    //Model{table,ref,pk}   
-#Model->val(KEY)                #Model[KEY]    //VALUE or PK
-#Model->count()
-#Model->avg()
-#Model->sum()
- 
-#Model[] = VALUE         > ERROR 
-#Model[] = Model{table}  > insert TABLE  ^ 
-#Model[] = Model{table}  > insert TABLE set TABLE.FK = Model.PK ^
-#Model[] = Model{table}  > insert TABLE , Model[FK] = TABLE.PK  ^  
-#Model[KEY] = VALUE      > Model[KEY] = VALUE ^
-#Model[REF] = Model      > insert set REF.pk = Model.fk REF or update ^
-#Model[REF] = Model      > update REF where REF.FK = Model.pk ^ 
-#unset(Model[KEY])       > Model[KEY] = NULL ^ 
-#unset(Model[REF])       > delete REF where REF.FK = Model.PK ^
-#unset(Model[REF])       > delete REF where REF.PK = Model.FK ^  
-  
- 
+#Model->val(KEY,VALUE)                          //VOID                立即修改当前(默认第一行)行值(update)
+#Model->val(REF,Model)                          //VOID                立即修改当前(默认第一行)行值(update)
+#Model->update(ARRAY)                           //RowCount            根据当前model条件修改多行 
+#Model->delete(TRUE)                            //RowCount            根据当前model条件删除多行
+#Model->insert(ARRAY,...)    #Model[]=...       //Model self:         当前model插入多行
+#Model->insert(ARRAY,...)    #Model[]=...       //Model hasmany:      当前model插入多行?parent.pk 
+#Model->insert(ARRAY,...)    #Model[]=...       //Model hasone:       当前model插入多行?并执行设置parent.fk  
+#Model->replace(ARRAY)       #Model[KEY]=...    //Model self:first    获取model当前(默认第一行)行执行覆盖(删除一行并插入) 
+#Model->replace(ARRAY)       #Model[KEY]=...    //Model hasmany:first 获取model当前(默认第一行)行执行覆盖(删除一行并插入)parent.pk 
+#Model->replace(ARRAY)       #Model[KEY]=...    //Model hasone:first  获取model当前(默认第一行)行执行覆盖(删除一行并插入)并执行设置parent.fk
+#Model->save(ARRAY)                             //Model self:first    当前model插入一行 如果失败就修改
+#Model->save(ARRAY)                             //Model hasmany:first 当前model插入一行 如果失败就修改parent.pk 
+#Model->save(ARRAY)                             //Model hasone:first  当前model插入一行 如果失败就修改并执行设置parent.fk
+
 
 //////////////////// v4 /////////////////////////
 

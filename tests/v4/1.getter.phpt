@@ -58,7 +58,7 @@ Array
             [?] => []
         )
 
-    [1] => dbm\Model Object
+    [1] => dbm\Collection Object
         (
             [:] => SELECT * FROM `zz_user`    LIMIT 1 OFFSET 1 ;
             [?] => []
@@ -80,7 +80,7 @@ Array
             [?] => {"Id":3}
         )
 
-    [1] => dbm\Model Object
+    [1] => dbm\Collection Object
         (
             [:] => SELECT * FROM `zz_user`  WHERE (`Id`=?)  ;3
             [?] => {"Id":3}

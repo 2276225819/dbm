@@ -69,7 +69,7 @@ print_r([$q,$w,$e,$r]);
 <!--SELECT * FROM `zz_user`  WHERE (`Id`=?)  ;3333-->
 Array
 (
-    [0] => dbm\Model Object
+    [0] => dbm\Collection Object
         (
             [Id] => 3
             [name] => u3

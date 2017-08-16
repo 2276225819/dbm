@@ -10,25 +10,32 @@ $conn->sql('zz_user_type')->where('1=1')->delete();
 $conn->debug=true; 
 
 $user = $conn->sql(User::class)->get();
-
-try{
-    $a=$user->ref('zz_user_type',['Id'],['Id'=>'type_id'])->insert([
-        'name'=>'aa',
-    ]);
+ 
+$a=$user->ref('zz_user_type',['Id'],['Id'=>'type_id'])->insert([
+    'name'=>'aa',
+]);
+if(function_exists('xdebug_disable')){
+    xdebug_disable();
+}
+try{ 
     $b=$user[UserType::class]->insert([
         'name'=>'bb',
-    ]); 
-}catch(Throwable $e){  
-} 
+    ]); //💩💩💩💩💩 
+}catch(\Throwable $e){ }
+if(function_exists('xdebug_enable')){
+    xdebug_enable();
+}
 print_r([$a??'',$b??'']);
 
-  
+ 
 $sql = $user->ref('zz_user_type',['Id'],['Id'=>'type_id'])->set([
     'name'=>'b',
 ]); 
 $sql = $user[UserType::class]->set([
     'name'=>'c',
 ]);  
+
+
 echo "\n";
 
 
@@ -54,12 +61,12 @@ $sql = $user[Post::class]->set([
 --EXPECTF--  
 <!--SELECT * FROM `zz_user`   ;-->
 <!--INSERT INTO `zz_user_type` (`name` )VALUES(?);aa-->
-<!--UPDATE `zz_user` SET `type_id`=?  WHERE (`Id`=?);3,1-->
+<!--INSERT INTO `zz_user` (`type_id`,`Id` )VALUES(?,?) ON DUPLICATE KEY UPDATE `type_id`=?;3,1,3-->
 <!--INSERT INTO `zz_user_type` (`name` )VALUES(?);bb-->
-<!--UPDATE `zz_user` SET `type_id`=?  WHERE (`Id`=?);4,1-->
+<!--INSERT INTO `zz_user` (`type_id`,`Id` )VALUES(?,?) ON DUPLICATE KEY UPDATE `type_id`=?;4,1,4-->
 Array
 (
-    [0] => dbm\Model Object
+    [0] => dbm\Collection Object
         (
             [name] => aa
             [Id] => 3
@@ -72,8 +79,8 @@ Array
         )
 
 )
-<!--UPDATE `zz_user_type` SET `name`=?  WHERE (`Id`=?);b,4-->
-<!--UPDATE `zz_user_type` SET `name`=?  WHERE (`Id`=?);c,4-->
+<!--INSERT INTO `zz_user_type` (`name`,`Id` )VALUES(?,?) ON DUPLICATE KEY UPDATE `name`=?;b,4,b-->
+<!--INSERT INTO `zz_user_type` (`name`,`Id` )VALUES(?,?) ON DUPLICATE KEY UPDATE `name`=?;c,4,c-->
 
 <!--INSERT INTO `zz_post` (`text`,`user_id` )VALUES(?,?);u1t1,1-->
 <!--INSERT INTO `zz_post` (`text`,`user_id` )VALUES(?,?);u1t2,1-->

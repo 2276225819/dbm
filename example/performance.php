@@ -2,7 +2,7 @@
 include __DIR__."/../vendor/autoload.php"; 
  
   
-$count=10;
+$count=10000;
 echo "performance test :select * from [table] * $count\n";
 /////////////////////////////////////////////////
  
@@ -39,7 +39,7 @@ $capsule->addConnection([
 $capsule->setAsGlobal();  
 $capsule->bootEloquent(); 
 
-echo "foreach          :";
+echo "foreach(Global)  :";//遍历数据 理论最高速度
 $time=microtime(true); 
 $query = $pdo->prepare("select * from zz_post"); 
 $query->execute(); 
@@ -51,7 +51,7 @@ for ($i=0; $i < $count; $i++){
 echo microtime(true)-$time;
 echo "\n";
 
-echo "native           :";
+echo "dbquery          :";//查数据库 理论最高速度
 $time=microtime(true); 
 $query = $pdo->prepare("select * from zz_post"); 
 for ($i=0; $i < $count; $i++){
@@ -62,7 +62,7 @@ for ($i=0; $i < $count; $i++){
 echo microtime(true)-$time;
 echo "\n";
 
-echo "dbm              :";
+echo "dbm.v3(Global)   :";
 $time=microtime(true);  
 for ($i=0; $i < $count; $i++) {
     foreach($db->entity('zz_post','ID') as $row) 
@@ -73,10 +73,19 @@ echo "\n";
 
 
 echo "dbm.v4           :";
-$time=microtime(true);  
+$time=microtime(true);   
 for ($i=0; $i < $count; $i++) {
-    foreach($db->sql('zz_post','ID') as $row) 
+    foreach($db->v4('zz_post','ID') as $row) 
         $arr4 = $row->toArray();
+}    
+echo microtime(true)-$time;
+echo "\n";
+
+echo "dbm.v5           :";
+$time=microtime(true);   
+for ($i=0; $i < $count; $i++) {
+    foreach($db['zz_post'] as $row) 
+        $arr5 = $row->toArray();
 }    
 echo microtime(true)-$time;
 echo "\n";
@@ -86,7 +95,7 @@ echo "notorm           :";
 $time=microtime(true); 
 for ($i=0; $i < $count; $i++){
     foreach ($software->zz_post() as $row)
-        $arr5 =  iterator_to_array($row) ; 
+        $arr6 =  iterator_to_array($row) ; 
 } 
 echo microtime(true)-$time;
 echo "\n";
@@ -97,7 +106,7 @@ echo "laravel/database :";
 $time=microtime(true);     
 for ($i=0; $i < $count; $i++) {
     foreach(Capsule::table('zz_post')->get() as $row) 
-    $arr6 = (array)$row; 
+    $arr7 = (array)$row; 
 }
 echo microtime(true)-$time;
 echo "\n";

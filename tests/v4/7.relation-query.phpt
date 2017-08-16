@@ -29,7 +29,7 @@ print_r($conn->sql(Post::class)->where('id in(3,4)')
 <!--SELECT * FROM `zz_post`  WHERE (`user_id` in (SELECT Id FROM `zz_user`  WHERE (`Id`=?)  )) AND (`post_type_id`=?)  ;1,1-->
 Array
 (
-    [0] => dbm\Model Object
+    [0] => dbm\Collection Object
         (
             [Id] => 1
             [post_type_id] => 1
@@ -37,7 +37,7 @@ Array
             [text] => text1
         )
 
-    [1] => dbm\Model Object
+    [1] => dbm\Collection Object
         (
             [Id] => 2
             [post_type_id] => 1
@@ -50,7 +50,7 @@ Array
 <!--SELECT * FROM `zz_post`  WHERE (`user_id`=?) AND (`post_type_id`=?)  ;1,1-->
 Array
 (
-    [0] => dbm\Model Object
+    [0] => dbm\Collection Object
         (
             [Id] => 1
             [post_type_id] => 1
@@ -58,7 +58,7 @@ Array
             [text] => text1
         )
 
-    [1] => dbm\Model Object
+    [1] => dbm\Collection Object
         (
             [Id] => 2
             [post_type_id] => 1

@@ -6,7 +6,19 @@ include __DIR__."/../before.php";
 
 $db = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root');
 $db->debug=true;
+ 
+foreach($db->sql('zz_post_type','Id') as $pt){
+    echo "POST_TYPE: ".$pt->val('name')."\n"; 
+    foreach ($pt->ref('zz_post',['Id'],['post_type_id'=>'Id']) as $post) {
+        echo "  ID     : ".$post->val('Id')."\n";
+        echo "  Author : ".$post->ref('zz_user',['Id'],['Id'=>'user_id'])->val('name')."\n";
+        echo "  Type   : ".$post->ref('zz_post_type',['Id'],['Id'=>'post_type_id'])->val('name')."\n";
+        echo "\n";
+    } 
+}
 
+
+exit;
 
 // new User([
 //     'name'=>'nUser',

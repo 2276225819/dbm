@@ -11,7 +11,7 @@ $db[User::class]->where('1=1')->update(['name'=>1]);
 $db->debug=true; 
 
 foreach ($db[User::class]->field('Id,name') ->order('Id desc') as $user) { 
-    $user = clone $user;
+    $user = clone $user;//FIXBUG 
     $user['name']+=1;
     $user->save();    
     print_r($user);
@@ -20,19 +20,19 @@ foreach ($db[User::class]->field('Id,name') ->order('Id desc') as $user) {
 ?>
 --EXPECTF--
 <!--SELECT Id,name FROM `zz_user`   ORDER BY Id desc ;-->
-<!--UPDATE `zz_user` SET `name`=?  WHERE (`Id`=?);2,3-->
+<!--INSERT INTO `zz_user` (`name`,`Id` )VALUES(?,?) ON DUPLICATE KEY UPDATE `name`=?;2,3,2-->
 User Object
 (
     [Id] => 3
     [name] => 2
 )
-<!--UPDATE `zz_user` SET `name`=?  WHERE (`Id`=?);2,2-->
+<!--INSERT INTO `zz_user` (`name`,`Id` )VALUES(?,?) ON DUPLICATE KEY UPDATE `name`=?;2,2,2-->
 User Object
 (
     [Id] => 2
     [name] => 2
 )
-<!--UPDATE `zz_user` SET `name`=?  WHERE (`Id`=?);2,1-->
+<!--INSERT INTO `zz_user` (`name`,`Id` )VALUES(?,?) ON DUPLICATE KEY UPDATE `name`=?;2,1,2-->
 User Object
 (
     [Id] => 1
