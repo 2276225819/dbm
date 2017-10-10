@@ -5,7 +5,7 @@
 <?php
 include __DIR__.'/../before.php';
 
-$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root'); 
+$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test2','root','root'); 
 $conn->debug=true;  
 $conn[UserType::class]->delete(true);
 $conn[Post::class]->delete(true);
@@ -22,7 +22,7 @@ echo "\n";
 
 
 foreach ($conn[User::class] as $row) {
-echo "-----------------------\n"; 
+    echo "-----------------------\n"; 
     echo $row['name'];
     echo "\n";
     

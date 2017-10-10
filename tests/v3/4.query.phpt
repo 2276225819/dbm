@@ -4,18 +4,18 @@
 <?php  
 include __DIR__."/../before.php";
 
-$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root');
+$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test2','root','root');
 $conn->debug=true;
 
 //<!--SELECT * FROM `zz_user`    LIMIT 1 OFFSET 2 ;-->
 //<!--SELECT * FROM `zz_user_type`  WHERE `Id`=?  ;2-->
-print_r($conn->sql(User::class)->get(2)->ref(UserType::class)->all());
+print_r($conn->sql(User::class)->get(2)->ref(UserType::class)->all(function($m){return (array)$m;}));
 
 //<!--SELECT * FROM `zz_user`  WHERE `id` =2 or `id`=3  ;-->
 print_r($uids = $conn->sql('zz_user')->where('id =2 or `id`=3')->all('Id'));
 
 //<!--SELECT * FROM `zz_post`  WHERE  `user_id` in (?,?)   ;2,3-->
-print_r($conn->sql('zz_post','Id')->where(['user_id'=>$uids])->keypair('Id'));
+print_r($conn->sql('zz_post','Id')->where(['user_id'=>$uids])->keypair('Id',function($m){return (array)$m;}));
 
 //<!--SELECT * FROM `zz_post`  WHERE  `user_id` in (?,?)   ;2,3-->
 print_r($conn->sql('zz_post')->where(['user_id'=>$uids])->keypair('Id','text'));
@@ -28,7 +28,7 @@ print_r($conn->sql('zz_post')->where(['user_id'=>$uids])->keypair('Id','text'));
 <!--SELECT * FROM `zz_user_type`  WHERE (`Id`=?)  ;2-->
 Array
 (
-    [0] => UserType Object
+    [0] => Array
         (
             [Id] => 2
             [name] => ty21
@@ -44,7 +44,7 @@ Array
 <!--SELECT * FROM `zz_post`  WHERE (`user_id` in (?,?) )  ;2,3-->
 Array
 (
-    [4] => dbm\Collection Object
+    [4] => Array
         (
             [Id] => 4
             [post_type_id] => 3
@@ -52,7 +52,7 @@ Array
             [text] => user2 22
         )
 
-    [5] => dbm\Collection Object
+    [5] => Array
         (
             [Id] => 5
             [post_type_id] => 2
@@ -60,7 +60,7 @@ Array
             [text] => post32
         )
 
-    [6] => dbm\Collection Object
+    [6] => Array
         (
             [Id] => 6
             [post_type_id] => 1

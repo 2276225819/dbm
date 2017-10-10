@@ -4,7 +4,7 @@
 <?php  
 include __DIR__."/../before.php";
 
-$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root');
+$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test2','root','root');
 $conn->debug=true;
 
 echo $conn->sql(Post::class)->delete(true)."\n";
@@ -35,16 +35,16 @@ $post4 = $user2->ref(Post::class)->insert(['text'=>'d']);
 echo "\n"; 
 
 print_r([
-    'user1'=>$user1??null,
-    'user2'=>$user2??null,
-    'user_type1'=>$type1??null,
-    'user_type2'=>$type2??null,
-    'user_type3'=>$type3??null,
-    'user_type4'=>$type4??null,
-    'user_post1'=>$post1??null,
-    'user_post2'=>$post2??null,
-    'user_post3'=>$post3??null,
-    'user_post4'=>$post4??null,
+    'user1'=>(array)$user1??null,
+    'user2'=>(array)$user2??null,
+    'user_type1'=>(array)$type1??null,
+    'user_type2'=>(array)$type2??null,
+    'user_type3'=>(array)$type3??null,
+    'user_type4'=>(array)$type4??null,
+    'user_post1'=>(array)$post1??null,
+    'user_post2'=>(array)$post2??null,
+    'user_post3'=>(array)$post3??null,
+    'user_post4'=>(array)$post4??null,
 ]);
 
 
@@ -80,66 +80,66 @@ print_r([
 
 Array
 (
-    [user1] => User Object
+    [user1] => Array
         (
             [name] => a
             [Id] => 4
             [type_id] => 3
         )
 
-    [user2] => User Object
+    [user2] => Array
         (
             [name] => b
             [Id] => 5
             [type_id] => 5
         )
 
-    [user_type1] => UserType Object
+    [user_type1] => Array
         (
             [name] => c
             [Id] => 3
         )
 
-    [user_type2] => UserType Object
+    [user_type2] => Array
         (
             [name] => b
             [Id] => 4
         )
 
-    [user_type3] => UserType Object
+    [user_type3] => Array
         (
             [name] => c
             [Id] => 3
         )
 
-    [user_type4] => UserType Object
+    [user_type4] => Array
         (
             [name] => d
             [Id] => 5
         )
 
-    [user_post1] => Post Object
+    [user_post1] => Array
         (
             [text] => a
             [user_id] => 4
             [Id] => 7
         )
 
-    [user_post2] => Post Object
+    [user_post2] => Array
         (
             [text] => b
             [user_id] => 5
             [Id] => 8
         )
 
-    [user_post3] => Post Object
+    [user_post3] => Array
         (
             [text] => c
             [user_id] => 4
             [Id] => 9
         )
 
-    [user_post4] => Post Object
+    [user_post4] => Array
         (
             [text] => d
             [user_id] => 5

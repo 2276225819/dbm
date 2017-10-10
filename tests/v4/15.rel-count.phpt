@@ -4,7 +4,7 @@
 <?php  
 include __DIR__."/../before.php";
 
-$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root');
+$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test2','root','root');
 $conn->debug=true;
   
 foreach ($conn[User::class]->where('`id` in (1,3)') as $user) {

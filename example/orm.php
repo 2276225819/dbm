@@ -3,54 +3,55 @@ include __DIR__."/../vendor/autoload.php";
 
 //////////////////// v5 /////////////////////////
 
-#Conn->execute(STRING[,...args]);  //PDOStatement
-#Conn->lastInsertId();             //int
-#Conn->debug;                      //bool 
-#Conn->scope();                    //Transaction
-#Conn->sql(TABLE,[PK])             //#Conn[CLASS]   
+#Conn->execute(STRING[,...args]);                //PDOStatement
+#Conn->lastInsertId();                           //int
+#Conn->debug;                                    //bool 
+#Conn->scope();                                  //Transaction
+#Conn->sql(TABLE,[PK])                           //Model{sql,pk}    
 
-#Model->where(STRING)             //self{table,where STRING...}
-#Model->whereAnd(STRING)          //self{table,and STRING...}
-#Model->whereOr(STRING)           //self{table,or STRING...}
-#Model->order(STRING)             //self{table,order by STRING...}
-#Model->field(FIELD)              //self{table,select FIELD...}
-#Model->find([PK])                //self{table,where PK=...} 
-#Model->limit(OFFSET)             //self{table,limit OFFSET... } 
+#Model->where(STRING)                            //self{sql,where STRING...}
+#Model->whereAnd(STRING)                         //self{sql,and STRING...}
+#Model->whereOr(STRING)                          //self{sql,or STRING...}
+#Model->order(STRING)                            //self{sql,order by STRING...}
+#Model->field(FIELD)                             //self{sql,select FIELD...}
+#Model->find([PK])                               //self{sql,where PK=...} 
+#Model->limit(OFFSET)                            //self{sql,limit OFFSET... } 
 
-#Model->getIterator()             //iterator() => self{table,row} 
-#Model->all()                     //[...Model{table,row} ] 
-#Model->all(FILED)                //[...VALUE]
-#Model->all(FN)                   //[...FN() ] 
-#Model->keypair(KEY)              //[...KEY=>Model{table,row}  ]
-#Model->keypair(KEY,FIELD)        //[...KEY=>VALUE ]
-#Model->keypair(KEY,FN)           //[...KEY=>FN() ]
-#Model->toArray()                 //row  
-#Model->count()                   //int   parent.where支持关联查询??
-#Model->avg()                     //int   parent.where支持关联查询??
-#Model->sum()                     //int   parent.where支持关联查询??
-#Model->max()                     //int   parent.where支持关联查询??
-#Model->mix()                     //int   parent.where支持关联查询??
+#Model->getIterator()  iterator_to_array(#Model) //self{sql,row} 
+#Model->all()                                    //[...Model{table,row} ]          or []
+#Model->all(FILED)                               //[...VALUE]                      or []
+#Model->all(FN)                                  //[...FN() ]                      or []
+#Model->keypair(KEY)                             //[...KEY=>Model{table,row}  ]    or []
+#Model->keypair(KEY,FIELD)                       //[...KEY=>VALUE ]                or []
+#Model->keypair(KEY,FN)                          //[...KEY=>FN() ]                 or []
+#Model->count()                                  //int   parent.where支持关联查询??
+#Model->avg()                                    //int   parent.where支持关联查询??
+#Model->sum()                                    //int   parent.where支持关联查询??
+#Model->max()                                    //int   parent.where支持关联查询??
+#Model->mix()                                    //int   parent.where支持关联查询??
+
+
+#Model->sql(TABLE,[PK])          #Model[TABLE]   //Model{sql,pk}             查询新集合
+#Model->ref(TABLE,[PK],[PK=>FK]) #Model[REF]     //Model{sql,ref,pk}         查询新集合
+#Model->ref(TABLE,[PK],[FK=>PK]) #Model[REF]     //Model{sql,ref,pk}         查询新集合
+#Model->get(OFFSET)              #Model[OFFSET]  //Model{sql,ref,pk} or NULL 查询新集合(第一列) 
  
-#Model->load([PK])               #Model(PK...)  //Model{table,w,row}
-#Model->get(OFFSET)              #Model[OFFSET] //Model{table,row}   
-#Model->val(KEY)                 #Model[KEY]    //VALUE or PK
-#Model->sql(TABLE,[PK])          #Model[REF]    //Model{table,pk}   
-#Model->ref(TABLE,[PK],[PK=>FK]) #Model[REF]    //Model{table,ref,pk}   
-#Model->ref(TABLE,[PK],[FK=>PK]) #Model[REF]    //Model{table,ref,pk}    
-
-#Model->val(KEY,VALUE)                          //VOID                立即修改当前(默认第一行)行值(update)
-#Model->val(REF,Model)                          //VOID                立即修改当前(默认第一行)行值(update)
-#Model->update(ARRAY)                           //RowCount            根据当前model条件修改多行 
-#Model->delete(TRUE)                            //RowCount            根据当前model条件删除多行
-#Model->insert(ARRAY,...)    #Model[]=...       //Model self:         当前model插入多行
-#Model->insert(ARRAY,...)    #Model[]=...       //Model hasmany:      当前model插入多行?parent.pk 
-#Model->insert(ARRAY,...)    #Model[]=...       //Model hasone:       当前model插入多行?并执行设置parent.fk  
-#Model->replace(ARRAY)       #Model[KEY]=...    //Model self:first    获取model当前(默认第一行)行执行覆盖(删除一行并插入) 
-#Model->replace(ARRAY)       #Model[KEY]=...    //Model hasmany:first 获取model当前(默认第一行)行执行覆盖(删除一行并插入)parent.pk 
-#Model->replace(ARRAY)       #Model[KEY]=...    //Model hasone:first  获取model当前(默认第一行)行执行覆盖(删除一行并插入)并执行设置parent.fk
-#Model->save(ARRAY)                             //Model self:first    当前model插入一行 如果失败就修改
-#Model->save(ARRAY)                             //Model hasmany:first 当前model插入一行 如果失败就修改parent.pk 
-#Model->save(ARRAY)                             //Model hasone:first  当前model插入一行 如果失败就修改并执行设置parent.fk
+#Model->insert(ARRAY,...)        #Model[]=...    //self Model self:          插入到集合
+#Model->insert(ARRAY,...)        #Model[]=...    //self Model hasmany:       插入到集合?parent.pk 
+#Model->insert(ARRAY,...)        #Model[]=...    //self Model hasone:        插入到集合?并执行设置parent.fk  
+#Model->save(ARRAY)                              //self Model self:first     插入到集合 失败就 修改
+#Model->save(ARRAY)                              //self Model hasmany:first  插入到集合 失败就 修改parent.pk 
+#Model->save(ARRAY)                              //self Model hasone:first   插入到集合 失败就 修改并执行设置parent.fk
+#Model->update(ARRAY)                            //self RowCount             根据当前model条件修改集合(可能空)
+#Model->delete(TRUE)                             //self RowCount             根据当前model条件删除集合(可能空)
+ 
+#Model->val(KEY)                 #Model[KEY]     //VALUE or PK or NULL       读取首行单列(第一列)
+#Model->val(KEY,VALUE)           #Model[KEY]=... //VOID                      修改首行单列
+#Model->val(REF,Model)           #Model[KEY]=... //VOID                      修改首行单列
+#Model->toArray()                (array)#Model   //row                       读取首行
+#Model->replace(ARRAY)           #Model[REF]=... //self Model self:first     覆盖首行(删除首行并插入) 
+#Model->replace(ARRAY)           #Model[REF]=... //self Model hasmany:first  覆盖首行(删除首行并插入)parent.pk 
+#Model->replace(ARRAY)           #Model[REF]=... //self Model hasone:first   覆盖首行(删除首行并插入)并执行设置parent.fk
 
 
 //////////////////// v4 /////////////////////////

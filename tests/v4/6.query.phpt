@@ -4,14 +4,14 @@
 <?php  
 include __DIR__."/../before.php";
 
-$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root');
+$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test2','root','root');
 $conn->debug=true;
  
 //<!--SELECT * FROM `zz_user`  WHERE (1=1) AND (2=2 or 3=3)  ;-->
 print_r($conn->sql(User::class)->whereAnd('1=1')->whereAnd('2=2 or 3=3')->all('Id'));
 
 //<!--SELECT * FROM `zz_user`  WHERE (`id`=2)  ;-->
-print_r($conn->sql('zz_user','Id')->where('id=1')->where('id=3')->where('id=2')->keypair('name'));
+print_r($conn->sql('zz_user','Id')->where('id=1')->where('id=3')->where('id=2')->keypair('name',function($m){return (array)$m;}));
 
 //<!--SELECT * FROM `zz_user`  WHERE (`id`=1) OR (`id`=3)  ;-->
 print_r($conn->sql('zz_user','Id')->whereOr('id=1')->whereOr('id=3')->keypair('Id','name'));
@@ -33,7 +33,7 @@ Array
 <!--SELECT * FROM `zz_user`  WHERE (`id`=2)  ;-->
 Array
 (
-    [u2] => dbm\Collection Object
+    [u2] => Array
         (
             [Id] => 2
             [name] => u2

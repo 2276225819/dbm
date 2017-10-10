@@ -41,10 +41,10 @@ class Connect implements \ArrayAccess
     {
         if ($this->debug) {
             echo "<!--begin {$this->dns}-->\n";
-        } 
-        if($row=static::$conn[$this->dns]->beginTransaction()){}else{
+        }
+        if ($row=static::$conn[$this->dns]->beginTransaction()) {
+        } else {
             throw new Exception("Error Processing Request", 1);
-            
         }
     }
     public function commit()
@@ -52,7 +52,8 @@ class Connect implements \ArrayAccess
         if ($this->debug) {
             echo "<!--commit {$this->dns}-->\n";
         }
-        if($row=static::$conn[$this->dns]->commit()){}else{
+        if ($row=static::$conn[$this->dns]->commit()) {
+        } else {
             throw new Exception("Error Processing Request", 1);
         }
     }
@@ -61,7 +62,8 @@ class Connect implements \ArrayAccess
         if ($this->debug) {
             echo "<!--rollback {$this->dns}-->\n";
         }
-        if($row=static::$conn[$this->dns]->rollBack()){}else{
+        if ($row=static::$conn[$this->dns]->rollBack()) {
+        } else {
             throw new Exception("Error Processing Request", 1);
         }
     }
@@ -99,7 +101,7 @@ class Connect implements \ArrayAccess
      * @return \dbm\Sql
      */
     public function entity($model, $pks = null)
-    { 
+    {
         $pks = (array)$pks;
         if (class_exists($model) && isset($model::$table)) {
             $table = $model::$table;
@@ -123,11 +125,16 @@ class Connect implements \ArrayAccess
      * @return \dbm\Model
      */
     public function v4($model, $pks = null)
-    {   
-        return Model::byName(new Session($this),$model, $pks);
+    {
+        return Model::byName(new Session($this), $model, $pks);
     }
 
-    public function sql($model,$pks=null){
-        return Collection::byName(new Session($this),$model,$pks);
+    // public function sql($model, $pks = null)
+    // {
+    //     return v5\Collection::byName(new Session($this),$model, $pks   );
+    // }
+    public function sql($model, $pks = null)
+    {
+        return Collection::new($model, $pks, new Session($this) );
     }
 }

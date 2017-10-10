@@ -4,19 +4,19 @@
 <?php  
 include __DIR__."/../before.php";
 
-$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root');
+$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test2','root','root');
 $conn->debug=true;
 
 //<!--SELECT * FROM `zz_post`  WHERE (`user_id` in (SELECT Id FROM `zz_user`  WHERE (`Id`=?)  )) AND (`post_type_id`=?)  ;1,1-->
 print_r($conn->sql('zz_user','Id')->find(1)
         ->ref('zz_post','Id',['user_id'=>'Id'])->whereAnd('post_type_id=?',"1")
-        ->all());
+        ->all(function($m){return (array)$m;}));
 
 //<!--SELECT * FROM `zz_user`  WHERE (`Id`=?)  ;1-->
 //<!--SELECT * FROM `zz_post`  WHERE (`user_id`=?) AND (`post_type_id`=?)  ;1,1-->
 print_r($conn->sql('zz_user','Id')->load(1)
         ->ref('zz_post','Id',['user_id'=>'Id'])->whereAnd('post_type_id=?',"1")
-        ->all());
+        ->all(function($m){return (array)$m;}));
 
 //<!--SELECT * FROM `zz_user`  WHERE (`Id` in (SELECT user_id FROM `zz_post`  WHERE (`id` in(3,4))  ))  ;-->
 print_r($conn->sql(Post::class)->where('id in(3,4)')
@@ -29,7 +29,7 @@ print_r($conn->sql(Post::class)->where('id in(3,4)')
 <!--SELECT * FROM `zz_post`  WHERE (`user_id` in (SELECT Id FROM `zz_user`  WHERE (`Id`=?)  )) AND (`post_type_id`=?)  ;1,1-->
 Array
 (
-    [0] => dbm\Collection Object
+    [0] => Array
         (
             [Id] => 1
             [post_type_id] => 1
@@ -37,7 +37,7 @@ Array
             [text] => text1
         )
 
-    [1] => dbm\Collection Object
+    [1] => Array
         (
             [Id] => 2
             [post_type_id] => 1
@@ -50,7 +50,7 @@ Array
 <!--SELECT * FROM `zz_post`  WHERE (`user_id`=?) AND (`post_type_id`=?)  ;1,1-->
 Array
 (
-    [0] => dbm\Collection Object
+    [0] => Array
         (
             [Id] => 1
             [post_type_id] => 1
@@ -58,7 +58,7 @@ Array
             [text] => text1
         )
 
-    [1] => dbm\Collection Object
+    [1] => Array
         (
             [Id] => 2
             [post_type_id] => 1

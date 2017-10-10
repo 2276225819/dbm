@@ -5,7 +5,7 @@
 <?php
 include __DIR__."/../before.php";
  
-$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root');
+$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test2','root','root');
 $conn->sql('zz_user_type')->where('1=1')->delete();
 $conn->debug=true; 
 
@@ -20,12 +20,14 @@ if(function_exists('xdebug_disable')){
 try{ 
     $b=$user[UserType::class]->insert([
         'name'=>'bb',
-    ]); //💩💩💩💩💩 
-}catch(\Throwable $e){ }
+    ]);  
+}catch(\Throwable $e){ 
+    echo '💩💩💩💩💩';
+}
 if(function_exists('xdebug_enable')){
     xdebug_enable();
 }
-print_r([$a??'',$b??'']);
+print_r([(array)($a??'') ,(array)($b??'') ]);
 
  
 $sql = $user->ref('zz_user_type',['Id'],['Id'=>'type_id'])->set([
@@ -66,13 +68,13 @@ $sql = $user[Post::class]->set([
 <!--INSERT INTO `zz_user` (`type_id`,`Id` )VALUES(?,?) ON DUPLICATE KEY UPDATE `type_id`=?;4,1,4-->
 Array
 (
-    [0] => dbm\Collection Object
+    [0] => Array
         (
             [name] => aa
             [Id] => 3
         )
 
-    [1] => UserType Object
+    [1] => Array
         (
             [name] => bb
             [Id] => 4

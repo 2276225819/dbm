@@ -4,35 +4,35 @@
 <?php  
 include __DIR__."/../before.php";
 
-$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root');
+$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test2','root','root');
 
 
 $conn[User::class]->delete(true);
 $conn[UserType::class]->delete(true);
 $conn->debug=true;
 
-$a = $conn[User::class][]=['name'=>'s1'];
-$b = $conn->sql(User::class)->insert(['name'=>'s2']); 
+$a = (array)$conn[User::class][]=['name'=>'s1'];
+$b = (array)$conn->sql(User::class)->insert(['name'=>'s2']); 
 print_r([$a,$b]);
 unset($a);
 unset($b);
  
-$a = $conn[User::class][UserType::class][]=['name'=>'t1'];
-$b = $conn->sql(User::class)->ref(UserType::class)->insert(['name'=>'t2']);
+$a = (array)$conn[User::class][UserType::class][]=['name'=>'t1'];
+$b = (array)$conn->sql(User::class)->ref(UserType::class)->insert(['name'=>'t2']);
 print_r([$a,$b]);
 unset($a);
 unset($b);
 
 
-$a = $conn[User::class][0][UserType::class][]=['name'=>'u1'];
-$b = $conn->sql(User::class)->get(0)->ref(UserType::class)->insert(['name'=>'u2']);
+$a = (array)$conn[User::class][0][UserType::class][]=['name'=>'u1'];
+$b = (array)$conn->sql(User::class)->get(0)->ref(UserType::class)->insert(['name'=>'u2']);
 print_r([$a,$b]);
 unset($a);
 unset($b);
 
 
-$a = $conn[User::class][0][Post::class][]=['text'=>'v1'];
-$b = $conn->sql(User::class)->get(0)->ref(Post::class)->insert(['text'=>'v2']);
+$a = (array)$conn[User::class][0][Post::class][]=['text'=>'v1'];
+$b = (array)$conn->sql(User::class)->get(0)->ref(Post::class)->insert(['text'=>'v2']);
 print_r([$a,$b]);
 unset($a);
 unset($b);
@@ -50,7 +50,7 @@ Array
             [name] => s1
         )
 
-    [1] => User Object
+    [1] => Array
         (
             [name] => s2
             [Id] => 5
@@ -66,7 +66,7 @@ Array
             [name] => t1
         )
 
-    [1] => UserType Object
+    [1] => Array
         (
             [name] => t2
             [Id] => 4
@@ -86,7 +86,7 @@ Array
             [name] => u1
         )
 
-    [1] => UserType Object
+    [1] => Array
         (
             [name] => u2
             [Id] => 6
@@ -104,7 +104,7 @@ Array
             [text] => v1
         )
 
-    [1] => Post Object
+    [1] => Array
         (
             [text] => v2
             [user_id] => 4

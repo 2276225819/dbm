@@ -4,41 +4,41 @@
 <?php  
 include __DIR__."/../before.php";
 
-$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root');
+$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test2','root','root');
 $conn->debug=true;
  
 //<!--SELECT Id,name FROM `zz_user`   ;-->
-print_r($conn->sql(User::class)->field(['Id','name'])->all());
+print_r($conn->sql(User::class)->field(['Id','name'])->all(function($x){return (array)$x;}));
 
 //<!--SELECT Id as `id`,name FROM `zz_user`  WHERE (`id` =2 or `id`=3)  ;-->
-print_r($conn->sql('zz_user','id')->field('Id as id,name')->whereAnd('id =2 or `id`=3')->all());
+print_r($conn->sql('zz_user','id')->field('Id as id,name')->whereAnd('id =2 or `id`=3')->all(function($x){return (array)$x;}));
 
 //<!--SELECT text FROM `zz_post`  WHERE (`id` in (?,?) )  ;1,3-->
-print_r($conn->sql('zz_post')->field('text')->whereAnd(['id'=>[1,3]])->all());
+print_r($conn->sql('zz_post')->field('text')->whereAnd(['id'=>[1,3]])->all(function($x){return (array)$x;}));
 
 //<!--SELECT * FROM `zz_post`  WHERE (`user_id` in (SELECT Id FROM `zz_user`  WHERE (`Id`=?)  ))  ;2-->
 print_r($conn->sql(Post::class)->whereAnd([
-    'user_id' => $conn->sql('zz_user')->whereAnd(['Id'=>2])
-])->all());
+    'user_id' => $conn->sql('zz_user')->whereAnd(['Id'=>2])->field('Id')
+])->all(function($x){return (array)$x;}));
 
 ?>
 --EXPECT--
 <!--SELECT Id,name FROM `zz_user`   ;-->
 Array
 (
-    [0] => User Object
+    [0] => Array
         (
             [Id] => 1
             [name] => u1
         )
 
-    [1] => User Object
+    [1] => Array
         (
             [Id] => 2
             [name] => u2
         )
 
-    [2] => User Object
+    [2] => Array
         (
             [Id] => 3
             [name] => u3
@@ -48,13 +48,13 @@ Array
 <!--SELECT Id as `id`,name FROM `zz_user`  WHERE (`id` =2 or `id`=3)  ;-->
 Array
 (
-    [0] => dbm\Collection Object
+    [0] => Array
         (
             [id] => 2
             [name] => u2
         )
 
-    [1] => dbm\Collection Object
+    [1] => Array
         (
             [id] => 3
             [name] => u3
@@ -64,12 +64,12 @@ Array
 <!--SELECT text FROM `zz_post`  WHERE (`id` in (?,?) )  ;1,3-->
 Array
 (
-    [0] => dbm\Collection Object
+    [0] => Array
         (
             [text] => text1
         )
 
-    [1] => dbm\Collection Object
+    [1] => Array
         (
             [text] => text3
         )
@@ -78,7 +78,7 @@ Array
 <!--SELECT * FROM `zz_post`  WHERE (`user_id` in (SELECT Id FROM `zz_user`  WHERE (`Id`=?)  ))  ;2-->
 Array
 (
-    [0] => Post Object
+    [0] => Array
         (
             [Id] => 4
             [post_type_id] => 3

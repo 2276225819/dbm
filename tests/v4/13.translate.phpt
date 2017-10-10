@@ -5,7 +5,7 @@
 
 include __DIR__."/../before.php"; 
 
-$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test', 'root', 'root');
+$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test2', 'root', 'root');
 $conn->debug=true;
 
 function rollbackScope(\dbm\Connect $conn)
@@ -47,30 +47,30 @@ rollbackScope($conn);
 echo "# ".json_encode($conn->sql('zz_user')->all())."\n\n";
 ?>
 --EXPECT--
-<!--begin mysql:host=127.0.0.1;dbname=test-->
+<!--begin mysql:host=127.0.0.1;dbname=test2-->
 <!--DELETE FROM `zz_user`;-->
 <!--INSERT `zz_user` SET `name`=4;-->
-<!--commit mysql:host=127.0.0.1;dbname=test-->
+<!--commit mysql:host=127.0.0.1;dbname=test2-->
 <!--SELECT * FROM `zz_user`   ;-->
 # [{"Id":"4","name":"4","type_id":null}]
 
-<!--begin mysql:host=127.0.0.1;dbname=test-->
+<!--begin mysql:host=127.0.0.1;dbname=test2-->
 <!--DELETE FROM `zz_user`;-->
 <!--INSERT `zz_user` SET `name`=2;-->
-<!--commit mysql:host=127.0.0.1;dbname=test-->
+<!--commit mysql:host=127.0.0.1;dbname=test2-->
 <!--SELECT * FROM `zz_user`   ;-->
 # [{"Id":"5","name":"2","type_id":null}]
 
-<!--begin mysql:host=127.0.0.1;dbname=test-->
+<!--begin mysql:host=127.0.0.1;dbname=test2-->
 <!--DELETE FROM `zz_user`;-->
 <!--INSERT `zz_user` SET `name`=3;-->
-<!--rollback mysql:host=127.0.0.1;dbname=test-->
+<!--rollback mysql:host=127.0.0.1;dbname=test2-->
 <!--SELECT * FROM `zz_user`   ;-->
 # [{"Id":"5","name":"2","type_id":null}]
 
-<!--begin mysql:host=127.0.0.1;dbname=test-->
+<!--begin mysql:host=127.0.0.1;dbname=test2-->
 <!--DELETE FROM `zz_user`;-->
 <!--INSERT `zz_user` SET `name`=1;-->
-<!--rollback mysql:host=127.0.0.1;dbname=test-->
+<!--rollback mysql:host=127.0.0.1;dbname=test2-->
 <!--SELECT * FROM `zz_user`   ;-->
 # [{"Id":"5","name":"2","type_id":null}]

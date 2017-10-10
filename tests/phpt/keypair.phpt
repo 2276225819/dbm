@@ -5,7 +5,7 @@
 <?php
 include __DIR__.'/../before.php';
 
-$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root');
+$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test2','root','root');
 $conn->debug=true;
 
 $user = $conn->sql('zz_user','Id')->load(1);
@@ -18,11 +18,11 @@ echo "\n";
 
 
 echo "following:\n";
-print_r($user->ref('zz_friend',['Id'],['uid1'=>'Id'])->all());
+print_r($user->ref('zz_friend',['Id'],['uid1'=>'Id'])->all(function($x){return (array)$x;}));
 
 
 echo "followers:\n";
-print_r($user->ref('zz_friend',['Id'],['uid2'=>'Id'])->all());
+print_r($user->ref('zz_friend',['Id'],['uid2'=>'Id'])->all(function($x){return (array)$x;}));
  
 echo "\n";
 
@@ -46,28 +46,28 @@ following:
 <!--SELECT * FROM `zz_friend`  WHERE (`uid1`=?)  ;1-->
 Array
 (
-    [0] => dbm\Collection Object
+    [0] => Array
         (
             [uid1] => 1
             [uid2] => 2
             [nickname] => 1->2
         )
 
-    [1] => dbm\Collection Object
+    [1] => Array
         (
             [uid1] => 1
             [uid2] => 3
             [nickname] => 1->3
         )
 
-    [2] => dbm\Collection Object
+    [2] => Array
         (
             [uid1] => 1
             [uid2] => 2
             [nickname] => 
         )
 
-    [3] => dbm\Collection Object
+    [3] => Array
         (
             [uid1] => 1
             [uid2] => 3

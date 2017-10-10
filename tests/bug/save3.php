@@ -3,7 +3,7 @@
 <?php
 include __DIR__.'/../before.php'; 
 
-$db = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root'); 
+$db = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test2','root','root'); 
 $db->debug=true;
 
 

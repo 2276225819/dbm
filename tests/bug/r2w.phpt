@@ -2,11 +2,12 @@
 关联测试2
 TODO:关联查询父级where默认删除条件重新查询
 --FILE--
-<?php
+<?php 
 include __DIR__.'/../before.php';
 
 
-$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root'); 
+
+$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test2','root','root'); 
 $conn->debug=true;
 foreach ($conn->sql(User::class)->and('Id=? or `Id`=3','1') as  $user) {
     echo "USER:".$user['name']."\n";

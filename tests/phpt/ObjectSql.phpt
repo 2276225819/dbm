@@ -3,14 +3,14 @@ test
 --FILE--
 <?php
 include __DIR__.'/../before.php';
-$db = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root'); 
+$db = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test2','root','root'); 
 $db->debug=true;
 
 echo "#SQL->find(...PKV)          #ROW/THROW\n";
 $a=$db->sql('zz_user','Id')->find(3)->get(); 
 $b=$db[User::class]->find(3)->get();
 $c=$db[User::class]->find(3333)->get();
-print_r([$a,$b,$c]);
+print_r([(array)$a,(array)$b, $c]);
 
 
 echo "#SQL->get(INDEX)            #ROW/NULL\n";
@@ -69,14 +69,14 @@ print_r([$q,$w,$e,$r]);
 <!--SELECT * FROM `zz_user`  WHERE (`Id`=?)  ;3333-->
 Array
 (
-    [0] => dbm\Collection Object
+    [0] => Array
         (
             [Id] => 3
             [name] => u3
             [type_id] => 2
         )
 
-    [1] => User Object
+    [1] => Array
         (
             [Id] => 3
             [name] => u3

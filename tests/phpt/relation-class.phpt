@@ -4,7 +4,7 @@ user->post
 <?php
 include __DIR__."/../before.php";
 
-$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root');
+$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test2','root','root');
 $conn->debug=true; 
 foreach ($conn->sql(PostType::class) as $pt) {
 	echo "POST_TYPE:".$pt['name']."\n" ; 

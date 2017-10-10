@@ -5,7 +5,7 @@
 <?php
 include __DIR__."/../before.php";
 
-$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root');
+$conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test2','root','root');
 $conn->debug=true;
 
 echo "#Connect->execute(STRING[,...args]); #PDOStatement\n";
@@ -13,8 +13,8 @@ print_r($conn->execute('select 1+2+3+?+?',[4,5])->fetchAll(\PDO::FETCH_ASSOC));
 
 
 echo "#Connect->sql(TABLE,...PKS)\n";
-$a=$conn->sql(User::class)->all();
-$b=$conn->sql('zz_user','Id')->all();
+$a=$conn->sql(User::class)->all(function($model){return (array)$model;});
+$b=$conn->sql('zz_user','Id')->all(function($model){return (array)$model;});
 print_r([$a,$b]);
  
 ?>
@@ -36,21 +36,21 @@ Array
 (
     [0] => Array
         (
-            [0] => User Object
+            [0] => Array
                 (
                     [Id] => 1
                     [name] => u1
                     [type_id] => 1
                 )
 
-            [1] => User Object
+            [1] => Array
                 (
                     [Id] => 2
                     [name] => u2
                     [type_id] => 1
                 )
 
-            [2] => User Object
+            [2] => Array
                 (
                     [Id] => 3
                     [name] => u3
@@ -61,21 +61,21 @@ Array
 
     [1] => Array
         (
-            [0] => dbm\Collection Object
+            [0] => Array
                 (
                     [Id] => 1
                     [name] => u1
                     [type_id] => 1
                 )
 
-            [1] => dbm\Collection Object
+            [1] => Array
                 (
                     [Id] => 2
                     [name] => u2
                     [type_id] => 1
                 )
 
-            [2] => dbm\Collection Object
+            [2] => Array
                 (
                     [Id] => 3
                     [name] => u3
