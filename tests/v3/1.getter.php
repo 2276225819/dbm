@@ -1,5 +1,5 @@
 --TEST--
-
+不能后向兼容
 --FILE--
 <?php  
 include __DIR__."/../before.php";
@@ -18,11 +18,14 @@ print_r([$a,$b]);
 $a=$conn[User::class][1]['name'];
 $b=$conn->sql('zz_user','Id')->get(1)->val('name');
 print_r([$a,$b]);  
- 
+
+//不能后向兼容
 //<!--SELECT * FROM `zz_post`  WHERE (`user_id` in (SELECT Id FROM `zz_user`   ))  ;-->
 $a=$conn[User::class][Post::class]['text']; 
 $b=$conn->sql('zz_user','Id')->ref('zz_post','Id',['user_id'=>'Id'])->val('text');  
 print_r([$a,$b]); 
+//不能后向兼容
+
 
 //<!--SELECT * FROM `zz_user`    LIMIT 1 OFFSET 1 ;-->
 //<!--SELECT * FROM `zz_post`  WHERE `user_id`=?  ;2-->

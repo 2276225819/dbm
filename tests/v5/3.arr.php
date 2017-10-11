@@ -7,45 +7,42 @@ include __DIR__."/../before.php";
 $db = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test','root','root');
 $db->debug=true;
  
-foreach($db->sql('zz_post_type','Id') as $pt){
-    echo "POST_TYPE: ".$pt->val('name')."\n"; 
-    foreach ($pt->ref('zz_post',['Id'],['post_type_id'=>'Id']) as $post) {
-        echo "  ID     : ".$post->val('Id')."\n";
-        echo "  Author : ".$post->ref('zz_user',['Id'],['Id'=>'user_id'])->val('name')."\n";
-        echo "  Type   : ".$post->ref('zz_post_type',['Id'],['Id'=>'post_type_id'])->val('name')."\n";
-        echo "\n";
-    } 
-}
+// foreach($db->sql('zz_post_type','Id') as $pt){
+//     echo "POST_TYPE: ".$pt->val('name')."\n"; 
+//     foreach ($pt->ref('zz_post',['Id'],['post_type_id'=>'Id']) as $post) {
+//         echo "  ID     : ".$post->val('Id')."\n";
+//         echo "  Author : ".$post->ref('zz_user',['Id'],['Id'=>'user_id'])->val('name')."\n";
+//         echo "  Type   : ".$post->ref('zz_post_type',['Id'],['Id'=>'post_type_id'])->val('name')."\n";
+//         echo "\n";
+//     } 
+// }
 
 
-exit;
+// exit;
 
 // new User([
 //     'name'=>'nUser',
 // ]);
 echo "------------------------------\n";
  
-$user = $db->sql(User::class)->insert([
+$user = $db->sql(User::class)->replace([
     'name'=>'oUser',
 ]);
 $a = $user->ref(UserType::class)->replace([
     'name'=>'oUserType' 
 ]);
-$b = $user->ref(Post::class)->insert([
+$b = $user->ref(Post::class)->replace([
     'text'=>'oPost1' ,
     PostType::class => new PostType([
         'id'=>'1',  'name'=>'a'
     ]),
 ]);
-$c = $user->ref(Post::class)->insert([
+$c = $user->ref(Post::class)->replace([
     'text'=>'oPost2' ,
     PostType::class => new PostType([
         'id'=>'1', 'name'=>'a'
     ]),
-]);   
-$user->save();
-$b->save();
-$c->save();
+]);    
 echo "------------------------------\n"; 
 $user = $db[User::class][] = new User([
     'name'=>'nUser',
@@ -64,9 +61,7 @@ $c    = $user[Post::class][] = new Post([
     PostType::class => new PostType([
         'id'=>'2',  'name'=>'b'
     ]),
-]);   
-//$db->save();
-//unset($user,$a,$b,$c); 
+]);     
 echo "------------------------------\n";
  
 $db[User::class][] = new User([
@@ -92,7 +87,7 @@ $db[User::class][] = new User([
 //unset($user,$a,$b,$c);
 echo "------------------------------\n";
 
-$db->sql(User::class)->insert([
+$db->sql(User::class)->replace([
     'name'=>'aaaa',
     UserType::class=> new UserType([
         'name'=>'bbb'

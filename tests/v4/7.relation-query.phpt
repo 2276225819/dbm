@@ -8,7 +8,7 @@ $conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test2','root','root');
 $conn->debug=true;
 
 //<!--SELECT * FROM `zz_post`  WHERE (`user_id` in (SELECT Id FROM `zz_user`  WHERE (`Id`=?)  )) AND (`post_type_id`=?)  ;1,1-->
-print_r($conn->sql('zz_user','Id')->find(1)
+print_r($conn->sql('zz_user','Id')->where(['Id'=>1])
         ->ref('zz_post','Id',['user_id'=>'Id'])->whereAnd('post_type_id=?',"1")
         ->all(function($m){return (array)$m;}));
 

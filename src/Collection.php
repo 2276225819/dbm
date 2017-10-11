@@ -16,7 +16,7 @@ class Collection extends \ArrayObject
             $model->tablepks = (array)$pks+(array)$table::$pks;
             $model->tablename = $table::$table;
         } else {
-            $model = new self;
+            $model = new static;
             $model->session = $session;
             $model->tablepks = (array)$pks;
             $model->tablename = $table;
@@ -26,17 +26,28 @@ class Collection extends \ArrayObject
  
     /////////// query:model{table} ///////////
     
+    /**
+     * @param [type] $table
+     * @param [type] $pks
+     * @return \dbm\Collection
+     */
     public function sql($table, $pks = null)
     {
         return static::new($table, $pks, $this->session);
     }
+    /**
+     * @param [type] $table
+     * @param array $pks
+     * @param array $ref
+     * @return \dbm\Collection
+     */
     public function ref($table, $pks = [], $ref = [])
     {
         $model = static::new($table, $pks, $this->session );
         if (empty($ref) && isset(static::$ref[$table])) {
             $ref = static::$ref[$table];
         }
-        if ($this->hasRow()) {
+        if ($this->isRow()) {
             $list = $this->getAllList(true);
             foreach ($ref as $k => $f) {
                 foreach ($list as $row) {
@@ -60,20 +71,38 @@ class Collection extends \ArrayObject
         }
         return $model;
     }
-    public function get($offset = null)
+    /**
+     * @param [type] $offset
+     * @return \dbm\Collection
+     */
+    public function get($offset = 0)
     {
-        $model = clone $this;
-        if (is_numeric($offset)) {
-            return $model->limit(1, $offset)->get();
+        $list = array_values( $this->getAllList() );
+        if (!empty($list[$offset])) {
+            $this->exchangeArray($list[$offset]);
+            return $this;
+        } else {
+            return null;
         }
-        if (!$this->hasRow()) {
-            $list = $model->getAllList();
-            if (!empty($list)) {
-                $model->exchangeArray(current($list));
-                return $model;
-            }
+    }
+    public function first($offset = 0)
+    {
+        return ( clone $this )->limit(1, $offset)->get();
+    }
+    /*
+     * @param [type] ...$pkv
+     * @return \dbm\Collection
+     */
+    public function find(...$pkv)
+    {
+        if (is_array($pkv[0] && empty($pkv[0][0]))) {
+            $arr = $pkv[0];
+        } else {
+            $arr = array_combine($this->tablepks, $pkv);
         }
-        return null;
+        $model = (clone $this);
+        $model->rArgs = $arr;
+        return $model->where($arr)->limit(1)->get();
     }
 
     /////////// curd:value ///////////
@@ -83,16 +112,15 @@ class Collection extends \ArrayObject
         throw new Exception("Error Processing Request", 1);
     }
     public function offsetExists($offset)
-    {            
-        if (!$this->hasRow()) {//兼容 
-            return $this[$offset]; 
+    {
+        if (!$this->isRow()) {//兼容
+            return $this[$offset];
         } else {
             return parent::offsetExists($offset);
         }
     }
     public function offsetGet($offset)
-    {
-        // 查分多条语句可以分别缓存，所以使用get(0)，不用limit(1,0)
+    { 
         if (is_numeric($offset)) {
             return $this->get($offset);
         } elseif (class_exists($offset) && isset($offset::$pks) && isset(static::$ref)) {
@@ -105,11 +133,18 @@ class Collection extends \ArrayObject
     }
     public function offsetSet($offset, $value)
     {
-        if (is_null($offset) && is_array($value)) {
-            return $this->insert($value);
+        if ( is_null($offset) ) {
+            return $this->replace($value);
+        } elseif (class_exists($offset) && isset($offset::$pks) && isset(static::$ref)) {
+            return $this->ref($offset, $offset::$pks, static::$ref[$offset])->replace($value);
         } else {
             return $this->val($offset, $value);
         }
+    }
+    
+    public function toArray()
+    {
+        return (array)$this;
     }
 
     public function val($key, $val = null)
@@ -119,48 +154,100 @@ class Collection extends \ArrayObject
         }
         if ($val===null) {
             // GET
-            if (!$this->hasRow()) {//兼容
+            if (!$this->isRow()) {//兼容
                 $object = $this->get();
                 if (isset($object)) {
                     return $object->val($key);
                 }
-            } 
-            if(parent::offsetExists($key)) {
+            }
+            if (parent::offsetExists($key)) {
                 return parent::offsetGet($key);
             }
         } else {
             // SET
-            $this->save([$key=>$val]); 
-            //兼容v4
-            // if (empty($this->data->$key) || $this->data->$key != $val) {
-            //     $this->dirty[$key] = $val;
-            // }
-            // if (isset($this->data)) {
-            //     $this->data->$key = $val;
-            // }
+            $this->save([$key=>$val]);
         }
     }
 
     public function replace($data)
     {
+        //组合插入
+        if($data instanceof self){
+            $model = $data;
+            $model->session  = $this->session;
+            $model->tablename= $this->tablename;
+            $model->tablepks = $this->tablepks; 
+            $data = (array)$data;
+            // foreach($model->getArrayCopy() as $key=>$row){
+            //     if($row instanceof self){ 
+            //         continue;
+            //     }
+            //     if(is_array($row)){
+            //         $array[$key] = $row;
+            //         continue;
+            //     }
+            //     $data[$key] = $row;
+            // } 
+        }else{
+            $model = $this->sql($this->tablename, $this->tablepks);
+        }
+
+        //关联修改
+        if (isset($this->parent) && $this->parent->isRow()) {
+            foreach ($this->refpks as $k => $v) {
+                if (!$this->parent->val($v)) {
+                    continue;
+                }
+                if (!\in_array($k, $this->tablepks)) {
+                    $data[$k] = $this->parent->val($v); 
+                }
+                if (!\in_array($v, $this->tablepks)) {
+                    $data[$k] = $this->parent->val($v); 
+                }
+            }
+        } 
         $param = [];
-        $str = $this->kvSQL($param, ',', $data);
-        $str = "REPLACE {$this->tablename} SET {$str}";
-        $param = array_merge($param, $this->wArgs);
-        if (!($query = $this->session->conn->execute($str, $param))) {
+        $str = $model->kvSQL($param, ',', $data);
+        $str = "REPLACE {$model->tablename} SET {$str}";
+        //$param = array_merge($param, $model->wArgs);
+        if (!($query = $model->session->conn->execute($str, $param))) {
             throw new \Exception("Error Processing Update", 1);
         }
         //AUTO INCREMENT
         $data = (object)$data;
-        $last_id = $this->session->conn->lastInsertId();
-        if (!empty($last_id) && isset($this->tablepks[0])) {
-            $data->{$this->tablepks[0]}=$last_id;
+        $last_id = $model->session->conn->lastInsertId();
+        if (!empty($last_id) && isset($model->tablepks[0])) {
+            $data->{$model->tablepks[0]}=$last_id;
         }
-        // ///////// unpure /////////
-        // $this->where($this->pkv($data));
-        // $this->cache[$s=(string)$sql]=[ $data ];
-        // ///////// unpure /////////
-        return $data;
+        
+        if (isset($model->tablepks[0]) && isset($data->{$model->tablepks[0]})) {
+            foreach ($model->tablepks as $v) {
+                $pkv[$v] = $data->$v;
+            }
+            if (isset($pkv)) {
+                $model->where($pkv);
+            }
+        }
+        //CACHED DATA
+        $model->exchangeArray($data);
+        $model->sqlhash = (string)$model;
+        $model->session->cache[$model->sqlhash] =  [ $data ];
+
+        // //组合插入
+        // if(isset($value)){
+        //     foreach($value as $key=>$row){
+        //         $model[$key]->replace($row);
+        //     }
+        // }
+        // if(isset($array)){
+        //     foreach($array as $key=>$row){
+        //         foreach ($row as $v) { 
+        //             $model[$key][] = $v;
+        //         }
+        //     }
+        // }
+
+        return $model;
     }
     
     ////////// curd:model{table sql row} //////////
@@ -172,7 +259,7 @@ class Collection extends \ArrayObject
         $sql2 = "";
         foreach ($list as &$arr) {
             //关联修改
-            if (isset($this->parent) && $this->parent->hasRow()) { 
+            if (isset($this->parent) && $this->parent->isRow()) {
                 foreach ($this->refpks as $k => $v) {
                     if (!$this->parent->val($v)) {
                         continue;
@@ -202,18 +289,18 @@ class Collection extends \ArrayObject
             $data->{$this->tablepks[0]}=$last_id;
         }
         //RELATION CONDITION
-        $model = $this->sql(static::class, $this->tablepks);
+        $model = $this->sql($this->tablename, $this->tablepks);
         if (isset($this->parent)) {
             foreach ($this->refpks as $k => $v) {
                 if (isset($data->$k)) {
                     $rev[$v] = $data->$k;
                 }
             }
-            if (isset($rev) && $this->parent->hasRow()) {
+            if (isset($rev) && $this->parent->isRow()) {
                 $this->parent->save($rev);
             }
         }
-        if (isset($data->{$this->tablepks[0]})) {
+        if (isset($this->tablepks[0]) && isset($data->{$this->tablepks[0]})) {
             foreach ($this->tablepks as $v) {
                 $pkv[$v] = $data->$v;
             }
@@ -231,18 +318,9 @@ class Collection extends \ArrayObject
     {
         if ($data===null) {
             return;//兼容旧版 不能报错
-            // if (empty($this->dirty)) {
-            //     throw new \Exception("Error Processing Request", 1);
-            // }
-            // if ( !$this->hasRow() ) {
-            //     throw new Exception("Error Processing Request", 1);
-            // }
-            // $data = (array)$this->dirty;
-            // $data += (array)$this->pkv($this->toArray());
-            // unset($this->dirty);
         }
-        //关联修改
-        if ($this->hasRow()) {
+        //自身修改
+        if ($this->isRow()) {
             foreach ($data as $key => $value) {
                 if ($this->val($key) == $data[$key]) {
                     unset($data[$key]);
@@ -256,6 +334,20 @@ class Collection extends \ArrayObject
             }
             foreach ($this->tablepks as $k => $v) {
                 $data[$v] = parent::offsetGet( $v );
+            }
+        }
+        //关联修改
+        if (isset($this->parent) && $this->parent->isRow()) {
+            foreach ($this->refpks as $k => $v) {
+                if (!$this->parent->val($v)) {
+                    continue;
+                }
+                if (!\in_array($k, $this->tablepks)) {
+                    $data[$k] = $this->parent->val($v); 
+                }
+                if (!\in_array($v, $this->tablepks)) {
+                    $data[$k] = $this->parent->val($v); 
+                }
             }
         }
 
@@ -285,7 +377,7 @@ class Collection extends \ArrayObject
             $data->{$this->tablepks[0]}=$last_id;
         }
         //RELATION CONDITION
-        $model = $this->sql(static::class, $this->tablepks);
+        $model = $this->sql($this->tablename, $this->tablepks);
         if (isset($this->parent)) {
             foreach ($this->refpks as $k => $v) {
                 if (isset($data->$k)) {
@@ -307,17 +399,21 @@ class Collection extends \ArrayObject
         //CACHED DATA
         $model->exchangeArray($data);
         $model->sqlhash = (string)$model;
-        $this->session->cache[$model->sqlhash] =  [ $data ];
+        $model->session->cache[$model->sqlhash] =  [ $data ];
         return $model;
     }
 
     public function update($data, ...$arr)
     {
+        $model = clone $this;
+        if (empty($model->wStr)) {
+            throw new \Exception("Require Where Column", 1);
+        }
         $param = [];
-        $data = $this->kvSQL($param, ',', $data, $arr);
-        $str = "UPDATE {$this->tablename} SET {$data} {$this->wStr}";
-        $param = array_merge($param, $this->wArgs);
-        if (!($query = $this->session->conn->execute($str, $param))) {
+        $data = $model->kvSQL($param, ',', $data, $arr);
+        $str = "UPDATE {$model->tablename} SET {$data} {$model->wStr}";
+        $param = array_merge($param, $model->wArgs);
+        if (!($query = $model->session->conn->execute($str, $param))) {
             throw new \Exception("Error Processing Update", 1);
         }
         return $query->rowCount();
@@ -325,12 +421,25 @@ class Collection extends \ArrayObject
 
     public function delete($where = false, ...$args)
     {
-        $sql = $this->where($where, ...$args) ;
-        if (empty($sql->wStr)) {
+        $model = clone $this;
+        if (!empty($model->lStr)) {
+            $model->get(); //Bugfix
+            $model->lStr='';
+        }
+         //自身修改
+        if ($model->isRow() && empty($model->wStr)) {
+            foreach ($model->tablepks as $k => $v) {
+                $data[$v] = $model->all($v);// parent::offsetGet( $v );
+            }
+            $model->whereAnd($data);
+        }
+        $model->whereAnd($where, ...$args);
+        
+        if (empty($model->wStr)) {
             throw new \Exception("Require Where Column", 1);
         }
-        $str="DELETE FROM {$sql->tablename} {$sql->wStr}";
-        if (!($query = $this->session->conn->execute($str, $sql->wArgs))) {
+        $str="DELETE FROM {$model->tablename} {$model->wStr}";
+        if (!($query = $model->session->conn->execute($str, $model->wArgs))) {
             throw new \Exception("Error Processing Delete", 1);
         }
         return $query->rowCount();
@@ -425,7 +534,10 @@ class Collection extends \ArrayObject
 
     public function getAllList($all = false)
     {
-        if (!$this->hasRow()) {
+        if (!$this->isRow()) {
+            if (isset($this->parent)) {
+                $this->lStr='';//bug: 1.sqlgetex.phpt
+            }
             $ssql = $this->bulidSelect();
             $args = $this->bulidArgs();
             $hash = Connect::bulidSql($ssql).';'.join($args, ',');
@@ -436,7 +548,7 @@ class Collection extends \ArrayObject
             }
             $this->sqlhash = $hash;
         }
-        if ($all or empty($this->parent) or !$this->parent->hasRow()) {
+        if ($all or empty($this->parent) or !$this->parent->isRow()) {
             return $this->session->cache[ $this->sqlhash ];
         } else {
             //$list = $this->parent->getAllList();
@@ -455,17 +567,18 @@ class Collection extends \ArrayObject
   
     public function __toString()
     {
-        if (!$this->hasRow()) {
+        if (!$this->isRow()) {
             return Connect::bulidSql($this->bulidSelect()).';'.join($this->bulidArgs(), ',');
         }
         return $this->sqlhash;
     }
 
+
     /**
      * ... LIMIT {$limit} OFFSET {$offset} ...
      * @param int $limit
      * @param int $offset
-     * @return Pql
+     * @return \dbm\Collection
      */
     public function limit($limit, $offset = 0)
     {
@@ -479,7 +592,7 @@ class Collection extends \ArrayObject
      * ... ORDER {$order} ...
      * @param string $order
      * @param array ...$arr
-     * @return Pql
+     * @return \dbm\Collection
      */
     public function order(string $order)
     {
@@ -489,7 +602,7 @@ class Collection extends \ArrayObject
     /**
      * SELECT {$fileds} FROM ...
      * @param string|array $fields
-     * @return Pql
+     * @return \dbm\Collection
      */
     public function field($fields)
     {
@@ -505,7 +618,7 @@ class Collection extends \ArrayObject
      * ... WHERE {$w} ...
      * @param string|array $w
      * @param array ...$arr
-     * @return Pql
+     * @return \dbm\Collection
      */
     public function where($w, ...$arr)
     {
@@ -515,6 +628,12 @@ class Collection extends \ArrayObject
         }
         return $this->uncache();
     }
+    /**
+     * ... AND {$w} ...
+     * @param string|array $w
+     * @param array ...$arr
+     * @return \dbm\Collection
+     */
     public function whereAnd($w, ...$arr)
     {
         if (!empty($w)) {
@@ -523,6 +642,12 @@ class Collection extends \ArrayObject
         }
         return $this->uncache();
     }
+    /**
+     * ... OR {$w} ...
+     * @param string|array $w
+     * @param array ...$arr
+     * @return \dbm\Collection
+     */
     public function whereOr($w, ...$arr)
     {
         if (!empty($w)) {
@@ -533,21 +658,10 @@ class Collection extends \ArrayObject
     }
 
 
-    public function find(...$pkv)
-    {
-        if (is_array($pkv[0] && empty($pkv[0][0]))) {
-            $arr = $pkv[0];
-        } else {
-            $arr = array_combine($this->tablepks, $pkv);
-        }
-        $this->rArgs=$arr;
-        return $this->where($arr)->uncache();
-    }
-    
     /**
      * ... FROM [TABLE] JOIN {$str} ...
      * @param string  $str
-     * @return Pql
+     * @return \dbm\Collection
      */
     public function join($str)
     {
@@ -557,7 +671,7 @@ class Collection extends \ArrayObject
     /**
      * ... GROUP BY {$str} ...
      * @param string  $str
-     * @return Pql
+     * @return \dbm\Collection
      */
     public function group($str)
     {
@@ -573,8 +687,8 @@ class Collection extends \ArrayObject
             foreach ($arr as $key => $v) {
                 if (strstr($key, ',')) {
                     $key="($key)";
-                } 
-                if (isset($v->session)) { 
+                }
+                if (isset($v->session)) {
                     $sql.="{$jtag}{$key} in (".$v->bulidSelect().")";
                     $param=array_merge($param, $v->bulidArgs());
                     continue;
@@ -623,7 +737,7 @@ class Collection extends \ArrayObject
         return $this;
     }
 
-    public function hasRow()
+    public function isRow()
     {
         return isset($this->sqlhash);
     }

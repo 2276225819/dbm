@@ -30,7 +30,6 @@ echo isset($a['frwe'])?'1':'0';
  
 ?>
 --EXPECTF--
-<!--SELECT * FROM `zz_user`    LIMIT 1;-->
-1<!--SELECT * FROM `zz_user`    LIMIT 1;-->
-10<!--SELECT * FROM `zz_user`    LIMIT 1 OFFSET 484878 ;-->
-010
+<!--SELECT * FROM `zz_user`   ;-->
+1<!--SELECT * FROM `zz_user`   ;-->
+10010

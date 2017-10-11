@@ -1,5 +1,5 @@
 --TEST-- 
-test
+不能后向兼容
 --FILE--
 <?php
 include __DIR__.'/../before.php';
@@ -9,7 +9,7 @@ $db->debug=true;
 echo "#SQL->find(...PKV)          #ROW/THROW\n";
 $a=$db->sql('zz_user','Id')->find(3)->get(); 
 $b=$db[User::class]->find(3)->get();
-$c=$db[User::class]->find(3333)->get();
+$c=$db[User::class]->find(3333)->get();//不能后向兼容
 print_r([(array)$a,(array)$b, $c]);
 
 

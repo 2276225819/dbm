@@ -1,5 +1,5 @@
 --TEST--
-
+不能后向兼容
 --FILE--
 <?php  
 include __DIR__."/../before.php";
@@ -22,10 +22,16 @@ $conn->sql(User::class)->load(2)->ref(Post::class)->insert([
 	'text'=>'insertUser' ,'post_type_id'=>1
 ]); 
 
+
+//不能后向兼容
 echo "#sql[Post::class][0][PostType::class]->insert\n";
 $conn->sql(Post::class)->get(0)->ref(PostType::class)->insert([
 	'name'=>'type new'
 ]);
+//不能后向兼容
+
+
+
 echo "---------------\n";
 $conn[Post::class]->map(function(Post $value){
 	echo json_encode($value); echo "\n"; 

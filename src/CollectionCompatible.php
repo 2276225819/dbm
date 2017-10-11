@@ -2,9 +2,9 @@
  
 trait CollectionCompatible
 {   
-    function __invoke(...$pkv)
+    function __invoke(...$pks)
     {
-        return $this->load(...$pkv);
+        return (clone $this)->find(...$pks);
     }
     
     /**
@@ -29,7 +29,7 @@ trait CollectionCompatible
     public function set($data)
     { 
         // //关联修改 
-        if( isset($this->parent) && $this->parent->hasRow() ){ 
+        if( isset($this->parent) && $this->parent->isRow() ){ 
             foreach($this->refpks as $k=>$v){
                 if( $this->parent->val($v) ){
                     $data[$k] = $this->parent->val($v); 
@@ -63,15 +63,16 @@ trait CollectionCompatible
     
     /////////// query:model{table} ///////////
 
-    public function load(...$pks)
+    public function load(...$pkv)
     {
-        $model = clone $this;
-        $list = $model->find(...$pks)->getAllList();
-        if (!empty($list)) {
-            $model->exchangeArray(current($list));
-            return $model;
+        if (is_array($pkv[0] && empty($pkv[0][0]))) {
+            $arr = $pkv[0];
+        } else {
+            $arr = array_combine($this->tablepks, $pkv);
         }
-        return null;
+        $model = (clone $this);
+        $model->rArgs = $arr;
+        return $model->where($arr)->get();
     }
 
     public function map($fn){
@@ -111,8 +112,5 @@ trait CollectionCompatible
         return $this->uncache();
     }
 
-    public function toArray(){
-        return (array)$this;
-    }
 }
 

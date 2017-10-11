@@ -1,5 +1,5 @@
 --TEST--
-
+不能后向兼容
 --FILE--
 <?php  
 include __DIR__."/../before.php";

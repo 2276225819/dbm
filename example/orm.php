@@ -14,7 +14,6 @@ include __DIR__."/../vendor/autoload.php";
 #Model->whereOr(STRING)                          //self{sql,or STRING...}
 #Model->order(STRING)                            //self{sql,order by STRING...}
 #Model->field(FIELD)                             //self{sql,select FIELD...}
-#Model->find([PK])                               //self{sql,where PK=...} 
 #Model->limit(OFFSET)                            //self{sql,limit OFFSET... } 
 
 #Model->getIterator()  iterator_to_array(#Model) //self{sql,row} 
@@ -30,29 +29,30 @@ include __DIR__."/../vendor/autoload.php";
 #Model->max()                                    //int   parent.where支持关联查询??
 #Model->mix()                                    //int   parent.where支持关联查询??
 
+#Model->toArray()                (array)#Model   //row                    获取指向行数据(未查询指向空数组)
+#Model->get(OFFSET)              #Model[OFFSET]  //self {sql,row} or NULL 查询全部并指向首行(多行集合)
 
-#Model->sql(TABLE,[PK])          #Model[TABLE]   //Model{sql,pk}             查询新集合
-#Model->ref(TABLE,[PK],[PK=>FK]) #Model[REF]     //Model{sql,ref,pk}         查询新集合
-#Model->ref(TABLE,[PK],[FK=>PK]) #Model[REF]     //Model{sql,ref,pk}         查询新集合
-#Model->get(OFFSET)              #Model[OFFSET]  //Model{sql,ref,pk} or NULL 查询新集合(第一列) 
- 
-#Model->insert(ARRAY,...)        #Model[]=...    //self Model self:          插入到集合
-#Model->insert(ARRAY,...)        #Model[]=...    //self Model hasmany:       插入到集合?parent.pk 
-#Model->insert(ARRAY,...)        #Model[]=...    //self Model hasone:        插入到集合?并执行设置parent.fk  
-#Model->save(ARRAY)                              //self Model self:first     插入到集合 失败就 修改
-#Model->save(ARRAY)                              //self Model hasmany:first  插入到集合 失败就 修改parent.pk 
-#Model->save(ARRAY)                              //self Model hasone:first   插入到集合 失败就 修改并执行设置parent.fk
-#Model->update(ARRAY)                            //self RowCount             根据当前model条件修改集合(可能空)
-#Model->delete(TRUE)                             //self RowCount             根据当前model条件删除集合(可能空)
- 
-#Model->val(KEY)                 #Model[KEY]     //VALUE or PK or NULL       读取首行单列(第一列)
-#Model->val(KEY,VALUE)           #Model[KEY]=... //VOID                      修改首行单列
-#Model->val(REF,Model)           #Model[KEY]=... //VOID                      修改首行单列
-#Model->toArray()                (array)#Model   //row                       读取首行
-#Model->replace(ARRAY)           #Model[REF]=... //self Model self:first     覆盖首行(删除首行并插入) 
-#Model->replace(ARRAY)           #Model[REF]=... //self Model hasmany:first  覆盖首行(删除首行并插入)parent.pk 
-#Model->replace(ARRAY)           #Model[REF]=... //self Model hasone:first   覆盖首行(删除首行并插入)并执行设置parent.fk
+#Model->sql(TABLE,[PK])          #Model[TABLE]   //Model{sql,pk}          创建新集合(未查询数据)
+#Model->ref(TABLE,[PK],[PK=>FK]) #Model[REF]     //Model{sql,ref,pk}      创建新集合(未查询数据)
+#Model->ref(TABLE,[PK],[FK=>PK]) #Model[REF]     //Model{sql,ref,pk}      创建新集合(未查询数据)
+#Model->first(OFFSET)                            //Model{sql,row} or NULL 查询首行(单行集合) 
+#Model->find(...PK)                              //Model{sql,row} or NULL 查询主键(单行集合)
 
+#Model->insert(ARRAY,...)                        //Model self:            插入到集合
+#Model->insert(ARRAY,...)                        //Model hasmany:         插入到集合?parent.pk 
+#Model->insert(ARRAY,...)                        //Model hasone:          插入到集合?并执行设置parent.fk  
+#Model->update(ARRAY)                            //Model RowCount         根据当前model条件修改集合(可能空)
+#Model->delete(TRUE)                             //Model RowCount         根据当前model条件删除集合(可能空)
+#Model->save(ARRAY)                              //Model void             插入到集合 失败就 修改
+#Model->save(ARRAY)                              //Model void             插入到集合 失败就 修改parent.pk 
+#Model->save(ARRAY)                              //Model void             插入到集合 失败就 修改并执行设置parent.fk
+ 
+#Model->val(KEY)                 #Model[KEY]     //VALUE or PK or NULL    读取首行字段值 
+#Model->val(KEY,VALUE)           #Model[KEY]=... //void                   修改首行字段值
+#Model->val(REF,Model)           #Model[KEY]=... //void                   修改首行字段值
+#Model->replace(ARRAY)           #Model[]=...    //Model self:first       覆盖首行(删除首行并插入) 
+#Model->replace(ARRAY)           #Model[]=...    //Model hasmany:first    覆盖首行(删除首行并插入)parent.pk 
+#Model->replace(ARRAY)           #Model[]=...    //Model hasone:first     覆盖首行(删除首行并插入)并执行设置parent.fk 
 
 //////////////////// v4 /////////////////////////
 
@@ -64,10 +64,10 @@ include __DIR__."/../vendor/autoload.php";
    
 #Model->get(INDEX)                    //Model{count=1}
 #Model[INDEX]                         //Model{count=1}
-#Model->load(...PK)                   //Model(count=1}
+//<s>#Model->load(...PK)                   //Model(count=1}</s>
 #Model(...Pk)                         //Model(count=1)
    
-#Model->find(...PK)                   //self(where Pk and Pk ...)
+//<s>#Model->find(...PK)                   //self(where Pk and Pk ...)</s>
 #Model->limit(LIMIT,OFFSET)           //self{limit LIMIT offset OFFSET...}
 #Model->where(STRING)                 //self{where STRING...}
 #Model->whereAnd(STRING)              //self{and STRING...}
@@ -119,14 +119,14 @@ include __DIR__."/../vendor/autoload.php";
 #SQL->ref(TABLE,PKS,REF)    #SQL 
 
 #SQL(...PKV)                #ROW/NULL
-#SQL->load(...PKV)          #ROW/Throw
+//<s>#SQL->load(...PKV)          #ROW/Throw</s>
 
 #SQL->__call(AggregateFunction) #mixed
 #SQL->count(FIELD)              #mixed
 #SQL->sum(FIELD)                #mixed
 #SQL->.....
 
-#SQL->find(...PKV)          	  #SQL
+//<s>#SQL->find(...PKV)          	  #SQL</s>
 #SQL->where(STRING[, ..._args]);  #SQL
 #SQL->where(ARRAY);               #SQL
 #SQL->and(STRING[, ..._args]);    #SQL

@@ -133,6 +133,17 @@ class Connect implements \ArrayAccess
     // {
     //     return v5\Collection::byName(new Session($this),$model, $pks   );
     // }
+
+    /**
+     * ## dbm v5
+     * \dbm\Connnect->sql(string $model)
+     *
+     * \dbm\Connnect->sql(string $model ,array $pks )
+     *
+     * @param string $model
+     * @param array $pks
+     * @return \dbm\Collection
+     */
     public function sql($model, $pks = null)
     {
         return Collection::new($model, $pks, new Session($this) );
