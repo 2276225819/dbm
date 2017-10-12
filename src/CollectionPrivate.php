@@ -2,7 +2,7 @@
 
 trait CollectionPrivate
 {
-    static function new($table, $pks, $session)
+    public static function new($table, $pks, $session)
     {
         if (class_exists($table) && isset($table::$table)) {
             $model = new $table;
@@ -50,7 +50,7 @@ trait CollectionPrivate
         } elseif (class_exists($offset) && isset($offset::$pks) && isset(static::$ref)) {
             return $this->ref($offset, $offset::$pks, static::$ref[$offset])->replace($value);
         } else {
-            return $this->val($offset, $value);
+            return $this->save([$offset=>$value]); 
         }
     }
     
@@ -75,7 +75,7 @@ trait CollectionPrivate
             }
             $ssql = $this->bulidSelect();
             $args = $this->bulidArgs();
-            $hash = Connect::bulidSql($ssql).';'.join($args, ',');
+            $hash = ($ssql).';'.join($args, ',');
             if (!isset($this->session->cache[$hash])) {
                 $fetch = $this->session->conn->execute($ssql, $args);
                 $fetch->setFetchMode(\PDO::FETCH_OBJ);
@@ -99,20 +99,109 @@ trait CollectionPrivate
             return $arr??[];
         }
     }
-  
-
+   
     public function __toString()
     {
-        if (!$this->isRow()) {
-            return Connect::bulidSql($this->bulidSelect()).';'.join($this->bulidArgs(), ',');
-        }
-        return $this->sqlhash;
+        return Connect::bulidSql($this->bulidSelect()).';'.join($this->bulidArgs(), ','); 
     }
 
-  
+
+
+    private function relaval($pdata){ 
+        foreach ($this->refpks as $k => $v) { 
+            if(isset($pdata[$v])){ 
+                if (!\in_array($k, $this->tablepks)) {
+                    $arr[$k] = $pdata[$v];
+                    continue;
+                }
+                if (!\in_array($v, $this->tablepks)) {
+                    $arr[$k] = $pdata[$v];
+                }
+            }
+        } 
+        return $arr??[];
+    } 
+    private function beginModel($data=null){
+        //组合插入
+        if ($data instanceof self) {
+            $model = $data;
+            $model->session  = $this->session;
+            $model->tablename= $this->tablename;
+            $model->tablepks = $this->tablepks;
+            $data = (array)$data;
+            // foreach($model->getArrayCopy() as $key=>$row){
+            //     if($row instanceof self){
+            //         continue;
+            //     }
+            //     if(is_array($row)){
+            //         $array[$key] = $row;
+            //         continue;
+            //     }
+            //     $data[$key] = $row;
+            // }
+        } else {
+            $model = $this->sql($this->tablename, $this->tablepks);
+        } 
+        return [$model,$data];
+    }
+    private function endModel($model, $row ,$insert = false){
+        //AUTO INCREMENT 
+        $last_id = $model->session->conn->lastInsertId();
+        if (!empty($last_id) && isset($model->tablepks[0])) {
+            $row->{$model->tablepks[0]}=$last_id;
+        } 
+        if (isset($model->tablepks[0]) && isset($row->{$model->tablepks[0]})) {
+            foreach ($model->tablepks as $v) {
+                $pkv[$v] = $row->$v;
+            }
+            if (isset($pkv)) {
+                $model->where($pkv);
+            }
+        } 
+        //RELATION CONDITION
+        if ($insert && isset($this->parent)) {
+            foreach ($this->refpks as $k => $v) {
+                if (isset($row->$k)) {
+                    $data[$v] = $row->$k;
+                }
+            }
+            if (isset($data) && $this->parent->isRow()) {
+                foreach ($data as $key => $value) {
+                    if ($this->parent->val($key) == $data[$key]) {
+                        unset($data[$key]);
+                    }
+                } 
+                $this->parent->save($data); 
+            }
+        } 
+        //CACHED DATA
+        $model->exchangeArray($row);
+        $model->sqlhash = ($model->bulidSelect()).';'.join($model->bulidArgs(), ',');
+        $model->session->cache[$model->sqlhash] = [ $row ];
+        
+
+        // //组合插入
+        // if(isset($value)){
+        //     foreach($value as $key=>$row){
+        //         $model[$key]->replace($row);
+        //     }
+        // }
+        // if(isset($array)){
+        //     foreach($array as $key=>$row){
+        //         foreach ($row as $v) {
+        //             $model[$key][] = $v;
+        //         }
+        //     }
+        // }
+        return $model;
+    }
+    
+    // private function execute($sql,$param){ 
+    //     return $this->session->conn->execute($sql, $param);
+    // }
 
         
-    public function kvSQL(&$param, $jtag = ' AND ', $arr, $attr = null, $sql = '')
+    private function kvSQL(&$param, $jtag = ' AND ', $arr, $attr = null, $sql = '')
     {
         if (is_array($arr)) {
             foreach ($arr as $key => $v) {
@@ -146,15 +235,15 @@ trait CollectionPrivate
         }
         return $sql;
     }
-    public function bulidArgs()
+    private function bulidArgs()
     {
         return $this->wArgs;
     }
-    public function bulidSelect()
+    private function bulidSelect()
     {
         return "SELECT {$this->fStr} FROM {$this->tablename}{$this->jStr} {$this->wStr}{$this->gStr} {$this->oStr} {$this->lStr}";
     }
-    public function pkv($data)
+    private function pkv($data)
     {
         foreach ($this->tablepks as $k) {
             $arr[$k]=$data[$k];
@@ -162,13 +251,13 @@ trait CollectionPrivate
         return $arr;
     }
     
-    public function uncache()
+    private function uncache()
     {
         unset($this->sqlhash);// = null;
         return $this;
     }
 
-    public function isRow()
+    private function isRow()
     {
         return isset($this->sqlhash);
     }

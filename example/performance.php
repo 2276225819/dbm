@@ -3,7 +3,7 @@ include __DIR__."/../vendor/autoload.php";
  
  
 $row=10000;
-$count=100;
+$count=1;
 echo "#performance test :select * from [table]  $row/row * $count/times\n";
 /////////////////////////////////////////////////
 $pdo = new PDO("mysql:dbname=test2", 'root', 'root');

@@ -35,15 +35,19 @@ trait CollectionCompatible
                     $data[$k] = $this->parent->val($v); 
                 }
             }
-        } 
-        //$data += $this->sql->rArgs;
+        }  
         foreach ($this->tablepks as $key) {
             if (isset($data[$key])) {
                 $where[$key]=$data[$key];
             }
         }
         if (isset($where)) {
-            if ($row = $this->where($where)->get()) { 
+            if ($row = $this->where($where)->get()) {  
+                foreach ($data as $key => $value) {
+                    if ($row->val($key) == $data[$key]) {
+                        unset($data[$key]);
+                    }
+                } 
                 return $row->save($data);  
             }
         }

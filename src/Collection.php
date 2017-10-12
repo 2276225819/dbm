@@ -7,7 +7,7 @@ class Collection extends \ArrayObject
 {
     use CollectionPrivate,CollectionCompatible;
     public $session;#{cache:{sqlhash:[]}}
-    public $tablename ,$tablepks ;//,$ref=[]; ,//$dirty=[]; //*ArrayObject*storage
+    public $tablename ,$tablepks ;//,$refpks=[];//$parent={};//*ArrayObject*storage
 
  
     /////////// query:model{table} ///////////
@@ -91,313 +91,6 @@ class Collection extends \ArrayObject
         return $model->where($arr)->limit(1)->get();
     }
 
-    /////////// curd:value ///////////
-     
-
-    
-    public function toArray()
-    {
-        return (array)$this;
-    }
-
-    public function val($key, $val = null)
-    {
-        if ($key===null) {
-            $key = current($this->tablepks);
-        }
-        if ($val===null) {
-            // GET
-            if (!$this->isRow()) {//兼容
-                $object = $this->get();
-                if (isset($object)) {
-                    return $object->val($key);
-                }
-            }
-            if (parent::offsetExists($key)) {
-                return parent::offsetGet($key);
-            }
-        } else {
-            // SET
-            $this->save([$key=>$val]);
-        }
-    }
-
-    public function replace($data)
-    {
-        //组合插入
-        if($data instanceof self){
-            $model = $data;
-            $model->session  = $this->session;
-            $model->tablename= $this->tablename;
-            $model->tablepks = $this->tablepks; 
-            $data = (array)$data;
-            // foreach($model->getArrayCopy() as $key=>$row){
-            //     if($row instanceof self){ 
-            //         continue;
-            //     }
-            //     if(is_array($row)){
-            //         $array[$key] = $row;
-            //         continue;
-            //     }
-            //     $data[$key] = $row;
-            // } 
-        }else{
-            $model = $this->sql($this->tablename, $this->tablepks);
-        }
-
-        //关联修改
-        if (isset($this->parent) && $this->parent->isRow()) {
-            foreach ($this->refpks as $k => $v) {
-                if (!$this->parent->val($v)) {
-                    continue;
-                }
-                if (!\in_array($k, $this->tablepks)) {
-                    $data[$k] = $this->parent->val($v); 
-                }
-                if (!\in_array($v, $this->tablepks)) {
-                    $data[$k] = $this->parent->val($v); 
-                }
-            }
-        } 
-        $param = [];
-        $str = $model->kvSQL($param, ',', $data);
-        $str = "REPLACE {$model->tablename} SET {$str}";
-        //$param = array_merge($param, $model->wArgs);
-        if (!($query = $model->session->conn->execute($str, $param))) {
-            throw new \Exception("Error Processing Update", 1);
-        }
-        //AUTO INCREMENT
-        $data = (object)$data;
-        $last_id = $model->session->conn->lastInsertId();
-        if (!empty($last_id) && isset($model->tablepks[0])) {
-            $data->{$model->tablepks[0]}=$last_id;
-        }
-        
-        if (isset($model->tablepks[0]) && isset($data->{$model->tablepks[0]})) {
-            foreach ($model->tablepks as $v) {
-                $pkv[$v] = $data->$v;
-            }
-            if (isset($pkv)) {
-                $model->where($pkv);
-            }
-        }
-        //CACHED DATA
-        $model->exchangeArray($data);
-        $model->sqlhash = (string)$model;
-        $model->session->cache[$model->sqlhash] =  [ $data ];
-
-        // //组合插入
-        // if(isset($value)){
-        //     foreach($value as $key=>$row){
-        //         $model[$key]->replace($row);
-        //     }
-        // }
-        // if(isset($array)){
-        //     foreach($array as $key=>$row){
-        //         foreach ($row as $v) { 
-        //             $model[$key][] = $v;
-        //         }
-        //     }
-        // }
-
-        return $model;
-    }
-    
-    ////////// curd:model{table sql row} //////////
-
-    public function insert(...$list)
-    {
-        $param=[];
-        $sql1 = "";
-        $sql2 = "";
-        foreach ($list as &$arr) {
-            //关联修改
-            if (isset($this->parent) && $this->parent->isRow()) {
-                foreach ($this->refpks as $k => $v) {
-                    if (!$this->parent->val($v)) {
-                        continue;
-                    }
-                    if (\in_array($k, $this->tablepks)) {
-                        continue;
-                    }
-                    $arr[$k] = $this->parent->val($v);
-                }
-            }
-            $sql2.=",(".substr(str_repeat(",?", count($arr)), 1).")";
-            foreach ($arr as $value) {
-                $param[]=$value;
-            }
-        }
-        foreach ($list[0] as $key => $value) {
-            $sql1.=",`{$key}`";
-        }
-        $str="INSERT INTO {$this->tablename} (".substr($sql1, 1)." )VALUES".substr($sql2, 1);
-        if (!($query = $this->session->conn->execute($str, $param))) {
-            throw new \Exception("Error Processing Insert Mulit", 1);
-        }
-        //AUTO INCREMENT
-        $data = (object)last($list);
-        $last_id = $this->session->conn->lastInsertId();
-        if (!empty($last_id) && isset($this->tablepks[0])) {
-            $data->{$this->tablepks[0]}=$last_id;
-        }
-        //RELATION CONDITION
-        $model = $this->sql($this->tablename, $this->tablepks);
-        if (isset($this->parent)) {
-            foreach ($this->refpks as $k => $v) {
-                if (isset($data->$k)) {
-                    $rev[$v] = $data->$k;
-                }
-            }
-            if (isset($rev) && $this->parent->isRow()) {
-                $this->parent->save($rev);
-            }
-        }
-        if (isset($this->tablepks[0]) && isset($data->{$this->tablepks[0]})) {
-            foreach ($this->tablepks as $v) {
-                $pkv[$v] = $data->$v;
-            }
-            if (isset($pkv)) {
-                $model->where($pkv);
-            }
-        }
-        //CACHED DATA
-        $model->exchangeArray($data);
-        $model->sqlhash = (string)$model;
-        $model->session->cache[$model->sqlhash] = [ $data ];
-        return $model;
-    }
-    public function save($data = null)
-    {
-        if ($data===null) {
-            return;//兼容旧版 不能报错
-        }
-        //自身修改
-        if ($this->isRow()) {
-            foreach ($data as $key => $value) {
-                if ($this->val($key) == $data[$key]) {
-                    unset($data[$key]);
-                }
-            }
-            if (empty($data)) {
-                return $this;
-            }
-            foreach ($data as $key => $value) {
-                parent::offsetSet($key, $value );//bugfix
-            }
-            foreach ($this->tablepks as $k => $v) {
-                $data[$v] = parent::offsetGet( $v );
-            }
-        }
-        //关联修改
-        if (isset($this->parent) && $this->parent->isRow()) {
-            foreach ($this->refpks as $k => $v) {
-                if (!$this->parent->val($v)) {
-                    continue;
-                }
-                if (!\in_array($k, $this->tablepks)) {
-                    $data[$k] = $this->parent->val($v); 
-                }
-                if (!\in_array($v, $this->tablepks)) {
-                    $data[$k] = $this->parent->val($v); 
-                }
-            }
-        }
-
-        $param = [];
-        $sql1 = '';
-        $sql2 = ",(".substr(str_repeat(",?", count($data)), 1).")";
-        foreach ($data as $key => $value) {
-            $sql1.=",`{$key}`";
-            $param[]=$value;
-        }
-        $data2 = $data;
-        $data = (object)$data2;
-        foreach ($this->tablepks as $value) {
-            unset($data2[$value]);
-        }
-        $str="INSERT INTO {$this->tablename} (".substr($sql1, 1)." )VALUES".substr($sql2, 1);
-        if ($sql3 = $this->kvSQL($param, ',', $data2)) {
-            $str.=" ON DUPLICATE KEY UPDATE ". $sql3 ;
-        }
-        if (!($query = $this->session->conn->execute($str, $param))) {
-            throw new \Exception("Error Processing Insert" );
-        }
-        //AUTO INCREMENT
-        $last_id = $this->session->conn->lastInsertId();
-        if (!empty($last_id) && isset($this->tablepks[0])) {
-        //if (empty($data->{$this->tablepks[0]}) && !empty($last_id)) {/????
-            $data->{$this->tablepks[0]}=$last_id;
-        }
-        //RELATION CONDITION
-        $model = $this->sql($this->tablename, $this->tablepks);
-        if (isset($this->parent)) {
-            foreach ($this->refpks as $k => $v) {
-                if (isset($data->$k)) {
-                    $rev[$v] = $data->$k;
-                }
-            }
-            if (isset($rev) && isset($this->parent->data)) {
-                $this->parent->save($rev);
-            }
-        }
-        if (isset($data->{$this->tablepks[0]})) {
-            foreach ($this->tablepks as $v) {
-                $pkv[$v] = $data->$v;
-            }
-            if (isset($pkv)) {
-                $model->where($pkv);
-            }
-        }
-        //CACHED DATA
-        $model->exchangeArray($data);
-        $model->sqlhash = (string)$model;
-        $model->session->cache[$model->sqlhash] =  [ $data ];
-        return $model;
-    }
-
-    public function update($data, ...$arr)
-    {
-        $model = clone $this;
-        if (empty($model->wStr)) {
-            throw new \Exception("Require Where Column", 1);
-        }
-        $param = [];
-        $data = $model->kvSQL($param, ',', $data, $arr);
-        $str = "UPDATE {$model->tablename} SET {$data} {$model->wStr}";
-        $param = array_merge($param, $model->wArgs);
-        if (!($query = $model->session->conn->execute($str, $param))) {
-            throw new \Exception("Error Processing Update", 1);
-        }
-        return $query->rowCount();
-    }
-
-    public function delete($where = false, ...$args)
-    {
-        $model = clone $this;
-        if (!empty($model->lStr)) {
-            $model->get(); //Bugfix
-            $model->lStr='';
-        }
-         //自身修改
-        if ($model->isRow() && empty($model->wStr)) {
-            foreach ($model->tablepks as $k => $v) {
-                $data[$v] = $model->all($v);// parent::offsetGet( $v );
-            }
-            $model->whereAnd($data);
-        }
-        $model->whereAnd($where, ...$args);
-        
-        if (empty($model->wStr)) {
-            throw new \Exception("Require Where Column", 1);
-        }
-        $str="DELETE FROM {$model->tablename} {$model->wStr}";
-        if (!($query = $model->session->conn->execute($str, $model->wArgs))) {
-            throw new \Exception("Error Processing Delete", 1);
-        }
-        return $query->rowCount();
-    }
-
     //////////////// all:mixed ///////////////////
     
     public function getIterator()
@@ -415,13 +108,13 @@ class Collection extends \ArrayObject
     {
         $arr=[];
         if (empty($field)) {
-            foreach ((clone $this) as $row) {
+            foreach ($this as $row) {
                 $arr[]=clone $row;
             }
             return $arr;
         }
         if (\is_callable($field)) {
-            foreach ((clone $this) as $row) {
+            foreach ($this as $row) {
                 $arr[] = \call_user_func($field, $row);
             }
             return $arr;
@@ -439,13 +132,13 @@ class Collection extends \ArrayObject
     {
         $arr=[];
         if (empty($field)) {
-            foreach ((clone $this) as $row) {
+            foreach ($this as $row) {
                 $arr[$row->val($key)] = clone $row;
             }
             return $arr;
         }
         if (\is_callable($field)) {
-            foreach ((clone $this) as $row) {
+            foreach ($this as $row) {
                 $arr[$row->val($key)] = \call_user_func($field, $row);
             }
             return $arr;
@@ -477,8 +170,6 @@ class Collection extends \ArrayObject
     {
         return (clone $this)->field("mix({$args}) as __VALUE__")->val('__VALUE__');
     }
-
-
  
     /////////// filter:self{table sql} ////////////
       
@@ -591,6 +282,178 @@ class Collection extends \ArrayObject
         $this->gStr=" GROUP BY $str";
         return $this->uncache();
     }
+    /////////// curd:value ///////////
+     
 
     
+    public function toArray()
+    {
+        return (array)$this;
+    }
+
+    public function val($key, $val = null)
+    {
+        if ($key===null) {
+            $key = current($this->tablepks);
+        }
+        if ($val===null) {
+            // GET
+            if (!$this->isRow()) {//兼容:默认读第一行
+                $object = $this->get();
+                if (isset($object)) {
+                    return $object->val($key);
+                }
+            }
+            if (parent::offsetExists($key)) {
+                return parent::offsetGet($key);
+            }
+        } else {
+            // SET
+            $this->save([$key=>$val]);
+        }
+    }
+
+    public function replace($data = null)
+    {
+        if (empty($data)) {
+            return $this;//兼容:旧版不报错
+        }
+        list($model,$data) = $this->beginModel($data);
+
+        //关联修改
+        if (isset($this->parent) && $this->parent->isRow()) {
+            $data = $data + $this->relaval((array)$this->parent);
+        }
+        $param = [];
+        $str = $model->kvSQL($param, ',', $data);
+        $str = "REPLACE {$model->tablename} SET {$str}";
+        //$param = array_merge($param, $model->wArgs);
+        if (!($query = $model->session->conn->execute($str, $param))) {
+            throw new \Exception("Error Processing Update", 1);
+        }
+        return $this->endModel($model, (object)$data);
+    }
+ 
+    ////////// curd:model{table sql row} //////////
+
+    public function insert(...$list)
+    {
+        if (empty($list[0])) {
+            return $this;//兼容:旧版不报错
+        }
+        list($model,$data) = $this->beginModel();
+
+        //关联修改
+        if (isset($this->parent) && $this->parent->isRow()) {
+            $parent_data = (array)$this->parent;
+            foreach ($this->refpks as $k => $v) {
+                if (in_array($k, $this->tablepks)) {
+                    unset($parent_data[$v]);//忽略外键插入
+                }
+            }
+        }
+        $param = [];
+        $sql1 = "";
+        $sql2 = "";
+        foreach ($list as &$arr) {
+            if (isset($parent_data)) {
+                $arr = $arr + $this->relaval($parent_data);  //关联修改
+            }
+            $sql2.=",(".substr(str_repeat(",?", count($arr)), 1).")";
+            foreach ($arr as $value) {
+                $param[]=$value;
+            }
+        }
+        foreach ($list[0] as $key => $value) {
+            $sql1.=",`{$key}`";
+        }
+        $str="INSERT INTO {$this->tablename} (".substr($sql1, 1)." )VALUES".substr($sql2, 1);
+        if (!($query = $this->session->conn->execute($str, $param))) {
+            throw new \Exception("Error Processing Insert Mulit", 1);
+        }
+        return $this->endModel($model, (object)last($list), true );
+    }
+    public function save($data = null)
+    {
+        if (empty($data)) {
+            return $this;//兼容:旧版不报错
+        }
+        list($model,$data) = $this->beginModel($data);
+
+        //兼容:自身修改(集合指针行)
+        if ($this->isRow()) {
+            foreach ($data as $key => $value) {
+                parent::offsetSet($key, $value );//bugfix
+            }
+            foreach ($this->tablepks as $k => $v) {
+                $data[$v] = parent::offsetGet( $v );
+            }
+        }
+        //关联修改
+        if (isset($this->parent) && $this->parent->isRow()) {
+            $data = $data + $this->relaval((array)$this->parent);
+        }
+
+        $param = [];
+        $sql1 = '';
+        $sql2 = ",(".substr(str_repeat(",?", count($data)), 1).")";
+        foreach ($data as $key => $value) {
+            $sql1.=",`{$key}`";
+            $param[]=$value;
+        }
+        $data2 = $data;
+        foreach ($this->tablepks as $value) {
+            unset($data2[$value]);
+        }
+        $str="INSERT INTO {$this->tablename} (".substr($sql1, 1)." )VALUES".substr($sql2, 1);
+        if ($sql3 = $this->kvSQL($param, ',', $data2)) {
+            $str.=" ON DUPLICATE KEY UPDATE ". $sql3 ;
+        }
+        if (!($query = $this->session->conn->execute($str, $param))) {
+            throw new \Exception("Error Processing Insert" );
+        }
+        return $this->endModel($model, (object)$data);
+    }
+
+    public function update($data, ...$arr)
+    {
+        $model = clone $this;
+        if (empty($model->wStr)) {
+            throw new \Exception("Require Where Column", 1);
+        }
+        $param = [];
+        $data = $model->kvSQL($param, ',', $data, $arr);
+        $str = "UPDATE {$model->tablename} SET {$data} {$model->wStr}";
+        $param = array_merge($param, $model->wArgs);
+        if (!($query = $model->session->conn->execute($str, $param))) {
+            throw new \Exception("Error Processing Update", 1);
+        }
+        return $query->rowCount();
+    }
+
+    public function delete($where = false, ...$args)
+    {
+        $model = clone $this;
+        if (!empty($model->lStr)) {
+            $model->get(); //Bugfix
+            $model->lStr='';
+        }
+         //自身修改
+        if ($model->isRow() && empty($model->wStr)) {
+            foreach ($model->tablepks as $k => $v) {
+                $data[$v] = $model->all($v);// parent::offsetGet( $v );
+            }
+            $model->whereAnd($data);
+        }
+        $model->whereAnd($where, ...$args);
+        
+        if (empty($model->wStr)) {
+            throw new \Exception("Require Where Column", 1);
+        }
+        $str="DELETE FROM {$model->tablename} {$model->wStr}";
+        if (!($query = $model->session->conn->execute($str, $model->wArgs))) {
+            throw new \Exception("Error Processing Delete", 1);
+        }
+        return $query->rowCount();
+    }
 }

@@ -16,9 +16,32 @@ print_r($user->val('name'));
 echo "\n"; 
 print_r($user->all('name'));
 
+
+print_r($user->keypair('name',function($x){return $x['Id']; }));
+echo "\n";
+print_r($user->val('name'));
+echo "\n"; 
+print_r($user->all('name'));
+
+
+
 ?>
 --EXPECT-- 
 <!--SELECT * FROM `zz_user`   ;-->
+Array
+(
+    [u1] => 1
+    [u2] => 2
+    [u3] => 3
+)
+
+u1
+Array
+(
+    [0] => u1
+    [1] => u2
+    [2] => u3
+)
 Array
 (
     [u1] => 1
