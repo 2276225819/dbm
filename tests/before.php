@@ -49,23 +49,23 @@ class Friend extends dbm\Collection
 }
 
 $conn = new \dbm\Connect('mysql:host=127.0.0.1;dbname=test2','root','root');
-$conn->sql(User::class)->insertMulit([ 
+$conn[User::class]->insertMulit([ 
 	['type_id'=>1,'name'=>'u1'],
 	['type_id'=>1,'name'=>'u2'],
 	['type_id'=>2,'name'=>'u3'],
 ]);
-$conn->sql(Friend::class)->insertMulit([
+$conn[Friend::class]->insertMulit([
 	['uid1'=>1,'uid2'=>2,'nickname'=>'1->2'],
 	['uid1'=>1,'uid2'=>3,'nickname'=>'1->3'],
 	['uid1'=>2,'uid2'=>3,'nickname'=>'2->3'],
 ]);
 
-$conn->sql(UserType::class)->insertMulit([
+$conn[UserType::class]->insertMulit([
 	['name'=>'tysfdpe1'],  
 	['name'=>'ty21'],  
 ]);
 
-$conn->sql(PostType::class)->insertMulit([
+$conn[PostType::class]->insertMulit([
 	['name'=>'type1'],
 	['name'=>'type2'],
 	['name'=>'type3'],
@@ -73,7 +73,7 @@ $conn->sql(PostType::class)->insertMulit([
 ]);
 
 
-$conn->sql(Post::class)->insertMulit([
+$conn[Post::class]->insertMulit([
 	['user_id'=>1,'post_type_id'=>1, 'text'=>'text1'],
 	['user_id'=>1,'post_type_id'=>1, 'text'=>'text2'],
 	['user_id'=>1,'post_type_id'=>2, 'text'=>'text3'],
