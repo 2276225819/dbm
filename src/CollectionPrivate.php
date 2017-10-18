@@ -59,8 +59,8 @@ trait CollectionPrivate
     public function getIterator()
     {
         //return new \ArrayIterator( $this->getAllList() );
-        $model = clone $this;//先查结果再复制副本
-        $all = $this->getAllList();//顺序不能换
+        $model = clone $this; 
+        $all = $model->getAllList(); 
         foreach ($all as $row) {
             $model->exchangeArray($row);
             yield $model;
@@ -140,7 +140,7 @@ trait CollectionPrivate
             //     $data[$key] = $row;
             // }
         } else {
-            $model = $this->sql($this->tablename, $this->tablepks);
+            $model = self::new($this->tablename, $this->tablepks,$this->session);
         } 
         return [$model,$data];
     }
@@ -261,4 +261,5 @@ trait CollectionPrivate
     {
         return isset($this->sqlhash);
     }
+    
 }

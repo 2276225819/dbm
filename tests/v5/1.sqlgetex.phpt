@@ -52,7 +52,7 @@ Array
 
 get:2
 <!--SELECT * FROM `zz_user`   ;-->
-<!--SELECT * FROM `zz_user_type`  WHERE (`Id` in (?,?) )  ;1,2-->
+<!--SELECT * FROM `zz_user_type`  WHERE (`Id`=?)  ;2-->
 Array
 (
     [Id] => 3

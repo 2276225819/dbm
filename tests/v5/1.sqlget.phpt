@@ -16,38 +16,46 @@ $user2 = $conn->sql(User::class, 'Id')->first();
 $user3 = $conn->sql(User::class, 'Id')->find(2);
  
 print_r([
+    (string) $users,
     (array) $users,
+    (string) $user1,
     (array) $user1,
+    (string) $user2,
     (array) $user2,
+    (string) $user3,
     (array) $user3,
 ]); 
 
 ?>
---EXPECTF-- 
+--EXPECTF--  
 <!--SELECT * FROM `zz_user`   ;-->
 <!--SELECT * FROM `zz_user`    LIMIT 1;-->
 <!--SELECT * FROM `zz_user`  WHERE (`Id`=?)   LIMIT 1;2-->
 Array
 (
-    [0] => Array
+    [0] => SELECT * FROM `zz_user`   ;
+    [1] => Array
         (
         )
 
-    [1] => Array
+    [2] => SELECT * FROM `zz_user`  WHERE (`Id`=?)  ;3
+    [3] => Array
         (
             [Id] => 3
             [name] => u3
             [type_id] => 2
         )
 
-    [2] => Array
+    [4] => SELECT * FROM `zz_user`  WHERE (`Id`=?)  ;1
+    [5] => Array
         (
             [Id] => 1
             [name] => u1
             [type_id] => 1
         )
 
-    [3] => Array
+    [6] => SELECT * FROM `zz_user`  WHERE (`Id`=?)  ;2
+    [7] => Array
         (
             [Id] => 2
             [name] => u2

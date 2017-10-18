@@ -97,8 +97,7 @@ SELECT * FROM `zz_user`  WHERE (`Id`=?)  ;5Array
 )
 
 --------------------
-<!--SELECT * FROM `zz_user`    LIMIT 2;-->
-<!--DELETE FROM `zz_user`  WHERE (`Id` in (?,?) ) AND (1);1,2-->
+<!--DELETE FROM `zz_user`  WHERE (1) LIMIT 2;-->
 <!--UPDATE `zz_user` SET `name`=?  WHERE (1);666-->
 <!--SELECT * FROM `zz_user`   ;-->
 Array

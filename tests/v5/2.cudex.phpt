@@ -45,8 +45,8 @@ echo "\n";
 <!--DELETE FROM `zz_post`  WHERE (`user_id` in (SELECT Id FROM `zz_user`   ));-->
 
 <!--SELECT * FROM `zz_user`   ;-->
-<!--UPDATE `zz_post` SET `text`=?  WHERE (`user_id` in (?,?,?) );666,1,2,3-->
-<!--DELETE FROM `zz_post`  WHERE (`user_id` in (?,?,?) );1,2,3-->
+<!--UPDATE `zz_post` SET `text`=?  WHERE (`user_id`=?);666,1-->
+<!--DELETE FROM `zz_post`  WHERE (`user_id`=?);1-->
 
 <!--SELECT * FROM `zz_user`    LIMIT 1 OFFSET 2 ;-->
 <!--UPDATE `zz_post` SET `text`=?  WHERE (`user_id`=?);777,3-->

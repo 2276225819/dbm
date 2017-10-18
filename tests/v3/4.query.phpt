@@ -25,7 +25,7 @@ print_r($conn->sql('zz_post')->where(['user_id'=>$uids])->keypair('Id','text'));
 ?>
 --EXPECT--
 <!--SELECT * FROM `zz_user`   ;-->
-<!--SELECT * FROM `zz_user_type`  WHERE (`Id` in (?,?) )  ;1,2-->
+<!--SELECT * FROM `zz_user_type`  WHERE (`Id`=?)  ;2-->
 Array
 (
     [0] => Array

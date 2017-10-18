@@ -19,7 +19,7 @@ class Collection extends \ArrayObject
      */
     public function sql($table, $pks = null)
     {
-        return static::new($table, $pks, $this->session);
+        return Collection::new($table, $pks, $this->session);
     }
     /**
      * @param [type] $table
@@ -65,7 +65,19 @@ class Collection extends \ArrayObject
     {
         $list = array_values( $this->getAllList() );
         if (!empty($list[$offset])) {
-            $this->exchangeArray($list[$offset]);
+            $object = $list[$offset];
+            $this->exchangeArray($object);
+            foreach ($this->tablepks as $k => $v) {
+                if(isset($object->$v)){
+                    $where[$v] = $object->$v;
+                }else{
+                    return $this;//bugfix tests/v4/3.call.phpt
+                }
+            }
+            $this->where($where??(array)$object);
+            $this->sqlhash = ($this->bulidSelect()).';'.join($this->bulidArgs(), ',');
+            $this->session->cache[$this->sqlhash] = [$object];
+            $this->lStr='';
             return $this;
         } else {
             return null;
@@ -92,17 +104,6 @@ class Collection extends \ArrayObject
     }
 
     //////////////// all:mixed ///////////////////
-    
-    public function getIterator()
-    {
-        //return new \ArrayIterator( $this->getAllList() );
-        $all = $this->getAllList();//顺序不能换
-        $model = clone $this;//先查结果再复制副本
-        foreach ($all as $row) {
-            $model->exchangeArray($row);
-            yield $model;
-        }
-    }
 
     public function all($field = null)
     {
@@ -299,7 +300,7 @@ class Collection extends \ArrayObject
         if ($val===null) {
             // GET
             if (!$this->isRow()) {//兼容:默认读第一行
-                $object = $this->get();
+                $object = (clone $this)->get();
                 if (isset($object)) {
                     return $object->val($key);
                 }
@@ -371,7 +372,7 @@ class Collection extends \ArrayObject
         if (!($query = $this->session->conn->execute($str, $param))) {
             throw new \Exception("Error Processing Insert Mulit", 1);
         }
-        return $this->endModel($model, (object)last($list), true );
+        return $this->endModel($model, (object)end($list), true );
     }
     public function save($data = null)
     {
@@ -417,40 +418,38 @@ class Collection extends \ArrayObject
 
     public function update($data, ...$arr)
     {
-        $model = clone $this;
+        $model = $this;
         if (empty($model->wStr)) {
             throw new \Exception("Require Where Column", 1);
         }
         $param = [];
-        $data = $model->kvSQL($param, ',', $data, $arr);
-        $str = "UPDATE {$model->tablename} SET {$data} {$model->wStr}";
+        $sdata = $model->kvSQL($param, ',', $data, $arr);
+        $str = "UPDATE {$model->tablename} SET {$sdata} {$model->wStr}";
         $param = array_merge($param, $model->wArgs);
         if (!($query = $model->session->conn->execute($str, $param))) {
             throw new \Exception("Error Processing Update", 1);
+        }
+        //兼容:v4批量替换
+        $sqlhash = ($model->bulidSelect()).';'.join($model->bulidArgs(), ',');
+        if (isset( $model->session->cache[$sqlhash])) {
+            foreach ($model->session->cache[$sqlhash] as $value) {
+                foreach ($data as $k => $v) {
+                    $value->$k=$v;
+                }
+            }
         }
         return $query->rowCount();
     }
 
     public function delete($where = false, ...$args)
     {
-        $model = clone $this;
-        if (!empty($model->lStr)) {
-            $model->get(); //Bugfix
-            $model->lStr='';
-        }
-         //自身修改
-        if ($model->isRow() && empty($model->wStr)) {
-            foreach ($model->tablepks as $k => $v) {
-                $data[$v] = $model->all($v);// parent::offsetGet( $v );
-            }
-            $model->whereAnd($data);
-        }
+        $model = clone $this; 
         $model->whereAnd($where, ...$args);
         
         if (empty($model->wStr)) {
             throw new \Exception("Require Where Column", 1);
         }
-        $str="DELETE FROM {$model->tablename} {$model->wStr}";
+        $str="DELETE FROM {$model->tablename} {$model->wStr}{$model->lStr}";
         if (!($query = $model->session->conn->execute($str, $model->wArgs))) {
             throw new \Exception("Error Processing Delete", 1);
         }
